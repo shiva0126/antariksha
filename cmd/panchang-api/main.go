@@ -9,6 +9,7 @@ import (
 
 	"github.com/example/panchang/api"
 	"github.com/example/panchang/engine"
+	"github.com/example/panchang/reading"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -28,7 +29,11 @@ func main() {
 		}
 		cache = api.PostgresCache{Pool: p}
 	}
-	handler := api.NewServer(e, cache, nil).Handler()
+	var llm reading.LLM
+	if key := os.Getenv("OPENAI_API_KEY"); key != "" {
+		llm = reading.OpenAIClient{BaseURL: env("OPENAI_BASE_URL", "https://api.openai.com/v1"), APIKey: key, Model: env("OPENAI_MODEL", "gpt-4o-mini"), HTTP: &http.Client{Timeout: 90 * time.Second}}
+	}
+	handler := api.NewServerWithReading(e, cache, nil, reading.NewService(reading.DefaultCorpus, llm)).Handler()
 	if dir := os.Getenv("WEB_DIST"); dir != "" {
 		mux := http.NewServeMux()
 		mux.Handle("/api/", handler)

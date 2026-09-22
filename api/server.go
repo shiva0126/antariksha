@@ -7,11 +7,13 @@ import (
 	"log/slog"
 	"math"
 	"net/http"
+	"net/url"
 	"strconv"
 	"sync"
 	"time"
 
 	"github.com/example/panchang/engine"
+	"github.com/example/panchang/reading"
 )
 
 type Calculator interface {
@@ -19,20 +21,27 @@ type Calculator interface {
 	BirthChart(engine.ChartInput) (engine.Chart, error)
 }
 type Server struct {
-	engine Calculator
-	cache  Cache
-	mux    *http.ServeMux
-	logger *slog.Logger
+	engine  Calculator
+	cache   Cache
+	mux     *http.ServeMux
+	logger  *slog.Logger
+	reading *reading.Service
 }
 
 func NewServer(e Calculator, c Cache, l *slog.Logger) *Server {
+	return NewServerWithReading(e, c, l, reading.NewService(reading.DefaultCorpus, nil))
+}
+func NewServerWithReading(e Calculator, c Cache, l *slog.Logger, rs *reading.Service) *Server {
 	if c == nil {
 		c = NoCache{}
 	}
 	if l == nil {
 		l = slog.Default()
 	}
-	s := &Server{e, c, http.NewServeMux(), l}
+	if rs == nil {
+		rs = reading.NewService(reading.DefaultCorpus, nil)
+	}
+	s := &Server{engine: e, cache: c, mux: http.NewServeMux(), logger: l, reading: rs}
 	s.routes()
 	return s
 }
@@ -43,6 +52,8 @@ func (s *Server) routes() {
 	s.mux.HandleFunc("GET /api/month", s.month)
 	s.mux.HandleFunc("GET /api/festivals", s.festivals)
 	s.mux.HandleFunc("GET /api/chart", s.chart)
+	s.mux.HandleFunc("GET /api/chart/facts", s.chartFacts)
+	s.mux.HandleFunc("GET /api/reading", s.readingHandler)
 }
 
 func (s *Server) chart(w http.ResponseWriter, r *http.Request) {
@@ -68,6 +79,96 @@ func (s *Server) chart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, 200, chart)
+}
+
+func (s *Server) chartInput(q url.Values) (engine.ChartInput, error) {
+	lat, e := strconv.ParseFloat(q.Get("lat"), 64)
+	if e != nil || math.IsNaN(lat) || math.IsInf(lat, 0) || lat < -90 || lat > 90 {
+		return engine.ChartInput{}, fmt.Errorf("invalid lat")
+	}
+	lon, e := strconv.ParseFloat(q.Get("lon"), 64)
+	if e != nil || math.IsNaN(lon) || math.IsInf(lon, 0) || lon < -180 || lon > 180 {
+		return engine.ChartInput{}, fmt.Errorf("invalid lon")
+	}
+	tz := q.Get("tz")
+	if tz == "" {
+		return engine.ChartInput{}, fmt.Errorf("invalid IANA timezone")
+	}
+	if _, e = time.LoadLocation(tz); e != nil {
+		return engine.ChartInput{}, fmt.Errorf("invalid IANA timezone")
+	}
+	return engine.ChartInput{Date: q.Get("date"), Time: q.Get("time"), Lat: lat, Lon: lon, TZ: tz}, nil
+}
+func (s *Server) chartFacts(w http.ResponseWriter, r *http.Request) {
+	in, e := s.chartInput(r.URL.Query())
+	if e != nil {
+		problem(w, 400, e)
+		return
+	}
+	c, e := s.engine.BirthChart(in)
+	if e != nil {
+		problem(w, 400, e)
+		return
+	}
+	asOf := time.Now()
+	if v := r.URL.Query().Get("as_of"); v != "" {
+		asOf, e = time.Parse(time.RFC3339, v)
+		if e != nil {
+			problem(w, 400, fmt.Errorf("as_of must be RFC3339"))
+			return
+		}
+	}
+	facts, _, e := s.reading.BuildFacts(r.Context(), c, asOf)
+	if e != nil {
+		problem(w, 500, e)
+		return
+	}
+	writeJSON(w, 200, facts)
+}
+func (s *Server) readingHandler(w http.ResponseWriter, r *http.Request) {
+	in, e := s.chartInput(r.URL.Query())
+	if e != nil {
+		problem(w, 400, e)
+		return
+	}
+	c, e := s.engine.BirthChart(in)
+	if e != nil {
+		problem(w, 400, e)
+		return
+	}
+	asOf := time.Now()
+	if v := r.URL.Query().Get("as_of"); v != "" {
+		asOf, e = time.Parse(time.RFC3339, v)
+		if e != nil {
+			problem(w, 400, fmt.Errorf("as_of must be RFC3339"))
+			return
+		}
+	}
+	facts, rules, e := s.reading.BuildFacts(r.Context(), c, asOf)
+	if e != nil {
+		problem(w, 500, e)
+		return
+	}
+	hash := reading.ChartHash(in, "en")
+	if store, ok := s.cache.(interface {
+		GetReading(context.Context, string) (CachedReading, bool, error)
+	}); ok {
+		if x, hit, err := store.GetReading(r.Context(), hash); err == nil && hit {
+			writeJSON(w, 200, map[string]any{"chart_hash": hash, "facts": x.Facts, "reading": x.Reading, "cached": true, "model": x.Model})
+			return
+		}
+	}
+	out, e := s.reading.Generate(r.Context(), facts, rules)
+	if e != nil {
+		problem(w, 502, e)
+		return
+	}
+	if store, ok := s.cache.(interface {
+		PutReading(context.Context, string, CachedReading) error
+	}); ok {
+		_ = store.PutReading(r.Context(), hash, CachedReading{facts, out, "fallback"})
+	}
+	writeJSON(w, 200, map[string]any{"chart_hash": hash, "facts": facts, "reading": out, "cached": false, "model": "fallback"})
 }
 
 func params(r *http.Request) (time.Time, engine.Location, error) {

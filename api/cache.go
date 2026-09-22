@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/example/panchang/engine"
+	"github.com/example/panchang/reading"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -28,6 +29,11 @@ type Festival struct {
 	Slug string `json:"slug"`
 	Name string `json:"name"`
 	Date string `json:"date"`
+}
+type CachedReading struct {
+	Facts   engine.ChartFacts
+	Reading reading.Reading
+	Model   string
 }
 
 func key(v float64) float64 { return math.Round(v*100) / 100 }
@@ -72,4 +78,31 @@ func (c PostgresCache) Festivals(ctx context.Context, year int, region string) (
 		out = append(out, f)
 	}
 	return out, rows.Err()
+}
+
+func (c PostgresCache) GetReading(ctx context.Context, hash string) (CachedReading, bool, error) {
+	var factsRaw, readingRaw []byte
+	var model string
+	err := c.Pool.QueryRow(ctx, `SELECT facts,reading,model FROM reading_cache WHERE chart_hash=$1`, hash).Scan(&factsRaw, &readingRaw, &model)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return CachedReading{}, false, nil
+	}
+	if err != nil {
+		return CachedReading{}, false, err
+	}
+	var facts engine.ChartFacts
+	var out reading.Reading
+	if err = json.Unmarshal(factsRaw, &facts); err != nil {
+		return CachedReading{}, false, err
+	}
+	if err = json.Unmarshal(readingRaw, &out); err != nil {
+		return CachedReading{}, false, err
+	}
+	return CachedReading{facts, out, model}, true, nil
+}
+func (c PostgresCache) PutReading(ctx context.Context, hash string, x CachedReading) error {
+	facts, _ := json.Marshal(x.Facts)
+	out, _ := json.Marshal(x.Reading)
+	_, err := c.Pool.Exec(ctx, `INSERT INTO reading_cache(chart_hash,facts,reading,model) VALUES($1,$2,$3,$4) ON CONFLICT(chart_hash) DO UPDATE SET facts=EXCLUDED.facts,reading=EXCLUDED.reading,model=EXCLUDED.model`, hash, facts, out, x.Model)
+	return err
 }

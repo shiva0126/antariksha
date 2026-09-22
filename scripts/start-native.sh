@@ -27,6 +27,14 @@ if ! psql -Atqc 'SELECT 1 FROM native_schema_migrations WHERE version=1' | rg -q
   psql -v ON_ERROR_STOP=1 --single-transaction -f db/migrations/000001_init.up.sql -c 'INSERT INTO native_schema_migrations(version) VALUES(1)'
 fi
 psql -v ON_ERROR_STOP=1 -f db/seed/festival_rules.sql
+if psql -Atqc "SELECT 1 FROM pg_available_extensions WHERE name='vector'" | rg -q '^1$'; then
+  if ! psql -Atqc 'SELECT 1 FROM native_schema_migrations WHERE version=2' | rg -q '^1$'; then
+    psql -v ON_ERROR_STOP=1 --single-transaction -f db/migrations/000002_reading.up.sql -c 'INSERT INTO native_schema_migrations(version) VALUES(2)'
+  fi
+  psql -v ON_ERROR_STOP=1 -f db/seed/astro_corpus.sql
+else
+  echo 'pgvector extension unavailable; reading cache/RAG tables were not applied. Facts and fallback readings remain available.'
+fi
 "$GO_BIN" build -buildvcs=false -o bin/panchang-api ./cmd/panchang-api
 (cd web && npm run build)
 export DATABASE_URL="postgresql:///panchang?host=$RUNTIME&port=55432&user=panchang&sslmode=disable"
