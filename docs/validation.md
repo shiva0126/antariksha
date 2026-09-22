@@ -72,4 +72,34 @@ Festival observance rules and regional calendars still need the dedicated festiv
 - **Named Ekadashis** come from the Amanta month and paksha, with Padmini and Parama in Adhika months (all present in 2026).
 - **Muhurta** is evaluated at day level from the sunrise nakshatra, tithi and weekday, excluding Rikta tithis, Amavasya, Bhadra at sunrise and inauspicious nitya yogas, plus personal tara bala and chandra bala. Suggested windows avoid Rahu kaal, Yamaganda and Gulika, and Abhijit is not offered on Wednesdays. Not evaluated: month-level rules (Kharmas, Chaturmas, combust Jupiter or Venus), lagna shuddhi, disha shula.
 - **Holika Dahan:** the engine gives 2 Mar 2026. Drik Panchang reports 2 Mar in some western states and 3 Mar in most of India (Bhadra and the lunar eclipse).
-- **Hindi** covers the UI and Sanskrit terms. Readings and chat answers remain in English.
+
+## Shadbala
+
+All six balas follow BPHS ch. 27, in virupas, compared against the classical minimums (Sun 5, Moon 6, Mars 5, Mercury 7, Jupiter 6.5, Venus 5.5, Saturn 5 rupas):
+- **Sthana:** uchcha, saptavargaja (D1, D2, D3, D7, D9, D12, D30, with compound friendship), ojha-yugma, kendradi, drekkana.
+- **Dig bala.**
+- **Kala:** nathonnata, paksha (doubled for the Moon), tribhaga, year/month/weekday/hora lords, ayana (from tropical declination; doubled for the Sun), yuddha.
+- **Chesta** (the Sun's from ayana bala, the Moon's from paksha bala).
+- **Naisargika.**
+- **Drik:** sphuta drishti with the special aspects of Mars, Jupiter and Saturn.
+
+Ishta and Kashta phala come from uchcha and chesta.
+
+Tests pin, for 14 May 1996 10:15 Bengaluru: the Sun's uchcha bala (160.14°/3), weekday lord Mars (a Tuesday), hora lord Moon, near-maximal dig bala for Mars in the 10th, retrograde chesta for Mercury and Jupiter, the compound-relationship table, and the special aspects.
+
+Approximations, stated in the UI notes:
+- Dig bala uses equal-house cusps from the ascendant.
+- Nathonnata bala uses local mean time.
+- Chesta bala for Mars–Saturn uses the eight-motion (ashta chesta) classification of apparent speed rather than the full chesta-kendra computation.
+- Year and month lords come from the Kali ahargana.
+
+Results can therefore differ by a few virupas from software that computes the full chesta kendra.
+
+## Languages
+
+The UI is available in English, Hindi, Marathi, Kannada, Tamil, Telugu, Malayalam, Gujarati and Bengali.
+- **UI strings** are hand-translated (59 per language); native-speaker review is welcome.
+- **Sanskrit terms** come from one canonical Devanagari table, transliterated by code point into Kannada, Telugu, Malayalam, Gujarati and Bengali (Bengali writes va as ba). Regional names are used for weekdays and Mars where they differ.
+- **Tamil** has its own table of almanac forms (for example Thiruvathirai for Ardra, Pournami for Purnima).
+- **Fonts:** a Noto font for the selected script is loaded on demand.
+- **Not translated:** long explanatory sentences, readings and chat answers remain in English.

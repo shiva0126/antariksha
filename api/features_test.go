@@ -88,3 +88,15 @@ func TestRateLimiter(t *testing.T) {
 		t.Fatal("tokens did not refill")
 	}
 }
+
+func TestShadbalaEndpointAndChat(t *testing.T) {
+	s := NewServer(realEngine(t), NoCache{}, nil)
+	code, v, body := do(t, s, "GET", "/api/chart/shadbala?"+birthQ, "")
+	if code != 200 || len(v["rows"].([]any)) != 7 {
+		t.Fatalf("shadbala %d %s", code, body[:min(200, len(body))])
+	}
+	_, v, _ = do(t, s, "POST", "/api/chat", `{"birth":{"date":"1996-05-14","time":"10:15","lat":12.97,"lon":77.59,"tz":"Asia/Kolkata"},"question":"Which is my strongest planet?"}`)
+	if a := v["answer"].(map[string]any)["content"].(string); !strings.Contains(a, "Shadbala") {
+		t.Fatalf("strength answer: %s", a)
+	}
+}

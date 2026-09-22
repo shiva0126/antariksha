@@ -18,6 +18,7 @@ import (
 func (s *Server) featureRoutes() {
 	s.mux.HandleFunc("GET /api/places", s.placeSearch)
 	s.mux.HandleFunc("GET /api/chart/varga", s.varga)
+	s.mux.HandleFunc("GET /api/chart/shadbala", s.shadbala)
 	s.mux.Handle("POST /api/match", s.limit(s.match, 30))
 	s.mux.HandleFunc("GET /api/muhurta/events", s.muhurtaEvents)
 	s.mux.Handle("GET /api/muhurta", s.limit(s.muhurta, 30))
@@ -123,6 +124,37 @@ func (s *Server) varga(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, 200, map[string]any{"varga": n, "name": engine.VargaName(n), "theme": engine.VargaTheme(n), "chart": v})
+}
+
+// ---- shadbala ---------------------------------------------------------------
+
+// ShadbalaCalculator is implemented by the real engine; test doubles may omit it.
+type ShadbalaCalculator interface {
+	Shadbala(engine.Chart) (engine.Shadbala, error)
+}
+
+func (s *Server) shadbala(w http.ResponseWriter, r *http.Request) {
+	sc, ok := s.engine.(ShadbalaCalculator)
+	if !ok {
+		problem(w, 501, fmt.Errorf("shadbala unavailable"))
+		return
+	}
+	in, e := s.chartInput(r.URL.Query())
+	if e != nil {
+		problem(w, 400, e)
+		return
+	}
+	c, e := s.engine.BirthChart(in)
+	if e != nil {
+		problem(w, 400, e)
+		return
+	}
+	sb, e := sc.Shadbala(c)
+	if e != nil {
+		problem(w, 500, e)
+		return
+	}
+	writeJSON(w, 200, sb)
 }
 
 // ---- kundli matching -------------------------------------------------------

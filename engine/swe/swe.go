@@ -41,6 +41,9 @@ func SetLahiri() { C.swe_set_sid_mode(C.SE_SIDM_LAHIRI, 0, 0) }
 
 func Close() { C.swe_close() }
 
+// Ayanamsa returns the configured (Lahiri) ayanamsa in degrees at a UT Julian day.
+func Ayanamsa(jdUT float64) float64 { return float64(C.swe_get_ayanamsa_ut(C.double(jdUT))) }
+
 func JulianDay(year, month, day int, hourUTC float64) float64 {
 	return float64(C.swe_julday(C.int(year), C.int(month), C.int(day), C.double(hourUTC), C.int(Gregorian)))
 }

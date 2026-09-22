@@ -218,6 +218,11 @@ func (s *Server) chat(w http.ResponseWriter, r *http.Request) {
 	if t, err := s.engine.BirthChart(engine.ChartInput{Date: nowLocal.Format("2006-01-02"), Time: nowLocal.Format("15:04"), Lat: req.Birth.Lat, Lon: req.Birth.Lon, TZ: req.Birth.TZ}); err == nil {
 		cc.Transit = &t
 	}
+	if sc, ok := s.engine.(ShadbalaCalculator); ok {
+		if sb, err := sc.Shadbala(c); err == nil {
+			cc.Shadbala = &sb
+		}
+	}
 	ans, err := s.reading.Answer(r.Context(), facts, rules, req.Question, turns, cc)
 	if err != nil {
 		problem(w, 400, err)

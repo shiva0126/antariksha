@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/example/panchang/engine"
@@ -26,7 +27,8 @@ type ChatAnswer struct {
 
 // ChatContext carries facts that depend on "now" rather than on birth.
 type ChatContext struct {
-	Transit *engine.Chart // sky at the time of asking, for Sade Sati and transits
+	Transit  *engine.Chart    // sky at the time of asking, for Sade Sati and transits
+	Shadbala *engine.Shadbala // six-fold planetary strength, when available
 }
 
 type topic struct {
@@ -57,6 +59,7 @@ var topics = []topic{
 	{"nakshatra", words(`nakshatra|nakshatras|star|birth star|janma nakshatra|pada`)},
 	{"lagna", words(`lagna|ascendant|rising|personality|nature|who am i|temperament`)},
 	{"moon_sign", words(`rashi|moon sign|mind|emotions?|emotional`)},
+	{"strength", words(`strength|strengths|strong|strongest|weak|weakest|shadbala|powerful|power`)},
 	{"remedy", words(`remedy|remedies|upay|upaya|gemstones?|mantras?|puja|fix|improve`)},
 }
 
@@ -285,6 +288,8 @@ func compose(in *insight, q string, history []ChatTurn, cc ChatContext) (string,
 		case "moon_sign":
 			add("Your Moon sign (rashi): " + in.placement("moon") + ".")
 			add(in.entry(engine.DocGrahaInSign, "moon_in_"+engine.Slug(in.signs[in.signIdx("moon")])))
+		case "strength":
+			add(strengthLine(cc))
 		case "remedy":
 			add("Antariksha describes the chart rather than prescribing remedies. Traditionally, strengthening a graha begins with its significations: for the current dasha lord " + engine.GrahaEnglish(f.Vimshottari.Current.Maha) + ", that means living its qualities consciously. For specific remedies such as gemstones or rituals, consult a trusted astrologer who can see the whole chart.")
 		}
@@ -388,4 +393,31 @@ func vargaLine(in *insight, n int, ids ...string) string {
 		}
 	}
 	return fmt.Sprintf("In the %s (D%d, the chart of %s) the ascendant is %s, with %s.", engine.VargaName(n), n, engine.VargaTheme(n), v.Ascendant.Rashi, strings.Join(parts, " and "))
+}
+
+// strengthLine summarises Shadbala: strongest and weakest grahas against
+// their classical minimums.
+func strengthLine(cc ChatContext) string {
+	if cc.Shadbala == nil || len(cc.Shadbala.Rows) == 0 {
+		return ""
+	}
+	rows := append([]engine.ShadbalaRow(nil), cc.Shadbala.Rows...)
+	sort.Slice(rows, func(i, j int) bool { return rows[i].Rank < rows[j].Rank })
+	var strong, weak []string
+	for _, r := range rows {
+		s := fmt.Sprintf("%s %.2f rupas (%.0f%% of the %.1f required)", engine.GrahaEnglish(r.Graha), r.Rupas, r.Ratio*100, r.Required)
+		if r.Ratio >= 1 {
+			strong = append(strong, s)
+		} else {
+			weak = append(weak, s)
+		}
+	}
+	out := fmt.Sprintf("By Shadbala (six-fold strength), your strongest graha is %s and the weakest is %s.", engine.GrahaEnglish(rows[0].Graha), engine.GrahaEnglish(rows[len(rows)-1].Graha))
+	if len(strong) > 0 {
+		out += " Meeting their required strength: " + strings.Join(strong, "; ") + "."
+	}
+	if len(weak) > 0 {
+		out += " Below their requirement: " + strings.Join(weak, "; ") + ". Strong grahas deliver their significations and dashas more fully; weaker ones need more conscious effort."
+	}
+	return out
 }
