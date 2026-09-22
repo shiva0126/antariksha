@@ -2,7 +2,7 @@ package engine
 
 import "time"
 
-const SchemaVersion = 3
+const SchemaVersion = 5
 
 type Location struct {
 	Lat float64 `json:"lat"`

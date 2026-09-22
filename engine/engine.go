@@ -137,6 +137,15 @@ func (e *Engine) Calculate(date time.Time, loc Location) (Computed, error) {
 		Tithi: Limb{tithiNames[tithi], tithi + 1, dayClock(tithiEnd, date, zone)}, Nakshatra: Limb{nakshatraNames[nak], nak + 1, dayClock(nakEnd, date, zone)},
 		Yoga: Limb{yogaNames[yoga], yoga + 1, dayClock(yogaEnd, date, zone)}, Karana: Limb{karanaName(half), half + 1, dayClock(karanaEnd, date, zone)}, Festivals: []string{},
 	}
+	fest, err := festivalsFor(sunriseJD, sunsetJD, nextRise, month, tithi)
+	if err != nil {
+		return Computed{}, err
+	}
+	solar, err := solarFestivals(sunriseJD, sunsetJD, nextRise)
+	if err != nil {
+		return Computed{}, err
+	}
+	day.Festivals = append(append([]string{}, solar...), fest...)
 	if mrErr == nil && moonriseJD < nextRise {
 		day.Moonrise = dayClock(moonriseJD, date, zone)
 	}

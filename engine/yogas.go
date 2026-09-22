@@ -80,19 +80,55 @@ func DetectYogas(c Chart, d map[string]Dignity) []Yoga {
 	return out
 }
 
-func rajaYoga(c Chart, gs map[string]Graha) Yoga {
+// lordsOf returns the distinct lords of the given houses from the lagna.
+func lordsOf(c Chart, houses ...int) []string {
 	asc := int(c.Ascendant.Longitude / 30)
-	var k, t string
-	for s, id := range rashiLord {
-		h := ((s - asc + 12) % 12) + 1
-		if inSet(h, 1, 4, 7, 10) {
-			k = id
+	seen := map[string]bool{}
+	var out []string
+	for _, h := range houses {
+		l := rashiLord[(asc+h-1)%12]
+		if !seen[l] {
+			seen[l] = true
+			out = append(out, l)
 		}
-		if inSet(h, 1, 5, 9) {
-			t = id
+	}
+	return out
+}
+
+// associated reports conjunction, mutual 7th-house aspect or sign exchange
+// (parivartana), the three classical forms of sambandha used for Raja Yoga.
+func associated(gs map[string]Graha, a, b string) (string, bool) {
+	sa, sb := signOf(gs[a]), signOf(gs[b])
+	switch {
+	case sa == sb:
+		return "conjunction", true
+	case (sa-sb+12)%12 == 6:
+		return "mutual_aspect", true
+	case rashiLord[sa] == b && rashiLord[sb] == a:
+		return "exchange", true
+	}
+	return "", false
+}
+
+func rajaYoga(c Chart, gs map[string]Graha) Yoga {
+	kendra, trikona := lordsOf(c, 1, 4, 7, 10), lordsOf(c, 1, 5, 9)
+	// A single planet ruling both a kendra (other than the lagna) and a trikona
+	// is a yogakaraka and forms Raja Yoga by itself.
+	for _, k := range lordsOf(c, 4, 7, 10) {
+		for _, t := range lordsOf(c, 5, 9) {
+			if k == t {
+				return yoga("Raja Yoga", "raja", []string{k}, []string{"yogakaraka"}, strength(c, k), map[string]any{"yogakaraka": k})
+			}
 		}
-		if k != "" && t != "" && k != t && (signOf(gs[k]) == signOf(gs[t]) || houseOf(gs[k].Longitude, c.Ascendant.Longitude)-houseOf(gs[t].Longitude, c.Ascendant.Longitude) == 6 || signOf(gs[k]) == int(c.Ascendant.Longitude/30)) {
-			return yoga("Raja Yoga", "raja", []string{k, t}, []string{"kendra_trikona_association"}, strength(c, k, t), map[string]any{"kendra_lord": k, "trikona_lord": t})
+	}
+	for _, k := range kendra {
+		for _, t := range trikona {
+			if k == t {
+				continue
+			}
+			if how, ok := associated(gs, k, t); ok {
+				return yoga("Raja Yoga", "raja", []string{k, t}, []string{"kendra_trikona_association"}, strength(c, k, t), map[string]any{"kendra_lord": k, "trikona_lord": t, "association": how})
+			}
 		}
 	}
 	return Yoga{}
@@ -145,22 +181,15 @@ func moonPattern(c Chart, gs map[string]Graha, name string, offset int) Yoga {
 		if g.ID == "sun" || g.ID == "moon" || g.ID == "rahu" || g.ID == "ketu" {
 			continue
 		}
-		d := (signOf(g) - m + 12) % 12
-		if offset == 1 && d == 1 {
+		switch (signOf(g) - m + 12) % 12 {
+		case 1:
 			left = true
-		}
-		if offset == -1 && d == 11 {
+		case 11:
 			right = true
 		}
-		if offset == 0 && (d == 1 || d == 11) {
-			if d == 1 {
-				left = true
-			} else {
-				right = true
-			}
-		}
 	}
-	ok := (offset == 1 && left) || (offset == -1 && right) || (offset == 0 && left && right)
+	// Sunapha and Anapha are one-sided; planets on both sides form Durudhara instead.
+	ok := (offset == 1 && left && !right) || (offset == -1 && right && !left) || (offset == 0 && left && right)
 	if !ok {
 		return Yoga{}
 	}
@@ -184,19 +213,29 @@ func kemadruma(c Chart, gs map[string]Graha) bool {
 	}
 	return !hasAdjacent && !hasKendra
 }
+
+// kalaSarpa: all seven planets strictly on one side of the Rahu–Ketu axis
+// (either hemisphere; the Ketu-to-Rahu side is sometimes called Kala Amrita).
 func kalaSarpa(c Chart, gs map[string]Graha) bool {
-	r, k := signOf(gs["rahu"]), signOf(gs["ketu"])
+	r := gs["rahu"].Longitude
+	side := 0
 	for _, g := range gs {
 		if g.ID == "rahu" || g.ID == "ketu" {
 			continue
 		}
-		s := signOf(g)
-		if s == r || s == k {
+		d := normalize(g.Longitude - r)
+		s := 1
+		if d > 180 {
+			s = -1
+		}
+		if d == 0 || d == 180 {
 			return false
 		}
-		if (s-r+12)%12 >= (k-r+12)%12 {
+		if side == 0 {
+			side = s
+		} else if side != s {
 			return false
 		}
 	}
-	return true
+	return side != 0
 }

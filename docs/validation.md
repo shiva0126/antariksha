@@ -54,3 +54,11 @@ Browser tests cover correct sign/house grouping, all three chart layouts, top na
 The Daily Panchang and Hindu Calendar pages display graha transits at a separately selected local time, clearly separated from sunrise-based Panchang limbs.
 
 Festival observance rules and regional calendars still need the dedicated festival milestone; this release does not claim a full validated festival calendar.
+
+## Interpretation and festival fixes (22 September 2026)
+
+- **Vimshottari:** the sequence skipped the second mahadasha (for example Ketu after a Mercury birth dasha), shifting every later period. Fixed, and the birth mahadasha's antardashas now run from its theoretical start before birth. Regression test: 14 May 1996 → Mercury to 2008-06, Ketu to 2015-06, Venus to 2035-06, and Venus–Jupiter on 22 Sep 2026.
+- **Dignity:** enemy signs are now classified from the full naisargika friend/enemy table; previously most enemy placements came out neutral.
+- **Yogas:** Raja Yoga checks every kendra-lord × trikona-lord pair (conjunction, mutual 7th aspect or exchange) and single-planet yogakarakas. Sunapha and Anapha no longer coexist with Durudhara. Neecha bhanga uses the lords of both the debilitation and exaltation signs, from the lagna or the Moon. Kala Sarpa counts both hemispheres.
+- **Festivals** are evaluated at each observance's kaal (sunrise, madhyahna, aparahna, pradosh, nishita). Kshaya tithis are assigned to the Panchang day holding the tithi's middle, and named festivals are skipped in Adhika months. Tests pin these 2026 dates to Drik Panchang: Makar Sankranti 14 Jan, Maha Shivaratri 15 Feb, Holi 4 Mar, Ugadi 19 Mar (kshaya Pratipada), Raksha Bandhan 28 Aug, Janmashtami 4 Sep, Ganesh Chaturthi 14 Sep, Navaratri 11 Oct, Dussehra 20 Oct, Dhanteras 6 Nov, Diwali 8 Nov.
+- **Known limits:** Bhadra avoidance (Holika Dahan gives 2 Mar where Drik may give 3 Mar), Bhai Dooj's aparahna rule, named Ekadashis and regional or Purnimanta variants are not implemented.

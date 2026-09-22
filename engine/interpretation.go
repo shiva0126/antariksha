@@ -55,7 +55,11 @@ var dashaYears = map[string]float64{"ketu": 7, "venus": 20, "sun": 6, "moon": 10
 var nakLords = dashaOrder
 var exalted = map[string]int{"sun": 0, "moon": 1, "mars": 9, "mercury": 5, "jupiter": 3, "venus": 11, "saturn": 6}
 var owned = map[string]map[int]bool{"sun": {4: true}, "moon": {3: true}, "mars": {0: true, 7: true}, "mercury": {2: true, 5: true}, "jupiter": {8: true, 11: true}, "venus": {1: true, 6: true}, "saturn": {9: true, 10: true}}
+
+// Naisargika (natural) relationships, BPHS: planets not listed as friend or
+// enemy are neutral.
 var friends = map[string]map[string]bool{"sun": {"moon": true, "mars": true, "jupiter": true}, "moon": {"sun": true, "mercury": true}, "mars": {"sun": true, "moon": true, "jupiter": true}, "mercury": {"sun": true, "venus": true}, "jupiter": {"sun": true, "moon": true, "mars": true}, "venus": {"mercury": true, "saturn": true}, "saturn": {"mercury": true, "venus": true}}
+var enemies = map[string]map[string]bool{"sun": {"venus": true, "saturn": true}, "moon": {}, "mars": {"mercury": true}, "mercury": {"moon": true}, "jupiter": {"mercury": true, "venus": true}, "venus": {"sun": true, "moon": true}, "saturn": {"sun": true, "moon": true, "mars": true}}
 var planetNames = map[string]string{"sun": "Surya", "moon": "Chandra", "mars": "Mangala", "mercury": "Budha", "jupiter": "Guru", "venus": "Shukra", "saturn": "Shani", "rahu": "Rahu", "ketu": "Ketu"}
 
 func signOf(g Graha) int { return int(g.Longitude / 30) }
@@ -102,7 +106,7 @@ func Dignities(c Chart) map[string]Dignity {
 			lord := rashiLord[sign]
 			if friends[id][lord] {
 				state = "friendly"
-			} else if friends[lord] != nil && friends[lord][id] {
+			} else if enemies[id][lord] {
 				state = "enemy"
 			}
 		}
@@ -116,11 +120,21 @@ func Dignities(c Chart) map[string]Dignity {
 	}
 	return out
 }
+
+// neechaBhanga applies the most widely used cancellation rule (BPHS, Phaladeepika):
+// the lord of the debilitation sign or the lord of the exaltation sign stands in
+// a kendra from the lagna or from the Moon.
 func neechaBhanga(c Chart, id string, d Dignity, gs map[string]Graha) Dignity {
 	g := gs[id]
-	dispositor := rashiLord[(signOf(g)+6)%12]
-	if dg, ok := gs[dispositor]; ok && inSet(houseOf(dg.Longitude, c.Ascendant.Longitude), 1, 4, 7, 10) {
-		d.NeechaBhanga = true
+	moon := gs["moon"].Longitude
+	for _, lord := range []string{rashiLord[signOf(g)], rashiLord[exalted[id]]} {
+		lg, ok := gs[lord]
+		if !ok || lord == id {
+			continue
+		}
+		if inSet(houseOf(lg.Longitude, c.Ascendant.Longitude), 1, 4, 7, 10) || inSet(houseOf(lg.Longitude, moon), 1, 4, 7, 10) {
+			d.NeechaBhanga = true
+		}
 	}
 	return d
 }
@@ -178,30 +192,30 @@ func Vimshottari(c Chart, asOf time.Time) Dasha {
 		birth = time.Date(t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), 0, 0, z).UTC()
 	}
 	periods := []DashaPeriod{}
-	cur := birth
+	starts := []time.Time{}
+	// The birth mahadasha began before birth; its antardashas run from that
+	// theoretical start, while the listed period starts at birth.
+	cur := birth.Add(-yearsDuration(dashaYears[lord] - remaining))
 	currentIndex := -1
 	for n := 0; n < 18; n++ {
-		i := (idx + n) % 9
-		years := dashaYears[dashaOrder[i]]
+		l := dashaOrder[(idx+n)%9]
+		end := cur.Add(yearsDuration(dashaYears[l]))
+		from := cur
 		if n == 0 {
-			years = remaining
+			from = birth
 		}
-		end := cur.Add(time.Duration(years*365.2425*24) * time.Hour)
-		p := DashaPeriod{Lord: dashaOrder[i], From: cur.Format("2006-01-02"), To: end.Format("2006-01-02"), Level: "maha"}
-		periods = append(periods, p)
-		if !asOf.Before(cur) && asOf.Before(end) {
+		periods = append(periods, DashaPeriod{Lord: l, From: from.Format("2006-01-02"), To: end.Format("2006-01-02"), Level: "maha"})
+		starts = append(starts, cur)
+		if !asOf.Before(from) && asOf.Before(end) {
 			currentIndex = n
 		}
 		cur = end
-		if n == 0 {
-			idx = (idx + 1) % 9
-		}
 	}
 	var current, upcoming DashaPeriod
 	if currentIndex >= 0 {
 		current = periods[currentIndex]
 		current.Maha = current.Lord
-		current.Antara, current.From, current.To = antaraFor(current, asOf)
+		current.Antara, current.From, current.To = antaraFor(current.Lord, starts[currentIndex], asOf)
 		if currentIndex+1 < len(periods) {
 			upcoming = periods[currentIndex+1]
 		}
@@ -212,24 +226,30 @@ func Vimshottari(c Chart, asOf time.Time) Dasha {
 	}{lord, remaining}, Current: current, Upcoming: upcoming, Sequence: periods}
 }
 
-func antaraFor(maha DashaPeriod, at time.Time) (string, string, string) {
-	from, _ := time.Parse("2006-01-02", maha.From)
+// yearsDuration converts Vimshottari years (365.2425-day years) to a duration.
+func yearsDuration(years float64) time.Duration {
+	return time.Duration(years * 365.2425 * 24 * float64(time.Hour))
+}
+
+// antaraFor finds the antardasha of the maha lord running at `at`. Antaras
+// start with the maha lord and follow the Vimshottari order; each lasts
+// maha_years × antara_years / 120 years.
+func antaraFor(maha string, start, at time.Time) (string, string, string) {
 	cycleStart := 0
 	for i, id := range dashaOrder {
-		if id == maha.Lord {
+		if id == maha {
 			cycleStart = i
 			break
 		}
 	}
-	cur := from
+	cur := start
 	for n := 0; n < 9; n++ {
 		lord := dashaOrder[(cycleStart+n)%9]
-		days := dashaYears[maha.Lord] * dashaYears[lord] / 120 * 365.2425
-		end := cur.Add(time.Duration(days*24) * time.Hour)
+		end := cur.Add(yearsDuration(dashaYears[maha] * dashaYears[lord] / 120))
 		if !at.Before(cur) && at.Before(end) {
 			return lord, cur.Format("2006-01-02"), end.Format("2006-01-02")
 		}
 		cur = end
 	}
-	return dashaOrder[cycleStart], maha.From, maha.To
+	return maha, start.Format("2006-01-02"), cur.Format("2006-01-02")
 }
