@@ -74,3 +74,6 @@ export interface TodayResponse {
 
 export interface PlaceHit { name: string; region: string; country: string; lat: number; lon: number; tz: string; population: number }
 export interface VargaResponse { varga: number; name: string; theme: string; chart: ChartResponse }
+
+export interface ShadbalaRow { graha: string; sthana: number; dig: number; kala: number; chesta: number; naisargika: number; drik: number; total: number; rupas: number; required_rupas: number; required?: number; ratio: number; rank: number; ishta_phala: number; kashta_phala: number; details: Record<string, number>; chesta_motion?: string }
+export interface ShadbalaResponse { rows: (ShadbalaRow & { required: number })[]; notes: string[] }

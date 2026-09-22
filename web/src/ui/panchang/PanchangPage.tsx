@@ -65,13 +65,13 @@ export function PanchangPage({ mode }: { mode: 'day' | 'month' }) {
           {mode === 'day' ? (
             <div className="stepper">
               <button className="ghost" aria-label="Previous day" onClick={() => pick(shift(date, -1))}>‹</button>
-              <label className="field compact"><span>Date</span><input type="date" aria-label="Panchang date" value={date} onChange={e => e.target.value && pick(e.target.value)} /></label>
+              <label className="field compact"><span>{t('Date')}</span><input type="date" aria-label="Panchang date" value={date} onChange={e => e.target.value && pick(e.target.value)} /></label>
               <button className="ghost" aria-label="Next day" onClick={() => pick(shift(date, 1))}>›</button>
             </div>
           ) : (
             <div className="stepper">
               <button className="ghost" aria-label="Previous month" onClick={() => setMonth(shiftMonth(month, -1))}>‹</button>
-              <label className="field compact"><span>Month</span><input type="month" aria-label="Calendar month" value={month} onChange={e => e.target.value && setMonth(e.target.value)} /></label>
+              <label className="field compact"><span>{t('Month')}</span><input type="month" aria-label="Calendar month" value={month} onChange={e => e.target.value && setMonth(e.target.value)} /></label>
               <button className="ghost" aria-label="Next month" onClick={() => setMonth(shiftMonth(month, 1))}>›</button>
             </div>
           )}

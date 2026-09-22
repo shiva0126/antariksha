@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { SettingsProvider, useSettings, useT } from './i18n';
+import { LANGUAGES, SettingsProvider, useSettings, useT, type Lang } from './i18n';
 import { KundaliPage } from './ui/kundali/KundaliPage';
 import { MatchPage } from './ui/match/MatchPage';
 import { MuhurtaPage } from './ui/muhurta/MuhurtaPage';
@@ -31,7 +31,7 @@ function Shell() {
           {pages.map(([id, label]) => <button key={id} className={page === id ? 'active' : ''} aria-current={page === id ? 'page' : undefined} onClick={() => go(id)}>{t(label)}</button>)}
           <div className="settings">
             <label><span className="sr-only">{t('Language')}</span>
-              <select aria-label="Language" value={lang} onChange={e => setLang(e.target.value as 'en' | 'hi')}><option value="en">English</option><option value="hi">हिन्दी</option></select></label>
+              <select aria-label="Language" value={lang} onChange={e => setLang(e.target.value as Lang)}>{LANGUAGES.map(([k, label]) => <option key={k} value={k}>{label}</option>)}</select></label>
             <label><span className="sr-only">{t('Months')}</span>
               <select aria-label="Month system" value={months} onChange={e => setMonths(e.target.value as 'amanta' | 'purnimanta')} title="Amanta (South/West India) or Purnimanta (North India) month naming">
                 <option value="amanta">Amanta</option><option value="purnimanta">Purnimanta</option></select></label>

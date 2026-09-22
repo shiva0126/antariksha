@@ -1,4 +1,4 @@
-import type { ChartInput, ChartResponse, ChatMessage, MatchResponse, MuhurtaEvent, MuhurtaResponse, PlaceHit, ReadingResponse, TodayResponse, VargaResponse } from './types';
+import type { ChartInput, ChartResponse, ChatMessage, MatchResponse, MuhurtaEvent, MuhurtaResponse, PlaceHit, ReadingResponse, ShadbalaResponse, TodayResponse, VargaResponse } from './types';
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const r = await fetch(path, init);
@@ -51,3 +51,6 @@ export const getToday = (input: ChartInput, signal?: AbortSignal) => request<Tod
 
 export const calendarURL = (year: number, place: { lat: number; lon: number; tz: string }, vrat = true) =>
   `/api/calendar.ics?${new URLSearchParams({ year: String(year), lat: String(place.lat), lon: String(place.lon), tz: place.tz, vrat: vrat ? '1' : '0' })}`;
+
+export const getShadbala = (input: ChartInput, signal?: AbortSignal) =>
+  request<ShadbalaResponse>(`/api/chart/shadbala?${query(input)}`, { signal }).then(r => ({ ...r, rows: r.rows.map(x => ({ ...x, required: x.required_rupas })) }));

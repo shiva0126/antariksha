@@ -12,10 +12,11 @@ import { PlanetTable } from './PlanetTable';
 import { ProfileBar } from './ProfileBar';
 import { ReadingPanel } from './ReadingPanel';
 import { ReportView } from './ReportView';
+import { StrengthTab } from './StrengthTab';
 import { TodayTab } from './TodayTab';
 
-type Tab = 'today' | 'chart' | 'planets' | 'dasha' | 'ashtaka' | 'reading' | 'ask' | 'report';
-const tabIds: [Tab, string][] = [['today', 'Today'], ['chart', 'Chart'], ['planets', 'Planets'], ['dasha', 'Dasha'], ['ashtaka', 'Ashtakavarga'], ['reading', 'Reading'], ['ask', 'Ask Antariksha'], ['report', 'Report']];
+type Tab = 'today' | 'chart' | 'planets' | 'dasha' | 'ashtaka' | 'strength' | 'reading' | 'ask' | 'report';
+const tabIds: [Tab, string][] = [['today', 'Today'], ['chart', 'Chart'], ['planets', 'Planets'], ['dasha', 'Dasha'], ['ashtaka', 'Ashtakavarga'], ['strength', 'Strength'], ['reading', 'Reading'], ['ask', 'Ask Antariksha'], ['report', 'Report']];
 
 export function KundaliPage() {
   const t = useT();
@@ -100,6 +101,7 @@ export function KundaliPage() {
             {tab === 'planets' && <PlanetTable chart={chart} facts={reading?.facts} />}
             {tab === 'dasha' && (reading ? <DashaTimeline facts={reading.facts} /> : <div className="card loading-card">Preparing dashas…</div>)}
             {tab === 'ashtaka' && (reading ? <AshtakavargaTab facts={reading.facts} /> : <div className="card loading-card">Preparing Ashtakavarga…</div>)}
+            {tab === 'strength' && <StrengthTab birth={profile} />}
             {tab === 'reading' && (reading ? <ReadingPanel data={reading} /> : <div className="card loading-card">Preparing the reading…</div>)}
             {tab === 'ask' && <ChatPanel key={profile.id} birth={profile} name={profile.name} />}
             {tab === 'report' && <ReportView profile={profile} chart={chart} reading={reading} />}

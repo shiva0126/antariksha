@@ -171,3 +171,28 @@ test('delete all my data removes chats from the server', async ({ page, request 
   const r = await request.get(`/api/chat/history?session_id=${sid}`);
   expect(r.status()).toBe(404);
 });
+
+test('strength tab shows shadbala for seven grahas', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', e => errors.push(e.message));
+  await openChart(page);
+  await page.getByRole('tab', { name: 'Strength' }).click();
+  await expect(page.locator('.sb-row[role=listitem]')).toHaveCount(7);
+  await expect(page.locator('.strength tbody tr')).toHaveCount(7);
+  await expect(page.locator('.sb-notes')).toContainText('Weekday lord Mars');
+  expect(errors).toEqual([]);
+});
+
+test('regional languages: Tamil, Kannada, Bengali', async ({ page }) => {
+  await page.goto('/#day');
+  await page.getByLabel('Panchang date').fill('2026-09-22');
+  await page.getByLabel('Language').selectOption('ta');
+  await expect(page.locator('.main-nav')).toContainText('தினசரி பஞ்சாங்கம்');
+  await expect(page.locator('.limb-grid')).toContainText('செவ்வாய்'); // Tuesday
+  await expect(page.locator('.limb-grid')).toContainText('ஏகாதசி');
+  await page.getByLabel('Language').selectOption('kn');
+  await expect(page.locator('.limb-grid')).toContainText('ಮಂಗಳವಾರ');
+  await page.getByLabel('Language').selectOption('bn');
+  await expect(page.locator('.limb-grid')).toContainText('একাদশী');
+  await page.getByLabel('Language').selectOption('en');
+});
