@@ -26,6 +26,7 @@ type Server struct {
 	mux     *http.ServeMux
 	logger  *slog.Logger
 	reading *reading.Service
+	chats   ChatStore
 }
 
 func NewServer(e Calculator, c Cache, l *slog.Logger) *Server {
@@ -41,7 +42,10 @@ func NewServerWithReading(e Calculator, c Cache, l *slog.Logger, rs *reading.Ser
 	if rs == nil {
 		rs = reading.NewService(reading.DefaultCorpus, nil)
 	}
-	s := &Server{engine: e, cache: c, mux: http.NewServeMux(), logger: l, reading: rs}
+	s := &Server{engine: e, cache: c, mux: http.NewServeMux(), logger: l, reading: rs, chats: NewMemoryChatStore()}
+	if pc, ok := c.(PostgresCache); ok {
+		s.chats = PostgresChatStore{Pool: pc.Pool}
+	}
 	s.routes()
 	return s
 }
@@ -55,6 +59,8 @@ func (s *Server) routes() {
 	s.mux.HandleFunc("GET /api/chart/facts", s.chartFacts)
 	s.mux.HandleFunc("GET /api/reading", s.readingHandler)
 	s.mux.HandleFunc("GET /api/reading/stream", s.readingStream)
+	s.mux.HandleFunc("POST /api/chat", s.chat)
+	s.mux.HandleFunc("GET /api/chat/history", s.chatHistory)
 }
 
 func (s *Server) chart(w http.ResponseWriter, r *http.Request) {
@@ -150,26 +156,29 @@ func (s *Server) readingHandler(w http.ResponseWriter, r *http.Request) {
 		problem(w, 500, e)
 		return
 	}
-	hash := reading.ChartHash(in, "en")
+	// Current-dasha facts depend on the as-of day, so it is part of the key.
+	hash := reading.ChartHash(in, "en") + ":" + asOf.UTC().Format("2006-01-02")
 	if store, ok := s.cache.(interface {
 		GetReading(context.Context, string) (CachedReading, bool, error)
 	}); ok {
 		if x, hit, err := store.GetReading(r.Context(), hash); err == nil && hit {
-			writeJSON(w, 200, map[string]any{"chart_hash": hash, "facts": x.Facts, "reading": x.Reading, "cached": true, "model": x.Model})
+			writeJSON(w, 200, map[string]any{"chart_hash": hash, "facts": x.Facts, "reading": x.Reading, "grounding": rules, "cached": true, "model": x.Model})
 			return
 		}
 	}
-	out, e := s.reading.Generate(r.Context(), facts, rules)
+	out, model, e := s.reading.Generate(r.Context(), facts, rules)
 	if e != nil {
 		problem(w, 502, e)
 		return
 	}
+	// Only LLM readings are cached; grounded readings are cheap to recompute and
+	// improve whenever the corpus does.
 	if store, ok := s.cache.(interface {
 		PutReading(context.Context, string, CachedReading) error
-	}); ok {
-		_ = store.PutReading(r.Context(), hash, CachedReading{facts, out, "fallback"})
+	}); ok && model != reading.FallbackModel {
+		_ = store.PutReading(r.Context(), hash, CachedReading{facts, out, model})
 	}
-	writeJSON(w, 200, map[string]any{"chart_hash": hash, "facts": facts, "reading": out, "cached": false, "model": "fallback"})
+	writeJSON(w, 200, map[string]any{"chart_hash": hash, "facts": facts, "reading": out, "grounding": rules, "cached": false, "model": model})
 }
 
 func (s *Server) readingStream(w http.ResponseWriter, r *http.Request) {
@@ -196,7 +205,7 @@ func (s *Server) readingStream(w http.ResponseWriter, r *http.Request) {
 		problem(w, 500, e)
 		return
 	}
-	out, e := s.reading.Generate(r.Context(), facts, rules)
+	out, _, e := s.reading.Generate(r.Context(), facts, rules)
 	if e != nil {
 		problem(w, 502, e)
 		return
@@ -215,6 +224,7 @@ func (s *Server) readingStream(w http.ResponseWriter, r *http.Request) {
 		fl.Flush()
 	}
 	writeEvent("facts", facts)
+	writeEvent("grounding", rules)
 	writeEvent("reading", out)
 	writeEvent("done", map[string]bool{"ok": true})
 }

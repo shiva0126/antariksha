@@ -2,120 +2,109 @@ package reading
 
 import (
 	"context"
-	"strings"
 
+	"github.com/example/panchang/corpus"
 	"github.com/example/panchang/engine"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type MemoryCorpus struct{ Entries []Rule }
+// MemoryCorpus serves entries from memory by exact engine token. Only the
+// Parashari namespace is ever consulted.
+type MemoryCorpus struct {
+	byKey map[engine.CorpusKey][]Rule
+}
 
+func NewMemoryCorpus(entries []corpus.Entry) MemoryCorpus {
+	m := MemoryCorpus{byKey: map[engine.CorpusKey][]Rule{}}
+	for _, e := range entries {
+		if e.System != engine.SystemParashari {
+			continue
+		}
+		k := engine.CorpusKey{DocType: e.DocType, Key: e.Key}
+		m.byKey[k] = append(m.byKey[k], Rule{DocType: e.DocType, Key: e.Key, Title: e.Title, Body: e.Body, Source: e.Source, Ref: e.Ref})
+	}
+	return m
+}
+
+func (m MemoryCorpus) Rules(ctx context.Context, f engine.ChartFacts) ([]Rule, error) {
+	return m.RulesFor(ctx, engine.CorpusKeys(f))
+}
+
+func (m MemoryCorpus) RulesFor(_ context.Context, keys []engine.CorpusKey) ([]Rule, error) {
+	var out []Rule
+	for _, k := range keys {
+		out = append(out, m.byKey[k]...)
+	}
+	return out, nil
+}
+
+// PostgresCorpus retrieves every astro_corpus row whose (doc_type, key) is a
+// token detected in the facts. It intentionally does not fuzzy-match core facts.
+type PostgresCorpus struct{ Pool *pgxpool.Pool }
+
+func (p PostgresCorpus) Rules(ctx context.Context, f engine.ChartFacts) ([]Rule, error) {
+	return p.RulesFor(ctx, engine.CorpusKeys(f))
+}
+
+func (p PostgresCorpus) RulesFor(ctx context.Context, keys []engine.CorpusKey) ([]Rule, error) {
+	if p.Pool == nil {
+		return nil, nil
+	}
+	ps, err := corpus.Retrieve(ctx, p.Pool, keys, "en")
+	if err != nil {
+		return nil, err
+	}
+	out := make([]Rule, 0, len(ps))
+	for _, x := range ps {
+		out = append(out, Rule{DocType: x.DocType, Key: x.Key, Title: x.Title, Body: x.Body, Source: x.Source, Ref: x.Ref})
+	}
+	return out, nil
+}
+
+// CompositeCorpus consults sources in order. A token answered by an earlier
+// source (which may return several passages for it) is not answered again by a
+// later one, so the embedded corpus only fills gaps.
 type CompositeCorpus []Corpus
 
 func (c CompositeCorpus) Rules(ctx context.Context, f engine.ChartFacts) ([]Rule, error) {
-	seen := map[string]bool{}
+	return c.RulesFor(ctx, engine.CorpusKeys(f))
+}
+
+func (c CompositeCorpus) RulesFor(ctx context.Context, keys []engine.CorpusKey) ([]Rule, error) {
+	answered := map[engine.CorpusKey]bool{}
 	var out []Rule
 	for _, source := range c {
 		if source == nil {
 			continue
 		}
-		rs, err := source.Rules(ctx, f)
+		rs, err := source.RulesFor(ctx, keys)
 		if err != nil {
 			// The embedded corpus remains a safe fallback while migrations or
 			// pgvector are unavailable; deterministic facts never depend on RAG.
 			continue
 		}
+		fresh := map[engine.CorpusKey]bool{}
 		for _, r := range rs {
-			if !seen[r.Key] {
-				seen[r.Key] = true
-				out = append(out, r)
+			k := engine.CorpusKey{DocType: r.DocType, Key: r.Key}
+			if answered[k] {
+				continue
 			}
-		}
-	}
-	return out, nil
-}
-
-func (m MemoryCorpus) Rules(_ context.Context, f engine.ChartFacts) ([]Rule, error) {
-	keys := map[string]bool{}
-	for _, y := range f.Yogas {
-		keys[strings.ToLower(strings.ReplaceAll(y.Name, " ", "-"))] = true
-	}
-	for id, d := range f.Dignities {
-		keys[id+"_"+d.State] = true
-	}
-	out := []Rule{}
-	for _, r := range m.Entries {
-		if keys[r.Key] {
+			fresh[k] = true
 			out = append(out, r)
 		}
+		for k := range fresh {
+			answered[k] = true
+		}
 	}
 	return out, nil
 }
 
-// PostgresCorpus retrieves only rules whose keys are present in the deterministic
-// facts object. It intentionally does not perform fuzzy matching for core facts.
-type PostgresCorpus struct{ Pool *pgxpool.Pool }
-
-func (p PostgresCorpus) Rules(ctx context.Context, f engine.ChartFacts) ([]Rule, error) {
-	if p.Pool == nil {
-		return nil, nil
-	}
-	keys := map[string]bool{}
-	for _, y := range f.Yogas {
-		keys[strings.ToLower(strings.ReplaceAll(y.Name, " ", "-"))] = true
-	}
-	for id, d := range f.Dignities {
-		keys[id+"_"+d.State] = true
-	}
-	for _, g := range f.Chart.Grahas {
-		house := (int(g.Longitude/30)-int(f.Chart.Ascendant.Longitude/30)+12)%12 + 1
-		keys[g.ID+"_in_"+itoa(house)] = true
-	}
-	if len(keys) == 0 {
-		return nil, nil
-	}
-	args := []any{"en"}
-	clauses := make([]string, 0, len(keys))
-	i := 2
-	for k := range keys {
-		clauses = append(clauses, "key=$"+itoa(i))
-		args = append(args, k)
-		i++
-	}
-	q := "SELECT key, COALESCE(title,''), body, COALESCE(source,'') FROM astro_corpus WHERE language=$1 AND key IN (" + strings.Join(placeholders(len(keys), 2), ",") + ")"
-	rows, err := p.Pool.Query(ctx, q, args...)
+// DefaultCorpus is the embedded self-authored corpus: full engine coverage
+// with no database, so readings are grounded even before ingestion runs.
+var DefaultCorpus = func() MemoryCorpus {
+	entries, err := corpus.Authored()
 	if err != nil {
-		return nil, err
+		panic("embedded corpus is invalid: " + err.Error())
 	}
-	defer rows.Close()
-	var out []Rule
-	for rows.Next() {
-		var r Rule
-		if err := rows.Scan(&r.Key, &r.Title, &r.Body, &r.Source); err != nil {
-			return nil, err
-		}
-		out = append(out, r)
-	}
-	return out, rows.Err()
-}
-
-func placeholders(n, start int) []string {
-	out := make([]string, n)
-	for i := range out {
-		out[i] = "$" + itoa(start+i)
-	}
-	return out
-}
-func itoa(n int) string {
-	if n == 0 {
-		return "0"
-	}
-	b := make([]byte, 0, 4)
-	for n > 0 {
-		b = append([]byte{byte('0' + n%10)}, b...)
-		n /= 10
-	}
-	return string(b)
-}
-
-var DefaultCorpus = MemoryCorpus{Entries: []Rule{{"gajakesari", "Gajakesari", "Jupiter in a kendra from the Moon is traditionally read as a supportive combination for judgment and learning; its result depends on dignity and affliction.", "BPHS-inspired rule"}, {"budha-aditya", "Budha-Aditya", "Sun and Mercury in one sign is traditionally associated with intellect and communication. Combustion changes emphasis but does not erase the geometric fact.", "BPHS-inspired rule"}, {"ruchaka", "Ruchaka", "Mars in own or exaltation sign in a kendra is a Mahapurusha combination associated with initiative and courage.", "BPHS-inspired rule"}}}
+	return NewMemoryCorpus(entries)
+}()

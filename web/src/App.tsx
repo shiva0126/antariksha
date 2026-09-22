@@ -1,35 +1,31 @@
-import {lazy,Suspense,useEffect,useState} from 'react';
-import {getChart,getReading,type ReadingResponse} from './api/client';
-import type {ChartInput,ChartResponse,Graha} from './api/types';
-import {BirthForm} from './ui/BirthForm';
-import {CircularWheel} from './chart2d/CircularWheel';
-import {NorthIndian} from './chart2d/NorthIndian';
-import {SouthIndian} from './chart2d/SouthIndian';
-import {GrahaInfoPanel} from './ui/GrahaInfoPanel';
-import {PlanetTable} from './ui/PlanetTable';
-import {PanchangPage} from './ui/PanchangPage';
-import {ReadingPanel} from './ui/ReadingPanel';
-const Dome=lazy(()=>import('./scene/CelestialDome'));
-type Page='kundali'|'day'|'month';
-function webgl(){try{const c=document.createElement('canvas');return!!(c.getContext('webgl2')||c.getContext('webgl'))}catch{return false}}
-function initialPage():Page {const p=location.hash.slice(1);return p==='day'||p==='month'?p:'kundali'}
-export default function App(){
- const [page,setPage]=useState<Page>(initialPage);
- const [lastInput,setLastInput]=useState<ChartInput>();
- useEffect(()=>{const changed=()=>setPage(initialPage());window.addEventListener('hashchange',changed);return()=>window.removeEventListener('hashchange',changed)},[]);
- const [chart,setChart]=useState<ChartResponse>(),[reading,setReading]=useState<ReadingResponse>(),[busy,setBusy]=useState(false),[readingBusy,setReadingBusy]=useState(false),[error,setError]=useState(''),[readingError,setReadingError]=useState('');
- const [view,setView]=useState<'chart'|'3d'>('chart'),[layout,setLayout]=useState<'circular'|'north'|'south'>('south');
- const [selected,setSelected]=useState<Graha>(),[can3d]=useState(webgl);
- function navigate(p:Page){setPage(p);location.hash=p;setSelected(undefined)}
- async function submit(input:ChartInput){setLastInput(input);setBusy(true);setReadingBusy(true);setError('');setReadingError('');setReading(undefined);setSelected(undefined);try{setChart(await getChart(input))}catch(e){setError(e instanceof Error?e.message:'Calculation failed')}finally{setBusy(false)};try{setReading(await getReading(input))}catch(e){setReadingError(e instanceof Error?e.message:'Reading unavailable')}finally{setReadingBusy(false)}}
- return <main className={page==='kundali'&&!chart?'landing':'explore'}>
- <header><button className="brand" onClick={()=>navigate('kundali')}><span>अ</span><b>ANTARIKSHA</b></button><nav className="top-nav" aria-label="Main navigation"><button className={page==='kundali'?'active':''} onClick={()=>navigate('kundali')}>Kundali</button><button className={page==='day'?'active':''} onClick={()=>navigate('day')}>Daily Panchang</button><button className={page==='month'?'active':''} onClick={()=>navigate('month')}>Hindu Calendar</button></nav></header>
- {page!=='kundali'?<PanchangPage mode={page}/>:!chart?<section className="hero"><div className="orb"/><p className="kicker">A MAP OF THE MOMENT YOU ARRIVED</p><h1>The sky remembers.</h1><p className="lede">Enter your exact birth details to see your Rashi Kundali, planetary degrees, nakshatras and Lagna.</p><BirthForm onSubmit={submit} busy={busy} initial={lastInput}/>{error&&<p role="alert" className="error">{error}</p>}<footer>LAHIRI SIDEREAL · WHOLE-SIGN HOUSES</footer></section>:<>
- <section className="viewer revealed">
- <nav className="view-nav"><button className={view==='3d'?'active':''} disabled={!can3d} onClick={()=>setView('3d')}>Celestial dome</button><button className={view==='chart'?'active':''} onClick={()=>setView('chart')}>Kundli chart</button></nav>
- {view==='3d'?<Suspense fallback={<div className="loading">Assembling the heavens…</div>}><Dome chart={chart} onSelect={setSelected}/></Suspense>:<div className="chart-stage"><div className="layout-nav">{(['circular','north','south'] as const).map(x=><button key={x} className={layout===x?'active':''} onClick={()=>setLayout(x)}>{x==='north'?'North Indian':x==='south'?'South Indian':'Circular'}</button>)}</div>{layout==='circular'?<CircularWheel chart={chart} onSelect={setSelected}/>:layout==='north'?<NorthIndian chart={chart} onSelect={setSelected}/>:<SouthIndian chart={chart} onSelect={setSelected}/>}<div className="chart-legend"><span><i className="lagna-dot"/>Lagna {chart.ascendant.rashi} {chart.ascendant.degree.toFixed(3)}°</span><span>Rashi / D1 · Whole-sign houses</span></div></div>}
- <button className="reset" onClick={()=>setChart(undefined)}>← Edit birth details</button>
- </section><PlanetTable chart={chart} onSelect={setSelected}/>{readingBusy&&<p className="reading-loading">Preparing the deterministic chart facts and interpretation…</p>}{readingError&&<p className="error reading-error">{readingError}</p>}{reading&&<ReadingPanel data={reading}/>}</>}
- {selected&&<GrahaInfoPanel graha={selected} onClose={()=>setSelected(undefined)}/>}
- </main>;
+import { useEffect, useState } from 'react';
+import { KundaliPage } from './ui/kundali/KundaliPage';
+import { PanchangPage } from './ui/panchang/PanchangPage';
+
+type Page = 'kundali' | 'day' | 'month';
+const pages: [Page, string][] = [['kundali', 'Kundali'], ['day', 'Daily Panchang'], ['month', 'Hindu Calendar']];
+const fromHash = (): Page => { const p = location.hash.slice(1); return p === 'day' || p === 'month' ? p : 'kundali'; };
+
+export default function App() {
+  const [page, setPage] = useState<Page>(fromHash);
+  const [menu, setMenu] = useState(false);
+  useEffect(() => {
+    const changed = () => setPage(fromHash());
+    window.addEventListener('hashchange', changed);
+    return () => window.removeEventListener('hashchange', changed);
+  }, []);
+  function go(p: Page) { location.hash = p; setPage(p); setMenu(false); window.scrollTo({ top: 0 }); }
+  return (
+    <div className="app">
+      <header className="site-header">
+        <button className="brand" onClick={() => go('kundali')} aria-label="Antariksha home"><span className="brand-mark" aria-hidden>अ</span><b>Antariksha</b></button>
+        <button className="menu-toggle" aria-expanded={menu} aria-controls="main-nav" onClick={() => setMenu(!menu)}>Menu</button>
+        <nav id="main-nav" className={'main-nav' + (menu ? ' open' : '')} aria-label="Main navigation">
+          {pages.map(([id, label]) => <button key={id} className={page === id ? 'active' : ''} aria-current={page === id ? 'page' : undefined} onClick={() => go(id)}>{label}</button>)}
+        </nav>
+      </header>
+      <main>{page === 'kundali' ? <KundaliPage /> : <PanchangPage key={page} mode={page} />}</main>
+      <footer className="site-footer">Antariksha · Swiss Ephemeris · Lahiri ayanamsa · For reflection, not certainty.</footer>
+    </div>
+  );
 }

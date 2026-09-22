@@ -3,10 +3,12 @@ set -euo pipefail
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 RUNTIME="$ROOT/.runtime"
-PG_BIN="${PG_BIN:-/usr/lib/postgresql/16/bin}"
 GO_BIN="${GO_BIN:-/home/shetty/.local/toolchains/go/bin/go}"
 mkdir -p "$RUNTIME" "$ROOT/bin"
 chmod 700 "$RUNTIME"
+# pgvector is not installed system-wide; run the dedicated instance from a
+# user-owned relocated PostgreSQL tree that includes it (see install-pgvector.sh).
+PG_BIN="${PG_BIN:-$(bash "$ROOT/scripts/install-pgvector.sh" || echo /usr/lib/postgresql/16/bin)}"
 if systemctl --user is-active --quiet panchang.service; then
   echo "Panchang is already running at http://localhost:3000"
   exit 0
@@ -18,26 +20,41 @@ if ! "$PG_BIN/pg_ctl" -D "$RUNTIME/postgres" status >/dev/null 2>&1; then
   "$PG_BIN/pg_ctl" -D "$RUNTIME/postgres" -l "$RUNTIME/postgres.log" -o "-k $RUNTIME -p 55432 -c listen_addresses=''" -w start
 fi
 export PGHOST="$RUNTIME" PGPORT=55432 PGUSER=panchang
-if ! psql -d postgres -Atqc "SELECT 1 FROM pg_database WHERE datname='panchang'" | rg -q '^1$'; then
+if ! psql -d postgres -Atqc "SELECT 1 FROM pg_database WHERE datname='panchang'" | grep -q '^1$'; then
   createdb panchang
 fi
 export PGDATABASE=panchang
 psql -v ON_ERROR_STOP=1 -c 'CREATE TABLE IF NOT EXISTS native_schema_migrations (version INTEGER PRIMARY KEY, applied_at TIMESTAMPTZ NOT NULL DEFAULT now())'
-if ! psql -Atqc 'SELECT 1 FROM native_schema_migrations WHERE version=1' | rg -q '^1$'; then
+if ! psql -Atqc 'SELECT 1 FROM native_schema_migrations WHERE version=1' | grep -q '^1$'; then
   psql -v ON_ERROR_STOP=1 --single-transaction -f db/migrations/000001_init.up.sql -c 'INSERT INTO native_schema_migrations(version) VALUES(1)'
 fi
 psql -v ON_ERROR_STOP=1 -f db/seed/festival_rules.sql
-if psql -Atqc "SELECT 1 FROM pg_available_extensions WHERE name='vector'" | rg -q '^1$'; then
-  if ! psql -Atqc 'SELECT 1 FROM native_schema_migrations WHERE version=2' | rg -q '^1$'; then
+if psql -Atqc "SELECT 1 FROM pg_available_extensions WHERE name='vector'" | grep -q '^1$'; then
+  if ! psql -Atqc 'SELECT 1 FROM native_schema_migrations WHERE version=2' | grep -q '^1$'; then
     psql -v ON_ERROR_STOP=1 --single-transaction -f db/migrations/000002_reading.up.sql -c 'INSERT INTO native_schema_migrations(version) VALUES(2)'
   fi
-  psql -v ON_ERROR_STOP=1 -f db/seed/astro_corpus.sql
+  if ! psql -Atqc 'SELECT 1 FROM native_schema_migrations WHERE version=3' | grep -q '^1$'; then
+    psql -v ON_ERROR_STOP=1 --single-transaction -f db/migrations/000003_corpus_provenance.up.sql -c 'INSERT INTO native_schema_migrations(version) VALUES(3)'
+  fi
+  if ! psql -Atqc 'SELECT 1 FROM native_schema_migrations WHERE version=4' | grep -q '^1$'; then
+    psql -v ON_ERROR_STOP=1 --single-transaction -f db/migrations/000004_chat.up.sql -c 'INSERT INTO native_schema_migrations(version) VALUES(4)'
+  fi
+  CORPUS_DB=1
 else
   echo 'pgvector extension unavailable; reading cache/RAG tables were not applied. Facts and fallback readings remain available.'
 fi
 "$GO_BIN" build -buildvcs=false -o bin/panchang-api ./cmd/panchang-api
+"$GO_BIN" build -buildvcs=false -o bin/corpus ./cmd/corpus
 (cd web && npm run build)
 export DATABASE_URL="postgresql:///panchang?host=$RUNTIME&port=55432&user=panchang&sslmode=disable"
+if [[ "${CORPUS_DB:-}" == 1 ]]; then
+  # Classical sources are fetched once and sha256-verified; offline starts
+  # still load the full self-authored corpus.
+  bin/corpus acquire || echo 'corpus acquire failed; loading without public-domain passages'
+  EMBED_FLAG=()
+  [[ -n "${OPENAI_API_KEY:-}" ]] && EMBED_FLAG=(-embed)
+  bin/corpus load -allow-missing-raw "${EMBED_FLAG[@]}"
+fi
 export EPHE_PATH="$ROOT/ephe" WEB_DIST="$ROOT/web/dist" HTTP_ADDR="0.0.0.0:3000"
 systemctl --user daemon-reload
 systemctl --user start panchang.service

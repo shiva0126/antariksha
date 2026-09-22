@@ -1,20 +1,52 @@
-import type { ChartResponse, Graha } from '../api/types';
-import { rashis, grahaColor } from '../astro/rashi';
+import { grahaColor } from '../astro/rashi';
 import { signIndex, houseNumber } from '../astro/houses';
-// Counterclockwise fixed houses; first house is the upper central diamond.
-const positions = [[340,170],[180,66],[76,172],[174,334],[76,490],[180,590],[340,494],[500,590],[604,490],[506,334],[604,172],[500,66]];
-export function NorthIndian({chart,onSelect}:{chart:ChartResponse;onSelect?:(g:Graha)=>void}) {
-  const asc=signIndex(chart.ascendant.longitude);
-  return <svg className="wheel traditional" viewBox="0 0 680 680" role="img" aria-label="North Indian Kundali with fixed houses">
-    <rect x="20" y="20" width="640" height="640" fill="#0c1120" stroke="#a4864f"/>
-    <path d="M20 20L660 660M660 20L20 660M340 20L660 340L340 660L20 340Z" fill="none" stroke="#8c744a"/>
-    {positions.map(([x,y],i)=>{
-      const sign=(asc+i)%12, planets=chart.grahas.filter(g=>houseNumber(g.longitude,chart.ascendant.longitude)===i+1);
-      return <g key={i} data-house={i+1}>
-        <text x={x} y={y} textAnchor="middle" fill={i===0?'#67e8f9':'#d0b275'} fontSize="12">H{i+1} · {rashis[sign][0]}</text>
-        <text x={x} y={y+15} textAnchor="middle" fill="#929cb5" fontSize="10">Sign {sign+1}{i===0?' · Lagna':''}</text>
-        {planets.map((g,j)=><text key={g.id} x={x} y={y+33+j*Math.min(16,65/Math.max(planets.length,1))} textAnchor="middle" fill={grahaColor[g.id]} fontSize="11" role="button" tabIndex={0} onClick={()=>onSelect?.(g)} onKeyDown={e=>e.key==='Enter'&&onSelect?.(g)}>{g.name} {g.rashi_degree.toFixed(2)}°{g.retrograde?' ℞':''}</text>)}
-      </g>;
-    })}
-  </svg>;
+import { type ChartProps, keyAct, label, useCompact } from './common';
+
+// Houses run counter-clockwise from the top-centre diamond (house 1). For each:
+// sign-number position, planet column x, first planet y, and stack direction.
+// Geometry: 600-unit square offset by 10; diamonds are houses 1, 4, 7, 10.
+const layout: { label: [number, number]; x: number; y: number; dir: 1 | -1 }[] = [
+  { label: [310, 48], x: 310, y: 88, dir: 1 },
+  { label: [160, 30], x: 160, y: 56, dir: 1 },
+  { label: [28, 164], x: 80, y: 130, dir: 1 },
+  { label: [160, 196], x: 160, y: 238, dir: 1 },
+  { label: [28, 464], x: 80, y: 430, dir: 1 },
+  { label: [160, 600], x: 160, y: 578, dir: -1 },
+  { label: [310, 348], x: 310, y: 388, dir: 1 },
+  { label: [460, 600], x: 460, y: 578, dir: -1 },
+  { label: [592, 464], x: 540, y: 430, dir: 1 },
+  { label: [460, 196], x: 460, y: 238, dir: 1 },
+  { label: [592, 164], x: 540, y: 130, dir: 1 },
+  { label: [460, 30], x: 460, y: 56, dir: 1 },
+];
+
+export function NorthIndian({ chart, onSelect, selected }: ChartProps) {
+  const asc = signIndex(chart.ascendant.longitude);
+  const compact = useCompact();
+  return (
+    <svg className={'chart-svg' + (compact ? ' compact' : '')} viewBox="0 0 620 620" role="img" aria-label="North Indian Kundali with fixed houses">
+      <rect x="10" y="10" width="600" height="600" className="c-frame" />
+      <path d="M310 10L460 160L310 310L160 160Z" className="c-lagna" />
+      <path d="M10 10L610 610M610 10L10 610M310 10L610 310L310 610L10 310Z" className="c-lines" />
+      {layout.map((h, i) => {
+        const sign = (asc + i) % 12;
+        const planets = chart.grahas.filter(g => houseNumber(g.longitude, chart.ascendant.longitude) === i + 1);
+        const diamond = i % 3 === 0;
+        const step = compact ? Math.min(diamond ? 26 : 22, (diamond ? 104 : 70) / Math.max(planets.length, 1)) : Math.min(diamond ? 20 : 16, (diamond ? 100 : 66) / Math.max(planets.length, 1));
+        return (
+          <g key={i} data-house={i + 1}>
+            <text x={h.label[0]} y={h.label[1]} textAnchor="middle" className={i === 0 ? 'c-signnum c-lagna-text' : 'c-signnum'}>{sign + 1}</text>
+            {planets.map((g, j) => (
+              <text key={g.id} x={h.x} y={h.y + h.dir * j * step} textAnchor="middle" fill={grahaColor[g.id]}
+                className={'c-planet' + (diamond ? '' : ' c-small') + (selected === g.id ? ' is-selected' : '')} role="button" tabIndex={0}
+                aria-label={`${g.name} in house ${i + 1}, ${g.rashi} ${g.rashi_degree.toFixed(2)} degrees`}
+                onClick={() => onSelect?.(g)} onKeyDown={keyAct(() => onSelect?.(g))}>
+                {label(g, compact)}
+              </text>
+            ))}
+          </g>
+        );
+      })}
+    </svg>
+  );
 }

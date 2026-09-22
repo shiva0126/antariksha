@@ -3,6 +3,7 @@ set -euo pipefail
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 RUNTIME="$ROOT/.runtime"
 PG_BIN="${PG_BIN:-/usr/lib/postgresql/16/bin}"
+[[ -x "$RUNTIME/pgdist/usr/lib/postgresql/16/bin/pg_ctl" ]] && PG_BIN="$RUNTIME/pgdist/usr/lib/postgresql/16/bin"
 systemctl --user stop panchang.service
 if [[ -f "$RUNTIME/app.pid" ]]; then
   APP_PID="$(<"$RUNTIME/app.pid")"

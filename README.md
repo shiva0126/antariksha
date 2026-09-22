@@ -34,6 +34,8 @@ cd web && npm install && npm run dev
 - `GET /api/chart/facts?date=1996-05-14&time=10:15&lat=12.97&lon=77.59&tz=Asia/Kolkata&as_of=2026-09-22T00:00:00Z`
 - `GET /api/reading?date=1996-05-14&time=10:15&lat=12.97&lon=77.59&tz=Asia/Kolkata&as_of=2026-09-22T00:00:00Z`
 - `GET /api/festivals?year=2026&region=south`
+- `POST /api/chat` `{birth:{date,time,lat,lon,tz}, question, session_id?}` — chart-grounded answer; the Q&A is stored
+- `GET /api/chat/history?session_id=…` — every question and answer in a session
 
 ## Validation status
 
@@ -44,3 +46,5 @@ The frontend does no astronomy. It renders the single `/api/chart` response and 
 ## Interpretation layer
 
 `/api/chart/facts` returns deterministic engine output: dignity, combustion, retrograde, Vimshottari Maha–Antara periods, and yoga geometry. `/api/reading` gives a structured interpretation. With no `OPENAI_API_KEY`, it returns a safe deterministic fallback so the route remains usable. Set `OPENAI_API_KEY`, `OPENAI_BASE_URL`, and `OPENAI_MODEL` to enable an OpenAI-compatible hosted model. The post-generation validator rejects a response if its yoga names or count differ from the engine facts.
+
+Readings are grounded in a rights-cleared classical corpus: every detected fact (yoga, graha-in-house/sign, nakshatra, dasha, dignity, lagna) is fetched by exact key from `astro_corpus` (PostgreSQL + pgvector) and returned as `grounding`. It comprises self-authored entries with full engine coverage plus cited public-domain passages from the 1885 Brihat Jataka translation. See [corpus ingestion](docs/corpus.md).

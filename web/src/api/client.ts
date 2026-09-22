@@ -1,5 +1,28 @@
-import type{ChartInput,ChartResponse}from'./types';
-export interface ReadingYoga{name:string;meaning:string;effect:string;strength:string}
-export interface ReadingResponse{chart_hash:string;cached:boolean;model:string;facts:any;reading:{summary:string;lagna_and_moon:string;grahas:{graha:string;placement:string;meaning:string}[];yogas:ReadingYoga[];dashas:{current:string;upcoming:string};themes:{career:string;relationships:string;strengths:string;growth_areas:string};disclaimer:string}}
-export async function getChart(input:ChartInput,signal?:AbortSignal):Promise<ChartResponse>{const q=new URLSearchParams({...input,lat:String(input.lat),lon:String(input.lon),ayanamsa:'lahiri'});const r=await fetch(`/api/chart?${q}`,{signal});if(!r.ok){const b=await r.json().catch(()=>({error:r.statusText}));throw new Error(b.error||'Unable to calculate chart')};return r.json()}
-export async function getReading(input:ChartInput,signal?:AbortSignal):Promise<ReadingResponse>{const q=new URLSearchParams({...input,lat:String(input.lat),lon:String(input.lon)});const r=await fetch(`/api/reading?${q}`,{signal});if(!r.ok){const b=await r.json().catch(()=>({error:r.statusText}));throw new Error(b.error||'Unable to produce reading')};return r.json()}
+import type { ChartInput, ChartResponse, ChatMessage, ReadingResponse } from './types';
+
+async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const r = await fetch(path, init);
+  const body = await r.json().catch(() => ({ error: r.statusText }));
+  if (!r.ok) throw new Error(body.error || `Request failed (${r.status})`);
+  return body as T;
+}
+
+const query = (input: ChartInput, extra: Record<string, string> = {}) =>
+  new URLSearchParams({ date: input.date, time: input.time, lat: String(input.lat), lon: String(input.lon), tz: input.tz, ...extra });
+
+export const getChart = (input: ChartInput, signal?: AbortSignal) =>
+  request<ChartResponse>(`/api/chart?${query(input, { ayanamsa: 'lahiri' })}`, { signal });
+
+export const getReading = (input: ChartInput, signal?: AbortSignal) =>
+  request<ReadingResponse>(`/api/reading?${query(input)}`, { signal });
+
+export const fetchJSON = <T,>(path: string, signal?: AbortSignal) => request<T>(path, { signal });
+
+export const postChat = (birth: ChartInput, question: string, sessionId?: string) =>
+  request<{ session_id: string; question: ChatMessage; answer: ChatMessage }>('/api/chat', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ birth, question, session_id: sessionId ?? '' }),
+  });
+
+export const getChatHistory = (sessionId: string) =>
+  request<{ session_id: string; messages: ChatMessage[] }>(`/api/chat/history?session_id=${encodeURIComponent(sessionId)}`);
