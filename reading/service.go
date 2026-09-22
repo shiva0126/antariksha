@@ -84,19 +84,27 @@ func (s *Service) Generate(ctx context.Context, facts engine.ChartFacts, rules [
 	if e != nil {
 		return Reading{}, e
 	}
-	raw, e := s.LLM.Complete(ctx, prompt)
-	if e != nil {
-		return Reading{}, e
+	var last error
+	for attempt := 0; attempt < 2; attempt++ {
+		raw, err := s.LLM.Complete(ctx, prompt)
+		if err != nil {
+			last = err
+			continue
+		}
+		raw = strings.TrimSpace(strings.TrimPrefix(strings.TrimSuffix(raw, "```"), "```json"))
+		var out Reading
+		if err = json.Unmarshal([]byte(raw), &out); err != nil {
+			last = fmt.Errorf("LLM returned invalid reading JSON: %w", err)
+			continue
+		}
+		if err = validate(out, facts); err != nil {
+			last = err
+			prompt += "\nYour previous response failed validation: " + err.Error() + ". Return corrected JSON only."
+			continue
+		}
+		return out, nil
 	}
-	raw = strings.TrimSpace(strings.TrimPrefix(strings.TrimSuffix(raw, "```"), "```json"))
-	var out Reading
-	if e = json.Unmarshal([]byte(raw), &out); e != nil {
-		return Reading{}, fmt.Errorf("LLM returned invalid reading JSON: %w", e)
-	}
-	if e = validate(out, facts); e != nil {
-		return Reading{}, e
-	}
-	return out, nil
+	return Reading{}, last
 }
 func promptFor(f engine.ChartFacts, rules []Rule) (string, error) {
 	b, e := json.Marshal(f)
@@ -176,7 +184,11 @@ func (c OpenAIClient) Complete(ctx context.Context, prompt string) (string, erro
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+c.APIKey)
-	resp, e := c.HTTP.Do(req)
+	hc := c.HTTP
+	if hc == nil {
+		hc = http.DefaultClient
+	}
+	resp, e := hc.Do(req)
 	if e != nil {
 		return "", e
 	}

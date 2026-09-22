@@ -10,7 +10,7 @@ func strength(c Chart, ids ...string) string {
 	score := 0
 	for _, id := range ids {
 		g := gs[id]
-		if inSet(signOf(g), 1, 4, 7, 10) {
+		if inSet(houseOf(g.Longitude, c.Ascendant.Longitude), 1, 4, 7, 10) {
 			score++
 		}
 		if g.Retrograde {

@@ -54,6 +54,7 @@ func (s *Server) routes() {
 	s.mux.HandleFunc("GET /api/chart", s.chart)
 	s.mux.HandleFunc("GET /api/chart/facts", s.chartFacts)
 	s.mux.HandleFunc("GET /api/reading", s.readingHandler)
+	s.mux.HandleFunc("GET /api/reading/stream", s.readingStream)
 }
 
 func (s *Server) chart(w http.ResponseWriter, r *http.Request) {
@@ -169,6 +170,53 @@ func (s *Server) readingHandler(w http.ResponseWriter, r *http.Request) {
 		_ = store.PutReading(r.Context(), hash, CachedReading{facts, out, "fallback"})
 	}
 	writeJSON(w, 200, map[string]any{"chart_hash": hash, "facts": facts, "reading": out, "cached": false, "model": "fallback"})
+}
+
+func (s *Server) readingStream(w http.ResponseWriter, r *http.Request) {
+	in, e := s.chartInput(r.URL.Query())
+	if e != nil {
+		problem(w, 400, e)
+		return
+	}
+	c, e := s.engine.BirthChart(in)
+	if e != nil {
+		problem(w, 400, e)
+		return
+	}
+	asOf := time.Now()
+	if v := r.URL.Query().Get("as_of"); v != "" {
+		asOf, e = time.Parse(time.RFC3339, v)
+		if e != nil {
+			problem(w, 400, fmt.Errorf("as_of must be RFC3339"))
+			return
+		}
+	}
+	facts, rules, e := s.reading.BuildFacts(r.Context(), c, asOf)
+	if e != nil {
+		problem(w, 500, e)
+		return
+	}
+	out, e := s.reading.Generate(r.Context(), facts, rules)
+	if e != nil {
+		problem(w, 502, e)
+		return
+	}
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
+	fl, ok := w.(http.Flusher)
+	if !ok {
+		problem(w, 500, fmt.Errorf("streaming unsupported"))
+		return
+	}
+	writeEvent := func(name string, value any) {
+		b, _ := json.Marshal(value)
+		fmt.Fprintf(w, "event: %s\ndata: %s\n\n", name, b)
+		fl.Flush()
+	}
+	writeEvent("facts", facts)
+	writeEvent("reading", out)
+	writeEvent("done", map[string]bool{"ok": true})
 }
 
 func params(r *http.Request) (time.Time, engine.Location, error) {

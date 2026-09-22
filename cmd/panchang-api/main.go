@@ -18,6 +18,7 @@ func main() {
 	addr := env("HTTP_ADDR", ":8080")
 	e := engine.New(ephe)
 	var cache api.Cache = api.NoCache{}
+	corpus := reading.Corpus(reading.DefaultCorpus)
 	if dsn := os.Getenv("DATABASE_URL"); dsn != "" {
 		p, err := pgxpool.New(context.Background(), dsn)
 		if err != nil {
@@ -28,12 +29,13 @@ func main() {
 			log.Fatal(err)
 		}
 		cache = api.PostgresCache{Pool: p}
+		corpus = reading.CompositeCorpus{reading.PostgresCorpus{Pool: p}, reading.DefaultCorpus}
 	}
 	var llm reading.LLM
 	if key := os.Getenv("OPENAI_API_KEY"); key != "" {
 		llm = reading.OpenAIClient{BaseURL: env("OPENAI_BASE_URL", "https://api.openai.com/v1"), APIKey: key, Model: env("OPENAI_MODEL", "gpt-4o-mini"), HTTP: &http.Client{Timeout: 90 * time.Second}}
 	}
-	handler := api.NewServerWithReading(e, cache, nil, reading.NewService(reading.DefaultCorpus, llm)).Handler()
+	handler := api.NewServerWithReading(e, cache, nil, reading.NewService(corpus, llm)).Handler()
 	if dir := os.Getenv("WEB_DIST"); dir != "" {
 		mux := http.NewServeMux()
 		mux.Handle("/api/", handler)
