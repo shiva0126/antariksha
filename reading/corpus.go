@@ -3,6 +3,7 @@ package reading
 import (
 	"context"
 	"github.com/example/panchang/engine"
+	"strings"
 )
 
 type MemoryCorpus struct{ Entries []Rule }
@@ -10,7 +11,7 @@ type MemoryCorpus struct{ Entries []Rule }
 func (m MemoryCorpus) Rules(_ context.Context, f engine.ChartFacts) ([]Rule, error) {
 	keys := map[string]bool{}
 	for _, y := range f.Yogas {
-		keys[y.Name] = true
+		keys[strings.ToLower(strings.ReplaceAll(y.Name, " ", "-"))] = true
 	}
 	for id, d := range f.Dignities {
 		keys[id+"_"+d.State] = true

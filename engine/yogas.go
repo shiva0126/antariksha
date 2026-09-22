@@ -69,6 +69,11 @@ func DetectYogas(c Chart, d map[string]Dignity) []Yoga {
 	if kemadruma(c, gs) {
 		out = append(out, yoga("Kemadruma", "caution", nil, []string{"from_moon"}, "caution", map[string]any{"exception_checks": []string{"no_planets_2nd_or_12th", "no_kendra_from_moon"}}))
 	}
+	for id, dg := range d {
+		if dg.NeechaBhanga {
+			out = append(out, yoga("Neecha Bhanga Raja Yoga", "raja", []string{id}, []string{"cancellation_geometry"}, "moderate", map[string]any{"planet": id, "debilitation_cancelled": true}))
+		}
+	}
 	if kalaSarpa(c, gs) {
 		out = append(out, yoga("Kala Sarpa", "caution", []string{"rahu", "ketu"}, []string{"between_nodes"}, "caution", map[string]any{"axis": "rahu_to_ketu"}))
 	}
