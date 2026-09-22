@@ -1,0 +1,32 @@
+{
+  "source_id": "antariksha-authored-v1",
+  "system": "parashari",
+  "language": "en",
+  "entries": [
+    {"doc_type": "bhava", "key": "bhava_1", "title": "1st house (tanu bhava)", "body": "The self: body, vitality, temperament, appearance and the general direction of life. The lagna and its lord are the foundation of the whole chart, and their strength supports everything else. It is a kendra and a trikona at once."},
+    {"doc_type": "bhava", "key": "bhava_2", "title": "2nd house (dhana bhava)", "body": "Wealth, savings, speech, family, food and early education. It is a maraka (critical) house in classical longevity reckoning and a key house for accumulation."},
+    {"doc_type": "bhava", "key": "bhava_3", "title": "3rd house (sahaja bhava)", "body": "Courage, effort, younger siblings, communication, skills, short journeys and initiative. As an upachaya house, its results improve over time and malefics do well here."},
+    {"doc_type": "bhava", "key": "bhava_4", "title": "4th house (sukha bhava)", "body": "Home, mother, emotional peace, property, vehicles, basic education and the heart's contentment. It is a kendra and the foundation of inner happiness."},
+    {"doc_type": "bhava", "key": "bhava_5", "title": "5th house (putra bhava)", "body": "Intelligence, creativity, children, romance, mantra, speculation and purva punya (merit from past actions). It is a trikona, among the most auspicious houses."},
+    {"doc_type": "bhava", "key": "bhava_6", "title": "6th house (ripu bhava)", "body": "Enemies, competition, debts, disease, service and daily work. It is a dusthana, yet also an upachaya where malefics help a person overcome obstacles."},
+    {"doc_type": "bhava", "key": "bhava_7", "title": "7th house (kalatra bhava)", "body": "Marriage, partners, business partnerships, contracts, public dealings and travel. It is a kendra opposite the self, the mirror of relationship, and also a maraka house."},
+    {"doc_type": "bhava", "key": "bhava_8", "title": "8th house (ayur bhava)", "body": "Longevity, transformation, hidden matters, inheritance, joint resources, research, the occult and sudden events. It is a dusthana, but also the house of deep insight and regeneration."},
+    {"doc_type": "bhava", "key": "bhava_9", "title": "9th house (dharma bhava)", "body": "Fortune, dharma, the father, teachers, higher learning, long journeys and faith. It is the strongest trikona, the house of grace."},
+    {"doc_type": "bhava", "key": "bhava_10", "title": "10th house (karma bhava)", "body": "Career, action, status, reputation, authority and one's contribution to the world. It is the most powerful kendra, where the Sun and Mars gain directional strength."},
+    {"doc_type": "bhava", "key": "bhava_11", "title": "11th house (labha bhava)", "body": "Gains, income, fulfilment of desires, friends, networks and elder siblings. It is an upachaya where most planets give good results."},
+    {"doc_type": "bhava", "key": "bhava_12", "title": "12th house (vyaya bhava)", "body": "Expenditure, loss, foreign lands, solitude, sleep, hospitals, charity and moksha (liberation). It is a dusthana, and also the house of spiritual release."},
+
+    {"doc_type": "bhava", "key": "lagna_mesha", "title": "Mesha lagna", "body": "Aries rising, ruled by Mars. It gives an energetic, direct, pioneering and competitive nature with quick decisions and physical vitality. Mars rules both the 1st and 8th houses. The Sun and Jupiter, as lords of trikonas, are classical benefics for this ascendant."},
+    {"doc_type": "bhava", "key": "lagna_vrishabha", "title": "Vrishabha lagna", "body": "Taurus rising, ruled by Venus. It gives a steady, patient, sensual nature that loves comfort, beauty and security. Saturn, lord of the 9th and 10th, is the yogakaraka, one of the most beneficial planets for this lagna."},
+    {"doc_type": "bhava", "key": "lagna_mithuna", "title": "Mithuna lagna", "body": "Gemini rising, ruled by Mercury. It gives a curious, communicative, versatile and youthful nature. Venus, lord of the 5th and 12th, is generally supportive, and Mercury's condition is central."},
+    {"doc_type": "bhava", "key": "lagna_karka", "title": "Karka lagna", "body": "Cancer rising, ruled by the Moon. It gives a sensitive, nurturing, intuitive and home-loving nature. Mars, lord of the 5th and 10th, is the yogakaraka. The Moon's phase and strength shape the whole chart."},
+    {"doc_type": "bhava", "key": "lagna_simha", "title": "Simha lagna", "body": "Leo rising, ruled by the Sun. It gives a dignified, confident, generous nature with leadership presence. Mars, lord of the 4th and 9th, is the yogakaraka, and the Sun's dignity is key."},
+    {"doc_type": "bhava", "key": "lagna_kanya", "title": "Kanya lagna", "body": "Virgo rising, ruled by Mercury. It gives an analytical, modest, service-minded and detail-oriented nature. Venus, as lord of the 2nd and 9th, supports fortune and wealth."},
+    {"doc_type": "bhava", "key": "lagna_tula", "title": "Tula lagna", "body": "Libra rising, ruled by Venus. It gives a diplomatic, graceful, fair-minded and partnership-oriented nature. Saturn, lord of the 4th and 5th, is the yogakaraka."},
+    {"doc_type": "bhava", "key": "lagna_vrishchika", "title": "Vrishchika lagna", "body": "Scorpio rising, ruled by Mars. It gives an intense, private, resilient and investigative nature. The Moon, lord of the 9th, and Jupiter, lord of the 2nd and 5th, are supportive. The Sun, lord of the 10th, supports career."},
+    {"doc_type": "bhava", "key": "lagna_dhanu", "title": "Dhanu lagna", "body": "Sagittarius rising, ruled by Jupiter. It gives an optimistic, principled, adventurous and philosophical nature. The Sun, lord of the 9th, and Mars, lord of the 5th and 12th, are supportive."},
+    {"doc_type": "bhava", "key": "lagna_makara", "title": "Makara lagna", "body": "Capricorn rising, ruled by Saturn. It gives a disciplined, practical, ambitious and patient nature. Venus, lord of the 5th and 10th, is the yogakaraka."},
+    {"doc_type": "bhava", "key": "lagna_kumbha", "title": "Kumbha lagna", "body": "Aquarius rising, ruled by Saturn. It gives a humanitarian, independent, inventive and group-minded nature. Venus, lord of the 4th and 9th, is the yogakaraka."},
+    {"doc_type": "bhava", "key": "lagna_meena", "title": "Meena lagna", "body": "Pisces rising, ruled by Jupiter. It gives a compassionate, imaginative, spiritual and receptive nature. The Moon, lord of the 5th, and Mars, lord of the 2nd and 9th, are supportive."}
+  ]
+}

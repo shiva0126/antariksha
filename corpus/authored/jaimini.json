@@ -1,0 +1,14 @@
+{
+  "source_id": "antariksha-authored-jaimini-v1",
+  "system": "jaimini",
+  "language": "en",
+  "entries": [
+    {"doc_type": "karaka", "key": "atmakaraka", "title": "Atmakaraka (Jaimini)", "body": "In the Jaimini system the planet with the highest degree in its sign is the atmakaraka, the significator of the soul and its central lesson. Its sign in the navamsa (karakamsha) is read for life purpose and spiritual inclination."},
+    {"doc_type": "karaka", "key": "amatyakaraka", "title": "Amatyakaraka (Jaimini)", "body": "The planet with the second-highest degree is the amatyakaraka, the minister of the soul. It indicates career, counsel and the means through which the atmakaraka's purpose is carried out."},
+    {"doc_type": "karaka", "key": "bhratrikaraka", "title": "Bhratrikaraka (Jaimini)", "body": "The third chara karaka signifies siblings, courage and the teachers who guide a person's effort."},
+    {"doc_type": "karaka", "key": "matrikaraka", "title": "Matrikaraka (Jaimini)", "body": "The fourth chara karaka signifies the mother, nurturing, home and emotional foundations."},
+    {"doc_type": "karaka", "key": "putrakaraka", "title": "Putrakaraka (Jaimini)", "body": "The fifth chara karaka signifies children, creativity, intelligence and disciples."},
+    {"doc_type": "karaka", "key": "gnatikaraka", "title": "Gnatikaraka (Jaimini)", "body": "The sixth chara karaka signifies relatives, rivals, obstacles and disease: the struggles through which a person grows."},
+    {"doc_type": "karaka", "key": "darakaraka", "title": "Darakaraka (Jaimini)", "body": "The planet with the lowest degree is the darakaraka, significator of the spouse and of close partnerships in the Jaimini system."}
+  ]
+}

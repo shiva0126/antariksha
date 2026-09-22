@@ -1,0 +1,123 @@
+{
+  "sources": [
+    {
+      "id": "antariksha-authored-v1",
+      "title": "Antariksha interpretive entries (Parashari)",
+      "author": "Antariksha project",
+      "edition": "v1, 2026",
+      "rights": "self_authored",
+      "rights_basis": "Original wording written for this project from classical principles; principles are not copyrightable. No modern translation was copied.",
+      "system": "parashari",
+      "notes": "Covers every required engine token so no detection retrieves empty. Tone is reflective and non-deterministic by design."
+    },
+    {
+      "id": "antariksha-authored-jaimini-v1",
+      "title": "Antariksha interpretive entries (Jaimini)",
+      "author": "Antariksha project",
+      "edition": "v1, 2026",
+      "rights": "self_authored",
+      "rights_basis": "Original wording written for this project from classical principles.",
+      "system": "jaimini",
+      "notes": "Chara karaka entries kept in their own namespace. The engine detects no Jaimini features, so these are never retrieved for a Parashari reading."
+    },
+    {
+      "id": "brihat-jataka-iyer-1885",
+      "title": "The Brihat Jataka of Varaha Mihira",
+      "author": "Varahamihira",
+      "edition": "Foster Press, Madras, 1885 (archive.org scan brihatjatakavar00iyergoog, Google Books digitization)",
+      "translator": "N. Chidambaram Iyer",
+      "year": 1885,
+      "url": "https://archive.org/download/brihatjatakavar00iyergoog/brihatjatakavar00iyergoog_djvu.txt",
+      "file": "brihatjatakavar00iyergoog_djvu.txt",
+      "sha256": "e37c03f91023058b3b2fdb616bc7bc2779d89debef297f12076964c28df6ce45",
+      "rights": "public_domain",
+      "rights_basis": "Sanskrit original is ancient. The English translation and notes were published in 1885, before 1929 (US public domain), and archive.org records possible-copyright-status NOT_IN_COPYRIGHT.",
+      "system": "parashari",
+      "notes": "The archive.org OCR text layer is used; no new OCR is needed. Excerpts are hand-corrected and must fuzzy-match the segmented OCR of the cited verse, which proves provenance. Chapters mapped: XIII, XIV, XVI, XVII and XX."
+    },
+    {
+      "id": "bphs-santhanam",
+      "title": "Brihat Parashara Hora Shastra (English translation)",
+      "author": "Parashara",
+      "translator": "R. Santhanam",
+      "edition": "Ranjan Publications (modern)",
+      "rights": "copyrighted_blocked",
+      "rights_basis": "Modern in-copyright translation. Never ingest its text; use it only as private reference when authoring.",
+      "system": "parashari"
+    },
+    {
+      "id": "bphs-sanskrit",
+      "title": "Brihat Parashara Hora Shastra (Sanskrit)",
+      "author": "Parashara",
+      "rights": "not_acquired",
+      "rights_basis": "The original is public domain. A verified public-domain digital Sanskrit edition has not yet been pinned. BPHS principles are covered by antariksha-authored-v1.",
+      "system": "parashari",
+      "notes": "Milestone C3: pin a GRETIL or archive.org Sanskrit edition, then add an IAST-normalised rendering map."
+    },
+    {
+      "id": "bhrigu-sutras",
+      "title": "Bhrigu Sutras",
+      "author": "Bhrigu (attrib.)",
+      "rights": "not_acquired",
+      "rights_basis": "The original is public domain, but no pre-1929 English translation was located, and the common English editions are modern. Its graha-in-house aphorisms are covered by antariksha-authored-v1 and by Brihat Jataka ch. XX.",
+      "system": "parashari",
+      "notes": "Bhrigu Samhita (a set of pre-written horoscopes) is out of scope."
+    },
+    {
+      "id": "saravali",
+      "title": "Saravali",
+      "author": "Kalyana Varma",
+      "rights": "not_acquired",
+      "rights_basis": "The original is public domain. No edition has been cleared yet.",
+      "system": "parashari"
+    },
+    {
+      "id": "phaladeepika",
+      "title": "Phaladeepika",
+      "author": "Mantreswara",
+      "rights": "not_acquired",
+      "rights_basis": "The original is public domain. No edition has been cleared yet.",
+      "system": "parashari"
+    },
+    {
+      "id": "jataka-parijata",
+      "title": "Jataka Parijata",
+      "author": "Vaidyanatha Dikshita",
+      "rights": "not_acquired",
+      "rights_basis": "The original is public domain. No edition has been cleared yet.",
+      "system": "parashari"
+    },
+    {
+      "id": "uttara-kalamrita",
+      "title": "Uttara Kalamrita",
+      "author": "Kalidasa (attrib.)",
+      "rights": "not_acquired",
+      "rights_basis": "The original is public domain. No edition has been cleared yet.",
+      "system": "parashari"
+    },
+    {
+      "id": "sarvartha-chintamani",
+      "title": "Sarvartha Chintamani",
+      "author": "Venkatesha Sharma",
+      "rights": "not_acquired",
+      "rights_basis": "The original is public domain. No edition has been cleared yet.",
+      "system": "parashari"
+    },
+    {
+      "id": "hora-sara",
+      "title": "Hora Sara",
+      "author": "Prithuyasas",
+      "rights": "not_acquired",
+      "rights_basis": "The original is public domain. No edition has been cleared yet.",
+      "system": "parashari"
+    },
+    {
+      "id": "jaimini-sutras",
+      "title": "Jaimini Sutras",
+      "author": "Jaimini",
+      "rights": "not_acquired",
+      "rights_basis": "The original is public domain. No edition has been cleared yet. This text belongs to the jaimini namespace only.",
+      "system": "jaimini"
+    }
+  ]
+}
