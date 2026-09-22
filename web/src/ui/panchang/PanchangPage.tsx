@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
-import { fetchJSON, getChart } from '../../api/client';
+import { calendarURL, fetchJSON, getChart } from '../../api/client';
 import type { MonthDay, PanchangDay } from '../../api/panchang';
 import type { ChartResponse } from '../../api/types';
 import { SouthIndian } from '../../chart2d/SouthIndian';
 import { PlanetTable } from '../kundali/PlanetTable';
-import { PlacePicker } from '../common/PlacePicker';
+import { PlaceSearch } from '../common/PlaceSearch';
+import { useT } from '../../i18n';
 import { defaultPlace, type Place } from '../common/places';
 import { DayDetails, FestivalChips } from './DayDetails';
 
@@ -14,6 +15,7 @@ const shiftMonth = (ym: string, n: number) => { const [y, m] = ym.split('-').map
 const monthTitle = (ym: string) => new Date(ym + '-01T12:00:00Z').toLocaleDateString('en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' });
 
 export function PanchangPage({ mode }: { mode: 'day' | 'month' }) {
+  const t = useT();
   const [place, setPlace] = useState<Place>(defaultPlace);
   const [date, setDate] = useState(() => todayIn(defaultPlace.tz));
   const [month, setMonth] = useState(() => todayIn(defaultPlace.tz).slice(0, 7));
@@ -55,11 +57,11 @@ export function PanchangPage({ mode }: { mode: 'day' | 'month' }) {
       <header className="page-head">
         <div>
           <p className="kicker">Hindu calendar</p>
-          <h1>{mode === 'month' ? 'Panchang calendar' : 'Daily Panchang'}</h1>
+          <h1>{mode === 'month' ? t('Panchang calendar') : t('Daily Panchang')}</h1>
           <p className="muted">The five limbs at local sunrise, festivals, muhurta windows and choghadiya for your location.</p>
         </div>
         <div className="filters">
-          <PlacePicker value={place} onChange={p => setPlace(p)} />
+          <PlaceSearch label={t('Location')} value={place} onChange={p => setPlace(p)} compact />
           {mode === 'day' ? (
             <div className="stepper">
               <button className="ghost" aria-label="Previous day" onClick={() => pick(shift(date, -1))}>‹</button>
@@ -73,19 +75,22 @@ export function PanchangPage({ mode }: { mode: 'day' | 'month' }) {
               <button className="ghost" aria-label="Next month" onClick={() => setMonth(shiftMonth(month, 1))}>›</button>
             </div>
           )}
-          <button className="ghost" onClick={() => pick(today)}>Today</button>
+          <button className="ghost" onClick={() => pick(today)}>{t('Today')}</button>
         </div>
       </header>
 
       {mode === 'month' && (
         <section className="card calendar" aria-label={`Panchang calendar for ${monthTitle(month)}`}>
-          <h2>{monthTitle(month)}</h2>
+          <div className="calendar-head">
+            <h2>{monthTitle(month)}</h2>
+            <a className="ghost" href={calendarURL(Number(month.slice(0, 4)), place)} download>Add {month.slice(0, 4)} festivals to my calendar (.ics)</a>
+          </div>
           {monthError && <p role="alert" className="form-error">{monthError}</p>}
           <div className="calendar-grid">
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => <div className="weekday" key={d}>{d}</div>)}
             {Array.from({ length: leading }, (_, i) => <div key={'b' + i} className="calendar-empty" />)}
             {days.map(d => {
-              const named = d.festivals.filter(f => !['Ekadashi', 'Pradosh Vrat', 'Sankashti Chaturthi'].includes(f));
+              const named = d.festivals.filter(f => !f.endsWith('Ekadashi') && !['Pradosh Vrat', 'Sankashti Chaturthi', 'Purnima', 'Amavasya'].includes(f));
               return (
                 <button key={d.date} className={'calendar-day' + (d.date === date ? ' selected' : '') + (d.date === today ? ' today' : '') + (named.length ? ' has-festival' : '')}
                   onClick={() => setDate(d.date)} aria-label={`${d.date} ${d.tithi} ${d.paksha} ${d.festivals.join(', ')}`} aria-pressed={d.date === date}>
@@ -100,7 +105,7 @@ export function PanchangPage({ mode }: { mode: 'day' | 'month' }) {
           {!days.length && !monthError && <p className="muted">Loading the month…</p>}
           {days.some(d => d.festivals.length) && (
             <details className="festival-list" open>
-              <summary>Festivals and observances this month</summary>
+              <summary>{t('Festivals and observances this month')}</summary>
               <ul>{days.filter(d => d.festivals.length).map(d => <li key={d.date}><button className="link-button" onClick={() => setDate(d.date)}>{Number(d.date.slice(-2))} {monthTitle(month).split(' ')[0].slice(0, 3)}</button><FestivalChips names={d.festivals} /></li>)}</ul>
             </details>
           )}

@@ -6,7 +6,7 @@ import { type ChartProps, keyAct, label, useCompact } from './common';
 const cells = [[1, 0], [2, 0], [3, 0], [3, 1], [3, 2], [3, 3], [2, 3], [1, 3], [0, 3], [0, 2], [0, 1], [0, 0]];
 const S = 150, O = 10;
 
-export function SouthIndian({ chart, onSelect, selected }: ChartProps) {
+export function SouthIndian({ chart, onSelect, selected, title = 'Rashi · D1' }: ChartProps) {
   const asc = signIndex(chart.ascendant.longitude);
   const compact = useCompact();
   return (
@@ -35,7 +35,7 @@ export function SouthIndian({ chart, onSelect, selected }: ChartProps) {
           </g>
         );
       })}
-      <text x="310" y="292" textAnchor="middle" className="c-title">Rashi · D1</text>
+      <text x="310" y="292" textAnchor="middle" className="c-title">{title}</text>
       <text x="310" y="320" textAnchor="middle" className="c-sub">South Indian</text>
       <text x="310" y="346" textAnchor="middle" className="c-lagna-text">Lagna {chart.ascendant.rashi}</text>
     </svg>

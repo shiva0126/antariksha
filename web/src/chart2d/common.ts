@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { ChartResponse, Graha } from '../api/types';
 import { grahaShort } from '../astro/format';
-export interface ChartProps { chart: ChartResponse; onSelect?: (g: Graha) => void; selected?: string }
+export interface ChartProps { chart: ChartResponse; onSelect?: (g: Graha) => void; selected?: string; title?: string }
 export const deg = (g: Graha) => `${Math.floor(g.rashi_degree)}°${String(Math.floor((g.rashi_degree % 1) * 60)).padStart(2, '0')}′`;
 export const keyAct = (fn: () => void) => (e: React.KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fn(); } };
 

@@ -42,6 +42,37 @@ export function DashaTimeline({ facts }: { facts: ChartFacts }) {
           })}
         </ol>
       </div>
+      <div className="grid-2">
+        <SubList title={`Antardashas of ${grahaEnglish(v.current.maha ?? '')}`} periods={v.antaras ?? []} today={today} />
+        <SubList title={`Pratyantardashas of ${grahaEnglish(v.current.antara ?? '')}`} periods={v.pratyantaras ?? []} today={today} />
+      </div>
+      {facts.yogini?.sequence?.length > 0 && (
+        <div className="card">
+          <h3>Yogini dasha</h3>
+          <p className="muted small">The 36-year cycle of eight yoginis, from the Moon's nakshatra. Running now: <b>{facts.yogini.current.yogini}</b> ({grahaEnglish(facts.yogini.current.lord)}) until {longDate(facts.yogini.current.to)}.</p>
+          <ol className="dasha-list">
+            {facts.yogini.sequence.slice(0, 10).map(p => {
+              const current = p.from <= today && today < p.to, past = p.to <= today;
+              return <li key={p.from} className={current ? 'is-current' : past ? 'is-past' : ''}><i style={{ background: grahaColor[p.lord] }} /><b>{p.yogini}</b><span>{longDate(p.from)} – {longDate(p.to)}</span><em>{grahaEnglish(p.lord)}{current ? ' · now' : ''}</em></li>;
+            })}
+          </ol>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SubList({ title, periods, today }: { title: string; periods: { lord: string; from: string; to: string }[]; today: string }) {
+  if (!periods.length) return null;
+  return (
+    <div className="card">
+      <h3>{title}</h3>
+      <ol className="dasha-list compact">
+        {periods.map(p => {
+          const current = p.from <= today && today < p.to, past = p.to <= today;
+          return <li key={p.from} className={current ? 'is-current' : past ? 'is-past' : ''}><i style={{ background: grahaColor[p.lord] }} /><b>{grahaEnglish(p.lord)}</b><span>{longDate(p.from)} – {longDate(p.to)}</span>{current && <em>now</em>}</li>;
+        })}
+      </ol>
     </div>
   );
 }

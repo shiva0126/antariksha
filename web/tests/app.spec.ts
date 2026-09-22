@@ -4,6 +4,7 @@ async function openChart(page: Page) {
   await page.goto('/');
   await page.evaluate(() => localStorage.clear());
   await page.goto('/');
+  await page.getByRole('checkbox').check();
   await page.getByRole('button', { name: 'Reveal my chart' }).click();
   await expect(page.locator('.profile')).toBeVisible();
 }
@@ -12,12 +13,14 @@ test('kundali: placement, dasha, tabs and no horizontal overflow', async ({ page
   const errors: string[] = [];
   page.on('pageerror', e => errors.push(e.message));
   await openChart(page);
+  await page.getByRole('tab', { name: 'Chart', exact: true }).click();
   await expect(page.getByRole('img', { name: 'South Indian Kundali with fixed zodiac signs' })).toBeVisible();
   // Reference chart (14 May 1996 10:15 Bengaluru): Karka lagna, Sun in Mesha, Moon in Meena.
   await expect(page.locator('svg [data-sign="1"]')).toContainText('Surya');
   await expect(page.locator('svg [data-sign="12"]')).toContainText('Chandra');
   await expect(page.locator('.profile')).toContainText('Karka');
   await expect(page.locator('.profile')).toContainText('Revati');
+  await page.getByRole('tab', { name: 'Chart', exact: true }).click();
   await page.getByRole('tab', { name: 'North Indian' }).click();
   await expect(page.locator('svg [data-house="10"]')).toContainText('Surya');
   await expect(page.locator('svg [data-house="9"]')).toContainText('Chandra');
@@ -38,11 +41,11 @@ test('chat answers from the chart and keeps history across reloads', async ({ pa
   await openChart(page);
   await page.getByRole('tab', { name: 'Ask Antariksha' }).click();
   await page.getByRole('button', { name: 'What does my chart say about my career?' }).click();
-  await expect(page.locator('.msg-assistant').first()).toContainText('10th house is Mesha');
+  await expect(page.locator('.msg-assistant:not(:has(.typing))').first()).toContainText('10th house is Mesha');
   await page.getByRole('textbox', { name: 'Your question' }).fill('Do I have Mangal dosha?');
   await page.getByRole('textbox', { name: 'Your question' }).press('Enter');
-  await expect(page.locator('.msg-assistant')).toHaveCount(2);
-  await expect(page.locator('.msg-assistant').nth(1)).toContainText('Mangal dosha');
+  await expect(page.locator('.msg-assistant:not(:has(.typing))')).toHaveCount(2);
+  await expect(page.locator('.msg-assistant:not(:has(.typing))').nth(1)).toContainText('Mangal dosha');
   await page.reload();
   await expect(page.locator('.msg')).toHaveCount(4);
   await expect(page.locator('.chat-history li')).toHaveCount(2);
@@ -78,4 +81,93 @@ test('chart remains usable without WebGL', async ({ page }) => {
   await openChart(page);
   await expect(page.getByRole('tab', { name: 'Celestial dome' })).toBeDisabled();
   await expect(page.getByRole('img', { name: 'South Indian Kundali with fixed zodiac signs' })).toBeVisible();
+});
+
+test('consent is required before a chart is created', async ({ page }) => {
+  await page.goto('/');
+  await page.evaluate(() => localStorage.clear());
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Reveal my chart' }).click();
+  await expect(page.getByRole('alert')).toContainText('consent');
+});
+
+test('new kundali tabs: today, divisional charts, dasha levels, ashtakavarga, report', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', e => errors.push(e.message));
+  await openChart(page);
+  await page.getByRole('tab', { name: 'Today' }).click();
+  await expect(page.locator('.today')).toContainText('Tara bala');
+  await expect(page.locator('.today .planet-table tbody tr')).toHaveCount(9);
+  await page.getByRole('tab', { name: 'Chart', exact: true }).click();
+  await page.getByLabel('Divisional chart').selectOption('9');
+  await expect(page.locator('svg')).toContainText('Navamsha');
+  await page.getByRole('tab', { name: 'Dasha' }).click();
+  await expect(page.locator('.dasha')).toContainText('Pratyantardashas');
+  await expect(page.locator('.dasha')).toContainText('Yogini dasha');
+  await page.getByRole('tab', { name: 'Ashtakavarga' }).click();
+  await expect(page.locator('.av-total')).toContainText('337');
+  await page.getByRole('tab', { name: 'Report' }).click();
+  await expect(page.locator('.report')).toContainText('Planetary positions');
+  expect(errors).toEqual([]);
+});
+
+test('profiles: add a second chart and switch', async ({ page }) => {
+  await openChart(page);
+  await page.getByLabel('Profiles').selectOption('__new');
+  await page.getByPlaceholder('Whose chart is this?').fill('Ravi');
+  await page.getByRole('textbox', { name: 'Birth date' }).fill('1990-01-01');
+  await page.getByRole('checkbox').check();
+  await page.getByRole('button', { name: 'Reveal my chart' }).click();
+  await expect(page.locator('.profile h1')).toContainText('Ravi');
+  await expect(page.getByLabel('Profiles').locator('option')).toHaveCount(3);
+});
+
+test('matching and muhurta pages', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', e => errors.push(e.message));
+  await page.goto('/#match');
+  await page.getByRole('button', { name: 'Match charts' }).click();
+  await expect(page.locator('.score-ring')).toBeVisible();
+  await expect(page.locator('.koota-table tbody tr')).toHaveCount(8);
+  await page.goto('/#muhurta');
+  await page.getByRole('button', { name: 'Find muhurta' }).click();
+  await expect(page.locator('.results-head')).toContainText('suitable');
+  expect(errors).toEqual([]);
+});
+
+test('place search finds towns by old names', async ({ page }) => {
+  await page.goto('/');
+  await page.evaluate(() => localStorage.clear());
+  await page.goto('/');
+  const input = page.getByRole('combobox', { name: 'Birthplace' });
+  await input.fill('bombay');
+  await expect(page.locator('.place-list').getByRole('option').first()).toContainText('Mumbai');
+  await page.locator('.place-list').getByRole('option').first().click();
+  await expect(page.locator('.place-search small')).toContainText('Asia/Kolkata');
+});
+
+test('hindi interface and purnimanta months', async ({ page }) => {
+  await page.goto('/#day');
+  await page.getByLabel('Language').selectOption('hi');
+  await page.getByLabel('Month system').selectOption('purnimanta');
+  await page.getByLabel('Panchang date').fill('2026-09-05');
+  await expect(page.locator('.main-nav')).toContainText('दैनिक पंचांग');
+  // Krishna paksha of Amanta Shravana is Purnimanta Bhadrapada.
+  await expect(page.locator('.day-head')).toContainText('भाद्रपद');
+  await page.getByLabel('Language').selectOption('en');
+  await page.getByLabel('Month system').selectOption('amanta');
+});
+
+test('delete all my data removes chats from the server', async ({ page, request }) => {
+  await openChart(page);
+  await page.getByRole('tab', { name: 'Ask Antariksha' }).click();
+  await page.getByRole('button', { name: 'Explain my yogas' }).click();
+  await expect(page.locator('.msg-assistant:not(:has(.typing))')).toHaveCount(1);
+  expect(await page.evaluate(() => Object.keys(localStorage).some(k => k.startsWith('antariksha.chat.')))).toBe(true);
+  const sid = await page.evaluate(() => Object.keys(localStorage).filter(k => k.startsWith('antariksha.chat.')).map(k => localStorage.getItem(k))[0]);
+  await page.goto('/#privacy');
+  await page.getByRole('button', { name: 'Delete all my data' }).click();
+  await expect(page.getByRole('status')).toContainText('Deleted 1 conversation');
+  const r = await request.get(`/api/chat/history?session_id=${sid}`);
+  expect(r.status()).toBe(404);
 });
