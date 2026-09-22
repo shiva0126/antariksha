@@ -106,3 +106,133 @@ func TestMoonYogasAreExclusive(t *testing.T) {
 		t.Fatalf("%v", names)
 	}
 }
+
+func TestDashaLevelsYoginiAndAshtakavarga(t *testing.T) {
+	e := New("../ephe")
+	c, _ := e.BirthChart(ChartInput{Date: "1996-05-14", Time: "10:15", Lat: 12.97, Lon: 77.59, TZ: "Asia/Kolkata"})
+	f, err := Facts(c, time.Date(2026, 9, 22, 0, 0, 0, 0, time.UTC))
+	if err != nil {
+		t.Fatal(err)
+	}
+	v := f.Vimshottari
+	if len(v.Antaras) != 9 || v.Antaras[0].Lord != "venus" || v.Antaras[5].Lord != "jupiter" {
+		t.Fatalf("antaras %+v", v.Antaras)
+	}
+	if v.Antaras[5].From[:7] != v.Current.From[:7] || v.Antaras[8].To[:7] != "2035-06" {
+		t.Fatalf("antara bounds %+v vs current %+v", v.Antaras, v.Current)
+	}
+	// Jupiter pratyantaras start with Jupiter; the running one must be named.
+	if len(v.Pratyantaras) != 9 || v.Pratyantaras[0].Lord != "jupiter" || v.Current.Pratyantara == "" {
+		t.Fatalf("pratyantaras %+v current %+v", v.Pratyantaras, v.Current)
+	}
+	// Revati is nakshatra 27: (27+3) mod 8 = 6 → Ulka (Saturn, 6 years).
+	if f.Yogini.Sequence[0].Yogini != "Ulka" || f.Yogini.Current.Yogini == "" {
+		t.Fatalf("yogini %+v", f.Yogini)
+	}
+	totals := map[string]int{"sun": 48, "moon": 49, "mars": 39, "mercury": 54, "jupiter": 56, "venus": 52, "saturn": 39}
+	sum := 0
+	for g, want := range totals {
+		got := 0
+		for _, b := range f.Ashtakavarga.Bhinna[g] {
+			got += b
+		}
+		if got != want {
+			t.Errorf("%s BAV total %d want %d", g, got, want)
+		}
+	}
+	for _, b := range f.Ashtakavarga.Sarva {
+		sum += b
+	}
+	if sum != 337 {
+		t.Fatalf("SAV total %d", sum)
+	}
+}
+
+func TestVargas(t *testing.T) {
+	cases := []struct {
+		lon  float64
+		n    int
+		sign int
+	}{
+		{0.5, 9, 0}, {29.9, 9, 8}, {30.5, 9, 9}, {95, 9, 4}, // Mesha→Mesha…Dhanu; Vrishabha starts Makara; Karka 5° → Simha
+		{1, 10, 0}, {5, 10, 1}, {31, 10, 9}, // Mesha from itself (5° is the 2nd part); Vrishabha (even) from its 9th, Makara
+		{5, 2, 4}, {20, 2, 3}, {35, 2, 3}, // odd: Simha then Karka; even reversed
+		{25, 3, 8}, {61, 12, 2}, {40, 7, 9}, // Vrishabha 10° is the 3rd saptamsha from its 7th (Vrishchika) → Makara
+	}
+	for _, c := range cases {
+		if s, _ := vargaSign(c.lon, c.n); s != c.sign {
+			t.Errorf("D%d of %.1f°: sign %d want %d", c.n, c.lon, s, c.sign)
+		}
+	}
+	e := New("../ephe")
+	ch, _ := e.BirthChart(ChartInput{Date: "1996-05-14", Time: "10:15", Lat: 12.97, Lon: 77.59, TZ: "Asia/Kolkata"})
+	d9, err := VargaChart(ch, 9)
+	if err != nil || len(d9.Grahas) != 9 {
+		t.Fatal(err)
+	}
+	// Lagna 90.48° is in the first navamsha of Karka → Karka.
+	if d9.Ascendant.Rashi != "Karka" {
+		t.Fatalf("D9 lagna %s", d9.Ascendant.Rashi)
+	}
+	if _, err := VargaChart(ch, 5); err == nil {
+		t.Fatal("unsupported varga accepted")
+	}
+}
+
+func TestMatchingKnownCases(t *testing.T) {
+	e := New("../ephe")
+	a, _ := e.BirthChart(ChartInput{Date: "1996-05-14", Time: "10:15", Lat: 12.97, Lon: 77.59, TZ: "Asia/Kolkata"})
+	// Identical Moons: the classical result is 28 points with Nadi dosha.
+	m, err := MatchCharts(a, a)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if m.Total != 28 || m.Kootas[7].Score != 0 {
+		t.Fatalf("same moon: %.1f %+v", m.Total, m.Kootas)
+	}
+	b, _ := e.BirthChart(ChartInput{Date: "1994-11-02", Time: "06:40", Lat: 28.61, Lon: 77.21, TZ: "Asia/Kolkata"})
+	m, _ = MatchCharts(b, a)
+	if m.Total < 0 || m.Total > 36 || len(m.Kootas) != 8 {
+		t.Fatalf("%+v", m)
+	}
+	var sum float64
+	for _, k := range m.Kootas {
+		if k.Score < 0 || k.Score > k.Max {
+			t.Fatalf("koota out of range %+v", k)
+		}
+		sum += k.Score
+	}
+	if sum != m.Total {
+		t.Fatal("total mismatch")
+	}
+	for i := range yoniScore {
+		for j := range yoniScore {
+			if yoniScore[i][j] != yoniScore[j][i] {
+				t.Fatalf("yoni table asymmetric at %d,%d", i, j)
+			}
+		}
+	}
+}
+
+func TestMuhurtaWindowsAvoidInauspiciousPeriods(t *testing.T) {
+	e := New("../ephe")
+	c, err := e.Calculate(time.Date(2026, 10, 7, 0, 0, 0, 0, time.UTC), Location{Lat: 12.9716, Lon: 77.5946, TZ: "Asia/Kolkata"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	ev, _ := MuhurtaEventByID("marriage")
+	m := EvaluateMuhurta(ev, c.Day, -1, -1, -1)
+	if !m.Good {
+		t.Skipf("reference day not suitable in general muhurta: %v", m.Cautions)
+	}
+	for _, w := range m.Windows {
+		for _, a := range m.Avoid {
+			if w.Start < a.End && a.Start < w.End {
+				t.Fatalf("window %v overlaps avoided %v", w, a)
+			}
+		}
+		if w == c.Day.Abhijit {
+			t.Fatal("Abhijit offered on a Wednesday")
+		}
+	}
+}

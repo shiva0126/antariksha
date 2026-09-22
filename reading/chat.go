@@ -212,12 +212,14 @@ func compose(in *insight, q string, history []ChatTurn, cc ChatContext) (string,
 				add(fmt.Sprintf("The 10th lord %s is in the %s house: %s", engine.GrahaEnglish(lord), ordinal(in.house(lord)), firstSentence(in.entry(engine.DocGrahaInHouse, fmt.Sprintf("%s_in_%d", lord, in.house(lord))), 280)))
 			}
 			add(careerYogas(in))
+			add(vargaLine(in, 10, "sun", "saturn"))
 		case "marriage":
 			add(in.houseSummary(7))
 			for _, id := range engine.GrahasInHouse(f.Chart, 7) {
 				add(fmt.Sprintf("%s: %s", in.placement(id), firstSentence(in.entry(engine.DocGrahaInHouse, id+"_in_7"), 300)))
 			}
 			add("Venus, the natural significator of partnership: " + in.placement("venus") + ". " + firstSentence(in.entry(engine.DocGrahaInHouse, fmt.Sprintf("venus_in_%d", in.house("venus"))), 260))
+			add(vargaLine(in, 9, "venus", "jupiter"))
 			add(mangal(in))
 		case "wealth":
 			add(in.houseSummary(2))
@@ -248,6 +250,12 @@ func compose(in *insight, q string, history []ChatTurn, cc ChatContext) (string,
 			add(in.entry(engine.DocDasha, "dasha_"+f.Vimshottari.Current.Maha))
 			if a := f.Vimshottari.Current.Antara; a != "" && a != f.Vimshottari.Current.Maha {
 				add(fmt.Sprintf("Within it, the %s antardasha colours events: %s", engine.GrahaEnglish(a), firstSentence(in.entry(engine.DocDasha, "dasha_"+a), 240)))
+			}
+			if p := f.Vimshottari.Current.Pratyantara; p != "" {
+				add(fmt.Sprintf("The finer pratyantardasha running now is %s.", engine.GrahaEnglish(p)))
+			}
+			if y := f.Yogini.Current; y.Yogini != "" {
+				add(fmt.Sprintf("In the Yogini dasha system you are in %s (ruled by %s) until %s.", y.Yogini, engine.GrahaEnglish(y.Lord), y.To))
 			}
 		case "yoga":
 			if len(f.Yogas) == 0 {
@@ -363,4 +371,21 @@ func sadeSati(in *insight, cc ChatContext) string {
 	}
 	names := map[int]string{1: "rising (first) phase, Saturn in the 12th from the Moon", 2: "peak (second) phase, Saturn over the natal Moon", 3: "setting (third) phase, Saturn in the 2nd from the Moon"}
 	return fmt.Sprintf("You are in Sade Sati: the %s. Transiting Saturn is in %s and your Moon sign is %s. Classically this is a period of responsibility, restructuring and maturity rather than misfortune; its tone depends on Saturn's strength in your chart (%s).", names[phase], sat.Rashi, moon, in.placement("saturn"))
+}
+
+// vargaLine summarises a divisional chart for the given significators.
+func vargaLine(in *insight, n int, ids ...string) string {
+	v, err := engine.VargaChart(in.f.Chart, n)
+	if err != nil {
+		return ""
+	}
+	parts := []string{}
+	for _, id := range ids {
+		for _, g := range v.Grahas {
+			if g.ID == id {
+				parts = append(parts, fmt.Sprintf("%s in %s (%s house)", engine.GrahaEnglish(id), g.Rashi, ordinal(engine.HouseOf(g.Longitude, v.Ascendant.Longitude))))
+			}
+		}
+	}
+	return fmt.Sprintf("In the %s (D%d, the chart of %s) the ascendant is %s, with %s.", engine.VargaName(n), n, engine.VargaTheme(n), v.Ascendant.Rashi, strings.Join(parts, " and "))
 }

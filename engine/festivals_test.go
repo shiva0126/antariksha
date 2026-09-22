@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"strings"
 	"testing"
 	"time"
 )
@@ -51,12 +52,17 @@ func TestFestivalYearListing(t *testing.T) {
 	loc := Location{12.9716, 77.5946, "Asia/Kolkata"}
 	d := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
 	counts := map[string]int{}
+	named := map[string]bool{}
 	for d.Year() == 2026 {
 		c, err := e.Calculate(d, loc)
 		if err != nil {
 			t.Fatal(err)
 		}
 		for _, f := range c.Day.Festivals {
+			if strings.HasSuffix(f, "Ekadashi") {
+				counts["Ekadashi"]++
+				named[f] = true
+			}
 			counts[f]++
 			if !isRecurring(f) && testing.Verbose() {
 				t.Logf("%s %s", d.Format("2006-01-02"), f)
@@ -67,6 +73,12 @@ func TestFestivalYearListing(t *testing.T) {
 	// 12–13 lunations: two Ekadashis each, one Purnima/Amavasya each, 12 sankrantis.
 	if counts["Ekadashi"] < 24 || counts["Ekadashi"] > 28 || counts["Purnima"] < 12 || counts["Amavasya"] < 12 {
 		t.Fatalf("recurring counts %v", counts)
+	}
+	// 2026 has an Adhika Jyeshtha, so all 24 regular names plus Padmini and Parama occur.
+	for _, n := range []string{"Nirjala Ekadashi", "Devshayani Ekadashi", "Parsva Ekadashi", "Devutthana Ekadashi", "Padmini Ekadashi", "Parama Ekadashi", "Mokshada Ekadashi"} {
+		if !named[n] {
+			t.Errorf("missing %s (have %v)", n, named)
+		}
 	}
 	for _, r := range Festivals {
 		if r.Month != "" && counts[r.Name] != 1 {

@@ -59,8 +59,9 @@ func (s *Server) routes() {
 	s.mux.HandleFunc("GET /api/chart/facts", s.chartFacts)
 	s.mux.HandleFunc("GET /api/reading", s.readingHandler)
 	s.mux.HandleFunc("GET /api/reading/stream", s.readingStream)
-	s.mux.HandleFunc("POST /api/chat", s.chat)
+	s.mux.Handle("POST /api/chat", s.limit(s.chat, 20))
 	s.mux.HandleFunc("GET /api/chat/history", s.chatHistory)
+	s.featureRoutes()
 }
 
 func (s *Server) chart(w http.ResponseWriter, r *http.Request) {

@@ -34,7 +34,6 @@ var Festivals = []FestivalRule{
 	{"Hanuman Jayanti", "Chaitra", true, 15, Sunrise},
 	{"Akshaya Tritiya", "Vaishakha", true, 3, Sunrise},
 	{"Buddha Purnima", "Vaishakha", true, 15, Sunrise},
-	{"Devshayani Ekadashi", "Ashadha", true, 11, Sunrise},
 	{"Guru Purnima", "Ashadha", true, 15, Sunrise},
 	{"Nag Panchami", "Shravana", true, 5, Sunrise},
 	{"Raksha Bandhan", "Shravana", true, 15, Sunrise},
@@ -50,7 +49,6 @@ var Festivals = []FestivalRule{
 	{"Diwali (Lakshmi Puja)", "Ashwina", false, 15, Pradosh},
 	{"Govardhan Puja", "Kartika", true, 1, Sunrise},
 	{"Bhai Dooj", "Kartika", true, 2, Aparahna},
-	{"Dev Uthani Ekadashi", "Kartika", true, 11, Sunrise},
 	{"Kartika Purnima", "Kartika", true, 15, Sunrise},
 	{"Vasant Panchami", "Magha", true, 5, Sunrise},
 	{"Maha Shivaratri", "Magha", false, 14, Nishita},
@@ -168,9 +166,13 @@ func festivalsFor(rise, set, nextRise float64, sunriseMonth string, sunriseTithi
 		if r.Month != "" && r.Month != month {
 			continue
 		}
-		if !seen[r.Name] {
-			seen[r.Name] = true
-			out = append(out, r.Name)
+		name := r.Name
+		if name == "Ekadashi" {
+			name = ekadashiName(month, r.Shukla)
+		}
+		if !seen[name] {
+			seen[name] = true
+			out = append(out, name)
 		}
 	}
 	// Named festivals first; recurring observances after them.
@@ -185,7 +187,32 @@ func festivalsFor(rise, set, nextRise float64, sunriseMonth string, sunriseTithi
 	return append(named, recurring...), nil
 }
 
+// Ekadashi names by Amanta month: [shukla, krishna].
+var ekadashiNames = map[string][2]string{
+	"Chaitra": {"Kamada", "Varuthini"}, "Vaishakha": {"Mohini", "Apara"}, "Jyeshtha": {"Nirjala", "Yogini"},
+	"Ashadha": {"Devshayani", "Kamika"}, "Shravana": {"Shravana Putrada", "Aja"}, "Bhadrapada": {"Parsva", "Indira"},
+	"Ashwina": {"Papankusha", "Rama"}, "Kartika": {"Devutthana", "Utpanna"}, "Margashirsha": {"Mokshada", "Saphala"},
+	"Pausha": {"Pausha Putrada", "Shattila"}, "Magha": {"Jaya", "Vijaya"}, "Phalguna": {"Amalaki", "Papmochani"},
+}
+
+func ekadashiName(month string, shukla bool) string {
+	i := 1
+	if shukla {
+		i = 0
+	}
+	if strings.HasPrefix(month, "Adhika") {
+		return [2]string{"Padmini", "Parama"}[i] + " Ekadashi"
+	}
+	if n, ok := ekadashiNames[month]; ok {
+		return n[i] + " Ekadashi"
+	}
+	return "Ekadashi"
+}
+
 func isRecurring(name string) bool {
+	if strings.HasSuffix(name, "Ekadashi") {
+		return true
+	}
 	switch name {
 	case "Ekadashi", "Pradosh Vrat", "Sankashti Chaturthi", "Purnima", "Amavasya":
 		return true

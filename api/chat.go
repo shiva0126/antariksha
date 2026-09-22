@@ -35,6 +35,8 @@ type ChatStore interface {
 	CreateSession(ctx context.Context, id, chartHash string, birth engine.ChartInput) error
 	Append(ctx context.Context, sessionID string, m ChatMessage) (ChatMessage, error)
 	History(ctx context.Context, sessionID string, limit int) ([]ChatMessage, error)
+	// Delete removes a session and every message in it (user data deletion).
+	Delete(ctx context.Context, sessionID string) error
 }
 
 var sessionIDPattern = regexp.MustCompile(`^[a-f0-9]{32}$`)
@@ -93,6 +95,14 @@ func (m *MemoryChatStore) History(_ context.Context, sid string, limit int) ([]C
 	return append([]ChatMessage{}, h...), nil
 }
 
+func (m *MemoryChatStore) Delete(_ context.Context, sid string) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	delete(m.sessions, sid)
+	delete(m.messages, sid)
+	return nil
+}
+
 // PostgresChatStore persists chats in chat_sessions / chat_messages.
 type PostgresChatStore struct{ Pool *pgxpool.Pool }
 
@@ -122,6 +132,11 @@ func (p PostgresChatStore) Append(ctx context.Context, sid string, m ChatMessage
 		_, _ = p.Pool.Exec(ctx, `UPDATE chat_sessions SET updated_at=now() WHERE id=$1`, sid)
 	}
 	return m, err
+}
+
+func (p PostgresChatStore) Delete(ctx context.Context, sid string) error {
+	_, err := p.Pool.Exec(ctx, `DELETE FROM chat_sessions WHERE id=$1`, sid) // messages cascade
+	return err
 }
 
 func (p PostgresChatStore) History(ctx context.Context, sid string, limit int) ([]ChatMessage, error) {

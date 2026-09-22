@@ -24,30 +24,35 @@ type Yoga struct {
 	Geometry map[string]any `json:"geometry"`
 }
 type DashaPeriod struct {
-	Lord   string `json:"lord"`
-	Maha   string `json:"maha,omitempty"`
-	Antara string `json:"antara,omitempty"`
-	From   string `json:"from"`
-	To     string `json:"to"`
-	Level  string `json:"level"`
+	Lord        string `json:"lord"`
+	Maha        string `json:"maha,omitempty"`
+	Antara      string `json:"antara,omitempty"`
+	Pratyantara string `json:"pratyantara,omitempty"`
+	From        string `json:"from"`
+	To          string `json:"to"`
+	Level       string `json:"level"`
 }
 type Dasha struct {
 	BirthBalance struct {
 		Lord           string  `json:"lord"`
 		YearsRemaining float64 `json:"years_remaining"`
 	} `json:"birth_balance"`
-	Current  DashaPeriod   `json:"current"`
-	Upcoming DashaPeriod   `json:"upcoming"`
-	Sequence []DashaPeriod `json:"sequence"`
+	Current      DashaPeriod   `json:"current"`
+	Upcoming     DashaPeriod   `json:"upcoming"`
+	Sequence     []DashaPeriod `json:"sequence"`
+	Antaras      []DashaPeriod `json:"antaras"`
+	Pratyantaras []DashaPeriod `json:"pratyantaras"`
 }
 type ChartFacts struct {
-	Chart       Chart              `json:"chart"`
-	Dignities   map[string]Dignity `json:"dignities"`
-	Combustion  Combustion         `json:"combustion"`
-	Retrograde  []string           `json:"retrograde"`
-	Vimshottari Dasha              `json:"vimshottari"`
-	Yogas       []Yoga             `json:"yogas"`
-	AsOf        string             `json:"as_of"`
+	Chart        Chart              `json:"chart"`
+	Dignities    map[string]Dignity `json:"dignities"`
+	Combustion   Combustion         `json:"combustion"`
+	Retrograde   []string           `json:"retrograde"`
+	Vimshottari  Dasha              `json:"vimshottari"`
+	Yogas        []Yoga             `json:"yogas"`
+	Yogini       YoginiDasha        `json:"yogini"`
+	Ashtakavarga Ashtakavarga       `json:"ashtakavarga"`
+	AsOf         string             `json:"as_of"`
 }
 
 var dashaOrder = []string{"ketu", "venus", "sun", "moon", "mars", "rahu", "jupiter", "saturn", "mercury"}
@@ -165,7 +170,7 @@ func Facts(c Chart, asOf time.Time) (ChartFacts, error) {
 		return ChartFacts{}, fmt.Errorf("facts require Lahiri chart")
 	}
 	d := Dignities(c)
-	return ChartFacts{Chart: c, Dignities: d, Combustion: CombustionFlags(c), Retrograde: retrograde(c), Vimshottari: Vimshottari(c, asOf), Yogas: DetectYogas(c, d), AsOf: asOf.UTC().Format(time.RFC3339)}, nil
+	return ChartFacts{Chart: c, Dignities: d, Combustion: CombustionFlags(c), Retrograde: retrograde(c), Vimshottari: Vimshottari(c, asOf), Yogas: DetectYogas(c, d), Yogini: Yogini(c, birthTime(c), asOf), Ashtakavarga: ComputeAshtakavarga(c), AsOf: asOf.UTC().Format(time.RFC3339)}, nil
 }
 func retrograde(c Chart) []string {
 	out := []string{}
@@ -178,7 +183,7 @@ func retrograde(c Chart) []string {
 	return out
 }
 
-func Vimshottari(c Chart, asOf time.Time) Dasha {
+func Vimshottari(c Chart, asOf time.Time) (result Dasha) {
 	gs := chartMap(c)
 	moon := gs["moon"]
 	nakSize := 360.0 / 27
@@ -186,11 +191,7 @@ func Vimshottari(c Chart, asOf time.Time) Dasha {
 	lord := nakLords[idx%9]
 	elapsed := math.Mod(moon.Longitude, nakSize) / nakSize
 	remaining := dashaYears[lord] * (1 - elapsed)
-	birth := time.Date(0, 1, 1, 0, 0, 0, 0, time.UTC)
-	if t, e := time.ParseInLocation("2006-01-02 15:04", c.Input.Date+" "+c.Input.Time, time.UTC); e == nil {
-		z, _ := time.LoadLocation(c.Input.TZ)
-		birth = time.Date(t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), 0, 0, z).UTC()
-	}
+	birth := birthTime(c)
 	periods := []DashaPeriod{}
 	starts := []time.Time{}
 	// The birth mahadasha began before birth; its antardashas run from that
@@ -216,14 +217,29 @@ func Vimshottari(c Chart, asOf time.Time) Dasha {
 		current = periods[currentIndex]
 		current.Maha = current.Lord
 		current.Antara, current.From, current.To = antaraFor(current.Lord, starts[currentIndex], asOf)
+		defer func(start time.Time) { addLevels(&result, start, asOf) }(starts[currentIndex])
 		if currentIndex+1 < len(periods) {
 			upcoming = periods[currentIndex+1]
 		}
 	}
-	return Dasha{BirthBalance: struct {
+	result = Dasha{BirthBalance: struct {
 		Lord           string  `json:"lord"`
 		YearsRemaining float64 `json:"years_remaining"`
-	}{lord, remaining}, Current: current, Upcoming: upcoming, Sequence: periods}
+	}{lord, remaining}, Current: current, Upcoming: upcoming, Sequence: periods, Antaras: []DashaPeriod{}, Pratyantaras: []DashaPeriod{}}
+	return result
+}
+
+// birthTime is the birth instant in UTC (zero time if the input is invalid).
+func birthTime(c Chart) time.Time {
+	t, e := time.ParseInLocation("2006-01-02 15:04", c.Input.Date+" "+c.Input.Time, time.UTC)
+	if e != nil {
+		return time.Date(0, 1, 1, 0, 0, 0, 0, time.UTC)
+	}
+	z, err := time.LoadLocation(c.Input.TZ)
+	if err != nil {
+		z = time.UTC
+	}
+	return time.Date(t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), 0, 0, z).UTC()
 }
 
 // yearsDuration converts Vimshottari years (365.2425-day years) to a duration.

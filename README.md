@@ -1,4 +1,9 @@
-# Panchang + Geocentric Birth Sky
+# Antariksha: Panchang, Kundali and a chart-grounded assistant
+
+Free for everyone: no payments, no premium tier, no remedies for sale.
+
+**Features:** Rashi kundali (South Indian, North Indian, circular and 3D views) with divisional charts D2, D3, D7, D9, D10 and D12 · Vimshottari maha, antar and pratyantar dashas · Yogini dasha · Ashtakavarga (Bhinna and Sarva) · yogas, dignity, combustion · a daily "Today" view (transits from Lagna and Moon, tara bala, chandra bala, Sade Sati) · a grounded reading and the **Ask Antariksha** chat, with saved Q&A · **Kundli matching** (Ashtakoota 36 gunas, doshas and cancellations, Mangal dosha for both) · a **muhurta finder** for seven event types · the daily Panchang and Hindu calendar with festivals, named Ekadashis and .ics export · Amanta or Purnimanta months · English or Hindi · worldwide birthplace search (GeoNames) · family profiles · printable report · consent and delete-my-data.
+
 
 Go/cgo Panchang engine backed by Swiss Ephemeris, PostgreSQL read-through cache, and a React/Three.js geocentric chart client.
 
@@ -36,6 +41,13 @@ cd web && npm install && npm run dev
 - `GET /api/festivals?year=2026&region=south`
 - `POST /api/chat` `{birth:{date,time,lat,lon,tz}, question, session_id?}` — chart-grounded answer; the Q&A is stored
 - `GET /api/chat/history?session_id=…` — every question and answer in a session
+- `DELETE /api/chat/session?session_id=…` — delete a conversation
+- `GET /api/chart/varga?…&n=9` — divisional chart (1, 2, 3, 7, 9, 10, 12)
+- `POST /api/match` `{boy, girl}` — Ashtakoota Guna Milan
+- `GET /api/muhurta?event=marriage&date=…&days=30&lat&lon&tz[&bdate&btime&blat&blon&btz]`, plus `GET /api/muhurta/events`
+- `GET /api/today?date&time&lat&lon&tz` — transits, tara bala, chandra bala, Sade Sati, upcoming festivals
+- `GET /api/places?q=bangalore` — search about 34,000 cities with timezones
+- `GET /api/calendar.ics?year&lat&lon&tz` — the year's festivals as iCalendar
 
 ## Validation status
 
