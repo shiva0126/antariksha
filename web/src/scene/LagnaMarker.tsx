@@ -1,0 +1,1 @@
+import{Line,Text}from'@react-three/drei';import{domeDirection}from'../astro/mapping';export function LagnaMarker({longitude}:{longitude:number}){const a=domeDirection(longitude,0,32),b=domeDirection(longitude,0,42);return <group><Line points={[a,b]} color="#67e8f9" lineWidth={3}/><Text position={b} fontSize={.7} color="#67e8f9">LAGNA</Text></group>}

@@ -1,0 +1,2 @@
+import{Points,PointMaterial}from'@react-three/drei';import{useMemo}from'react';
+export function StarField(){const p=useMemo(()=>{const a=new Float32Array(4500*3);for(let i=0;i<a.length;i+=3){const r=70+Math.random()*50,t=Math.random()*Math.PI*2,u=Math.acos(2*Math.random()-1);a[i]=r*Math.sin(u)*Math.cos(t);a[i+1]=r*Math.cos(u);a[i+2]=r*Math.sin(u)*Math.sin(t)}return a},[]);return <Points positions={p} stride={3}><PointMaterial transparent color="#becbff" size={.18} sizeAttenuation depthWrite={false} opacity={.8}/></Points>}

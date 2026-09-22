@@ -1,0 +1,2 @@
+import type{ChartInput,ChartResponse}from'./types';
+export async function getChart(input:ChartInput,signal?:AbortSignal):Promise<ChartResponse>{const q=new URLSearchParams({...input,lat:String(input.lat),lon:String(input.lon),ayanamsa:'lahiri'});const r=await fetch(`/api/chart?${q}`,{signal});if(!r.ok){const b=await r.json().catch(()=>({error:r.statusText}));throw new Error(b.error||'Unable to calculate chart')};return r.json()}

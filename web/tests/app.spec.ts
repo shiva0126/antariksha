@@ -1,0 +1,56 @@
+import {test,expect} from '@playwright/test';
+test('Kundali placement, navigation, calendar and mobile',async({page})=>{
+ const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.goto('/');
+ await page.getByRole('button',{name:'Reveal my sky'}).click();
+ await expect(page.getByRole('img',{name:'South Indian Kundali with fixed zodiac signs'})).toBeVisible();
+ // Sample form's Karka Lagna and each planet must agree with the table.
+ await expect(page.locator('svg [data-sign="1"]')).toContainText('Surya');
+ await expect(page.locator('svg [data-sign="12"]')).toContainText('Chandra');
+ await expect(page.locator('svg [data-sign="4"]')).toContainText('Lagna');
+ await page.getByRole('button',{name:'North Indian',exact:true}).click();
+ await expect(page.locator('svg [data-house="10"]')).toContainText('Surya');
+ await expect(page.locator('svg [data-house="9"]')).toContainText('Chandra');
+ await page.screenshot({path:'test-results/north-kundali.png',fullPage:true});
+ await page.getByRole('button',{name:'Circular',exact:true}).click();
+ await expect(page.locator('svg [data-longitude]')).toHaveCount(9);
+ await page.getByRole('button',{name:'Daily Panchang',exact:true}).click();
+ await page.getByLabel('Panchang date').fill('2026-09-22');
+ await expect(page.locator('.limb-grid')).toContainText('Ekadashi');
+ await expect(page.locator('.planet-table tbody tr')).toHaveCount(9);
+ await page.screenshot({path:'test-results/panchang.png',fullPage:true});
+ await page.getByRole('button',{name:'Hindu Calendar',exact:true}).click();
+ await page.getByLabel('Calendar month').fill('2026-09');
+ await expect(page.locator('.calendar-day')).toHaveCount(30);
+ await page.getByRole('button',{name:/2026-09-23 /}).click();
+ await expect(page.locator('.day-details h2')).toContainText('2026-09-23');
+ await page.screenshot({path:'test-results/calendar.png',fullPage:true});
+ await page.setViewportSize({width:390,height:844});
+ await page.screenshot({path:'test-results/mobile-calendar.png',fullPage:true});
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
+ expect(errors).toEqual([]);
+});
+test('wheel remains usable without WebGL',async({page})=>{
+ await page.addInitScript(()=>{const old=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(kind:any,...args:any[]){if(String(kind).includes('webgl'))return null;return (old as any).call(this,kind,...args)} as any});
+ await page.goto('/');
+ await page.getByRole('button',{name:'Reveal my sky'}).click();
+ await expect(page.getByRole('button',{name:'Celestial dome'})).toBeDisabled();
+ await expect(page.getByRole('img',{name:'South Indian Kundali with fixed zodiac signs'})).toBeVisible();
+});
+test('dome and wheel share one chart response',async({page})=>{
+ let chartRequests=0;const errors:string[]=[];
+ page.on('request',r=>{if(r.url().includes('/api/chart?'))chartRequests++});
+ page.on('pageerror',e=>errors.push(e.message));
+ await page.goto('/');
+ await page.getByRole('button',{name:'Reveal my sky'}).click();
+ await expect(page.locator('.planet-table tbody tr')).toHaveCount(9);
+ await page.getByRole('button',{name:'Celestial dome'}).click();
+ await expect(page.locator('.dome canvas')).toBeVisible();
+ await expect(page.getByText('Drag to orbit · Scroll to move through the sky')).toBeVisible();
+ await expect(page.getByText('Assembling the heavens…')).toBeHidden({timeout:30000});
+ await page.locator('.dome').evaluate(async()=>{await new Promise(resolve=>setTimeout(resolve,3000))});
+ await page.screenshot({path:'test-results/dome.png'});
+ await page.getByRole('button',{name:'Kundli chart',exact:true}).click();
+ await expect(page.getByRole('img',{name:'South Indian Kundali with fixed zodiac signs'})).toBeVisible();
+ expect(chartRequests).toBe(1);expect(errors).toEqual([]);
+});
