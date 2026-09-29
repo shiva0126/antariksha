@@ -9,6 +9,8 @@ Go/cgo Panchang engine backed by Swiss Ephemeris, PostgreSQL read-through cache,
 
 ## Run locally
 
+The next product expansion is documented in the [community, family and matrimony implementation plan](docs/community-matrimony-plan.md), including phone accounts, personal photo posts, profile privacy, family trees and matching. These are planned features, not currently deployed capabilities.
+
 The repository vendors the Swiss Ephemeris C source required by cgo and the current Sun/Moon ephemeris files. Swiss Ephemeris is AGPL; review `engine/swe/LICENSE` before distribution.
 
 Run directly on this machine (no Docker):
