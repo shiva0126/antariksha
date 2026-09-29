@@ -3,6 +3,15 @@
 Status: approved product direction; implementation roadmap, not a claim that
 these features are deployed. Updated 2026-09-29.
 
+Implementation progress: private accounts and profile editing are now implemented
+using handle/password sign-in, PostgreSQL sessions, consent acknowledgement,
+profile export and account deletion. The My profile page exposes these flows.
+Phone OTP, recovery, legacy-chat ownership migration, social posts and all later
+phases remain unfinished. M0 is therefore not yet complete. The initial account
+slice has database-backed isolation, cross-origin rejection, logout revocation
+and deletion tests. HTTPS deployment must terminate TLS in Go or explicitly
+configure secure-cookie handling at the trusted proxy before public launch.
+
 ## Product
 
 One account supports a private personal profile, an optional community presence,

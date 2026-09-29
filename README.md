@@ -9,7 +9,7 @@ Go/cgo Panchang engine backed by Swiss Ephemeris, PostgreSQL read-through cache,
 
 ## Run locally
 
-The next product expansion is documented in the [community, family and matrimony implementation plan](docs/community-matrimony-plan.md), including phone accounts, personal photo posts, profile privacy, family trees and matching. These are planned features, not currently deployed capabilities.
+The [community, family and matrimony implementation plan](docs/community-matrimony-plan.md) tracks the expansion. The first slice is available at `/#account`: handle/password accounts, private profiles, hobbies/goals, export and deletion. Phone OTP, recovery, photo posts, family trees and matchmaking remain planned. Existing browser chart profiles and astrology chat sessions are not yet linked to these accounts.
 
 The repository vendors the Swiss Ephemeris C source required by cgo and the current Sun/Moon ephemeris files. Swiss Ephemeris is AGPL; review `engine/swe/LICENSE` before distribution.
 

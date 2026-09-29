@@ -43,6 +43,9 @@ if psql -Atqc "SELECT 1 FROM pg_available_extensions WHERE name='vector'" | grep
 else
   echo 'pgvector extension unavailable; reading cache/RAG tables were not applied. Facts and fallback readings remain available.'
 fi
+if ! psql -Atqc 'SELECT 1 FROM native_schema_migrations WHERE version=5' | grep -q '^1$'; then
+  psql -v ON_ERROR_STOP=1 --single-transaction -f db/migrations/000005_accounts.up.sql -c 'INSERT INTO native_schema_migrations(version) VALUES(5)'
+fi
 "$GO_BIN" build -buildvcs=false -o bin/panchang-api ./cmd/panchang-api
 "$GO_BIN" build -buildvcs=false -o bin/corpus ./cmd/corpus
 (cd web && npm run build)
