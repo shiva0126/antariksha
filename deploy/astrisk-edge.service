@@ -1,0 +1,17 @@
+[Unit]
+Description=Astrisk native HTTPS edge (WSL)
+After=network-online.target panchang.service
+Wants=panchang.service
+
+[Service]
+Type=simple
+WorkingDirectory=%h/panchang
+ExecStart=%h/panchang/bin/caddy run --config %h/panchang/deploy/Caddyfile.wsl --adapter caddyfile
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+UMask=0077
+
+[Install]
+WantedBy=default.target

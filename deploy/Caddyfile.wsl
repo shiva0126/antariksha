@@ -1,0 +1,21 @@
+{
+	# Preserve unrelated services on this machine's ports 80 and 443.
+	http_port 8088
+	https_port 8443
+	admin 127.0.0.1:2020
+}
+
+astrisk.space {
+	encode zstd gzip
+	header {
+		X-Content-Type-Options nosniff
+		X-Frame-Options DENY
+		Referrer-Policy strict-origin-when-cross-origin
+		-Server
+	}
+	reverse_proxy 127.0.0.1:3000
+}
+
+www.astrisk.space {
+	redir https://astrisk.space{uri} permanent
+}
