@@ -14,6 +14,7 @@ hobbies and other details stay in the separate profile page. All application API
 require authentication. `/#community` provides photo/text posts, audience controls,
 followers, private family groups/trees, optional matrimony, mutual-match messages,
 an in-app notification inbox and explicit legacy device-chart import,
+revocable family-assisted matrimony shortlists,
 blocking, recovery keys and export. Phone linking requires Twilio configuration;
 email verification and external social OAuth connections are not implemented.
 See the [implementation status and remaining roadmap](docs/community-matrimony-plan.md)

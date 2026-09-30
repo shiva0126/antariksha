@@ -1,8 +1,9 @@
 # Community validation build
 
 The native application runs on port 3000 via `panchang.service`. No Docker is used.
-Start from a fresh checkout with `scripts/start-native.sh`; migrations 6–9 add
-community tables, conversation ownership, email/birth onboarding and notifications. Back up the
+Start from a fresh checkout with `scripts/start-native.sh`; migrations 6–10 add
+community tables, conversation ownership, email/birth onboarding, notifications
+and family-assisted shortlisting. Back up the
 database before upgrading. New API requests require an authenticated session;
 `/healthz` remains public. Existing clients must register/login first.
 
@@ -28,6 +29,17 @@ explain shared interests and preferences; no character or marriage-success score
 is inferred from astrology. Messages require mutual acceptance and respect blocks.
 
 ## Operator configuration
+
+Community → Family assistance allows an active adult matrimony member to invite
+an adult member of a shared private family group to help shortlist. The helper must
+accept. Grants expire after 30 days; renewing requires acceptance again. Helpers see
+only eligible published candidates and cannot act as the owner. Notes are private
+to the owner and helper and included in their exports, never sent to candidates.
+Owners can revoke at any time; leaving the shared group or blocking either way
+permanently deletes the grant and shortlist. Pausing the owner's matrimony profile
+suspends access. Expiry and reciprocal age eligibility are checked at read/write.
+Existing copies or screenshots cannot be recalled. Notifications for helper grants
+are not yet emitted; pending grants appear in the Family assistance tab.
 
 Keep values in the protected service environment, never Git:
 

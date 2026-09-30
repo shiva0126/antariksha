@@ -23,6 +23,7 @@ type matrimonyDetails struct {
 }
 
 func (s *Server) matrimonyRoutes() {
+	s.delegateRoutes()
 	s.memberRoute("GET /api/matrimony/me", s.matrimonyMe)
 	s.memberRoute("PUT /api/matrimony/me", s.saveMatrimony)
 	s.memberRoute("GET /api/matrimony/discover", s.discoverMatrimony)
@@ -61,6 +62,9 @@ func (s *Server) discoverMatrimony(w http.ResponseWriter, r *http.Request, id st
 	if !s.adultCommunity(w, r, id) {
 		return
 	}
+	s.matrimonyCandidates(w, r, id, id)
+}
+func (s *Server) matrimonyCandidates(w http.ResponseWriter, r *http.Request, id, viewer string) {
 	s.memberRows(w, r, `SELECT a.id,a.handle,p.details,c.avatar,c.accent,c.interests,date_part('year',age(c.birth_date))::int age,
  ARRAY(SELECT unnest(c.interests) INTERSECT SELECT unnest(me.interests)) shared_interests,
  (p.details->>'city'=mine.details->>'city' AND p.details->>'city'<>'') same_city,
@@ -68,10 +72,11 @@ func (s *Server) discoverMatrimony(w http.ResponseWriter, r *http.Request, id st
  (p.details->>'relocation'<>mine.details->>'relocation' AND p.details->>'relocation'<>'' AND mine.details->>'relocation'<>'') discuss_relocation
  FROM matrimony_profiles p JOIN member_accounts a ON a.id=p.account_id JOIN member_settings c ON c.account_id=a.id
  JOIN member_settings me ON me.account_id=$1 JOIN matrimony_profiles mine ON mine.account_id=$1
- WHERE p.active AND mine.active AND c.community AND a.id<>$1 AND NOT member_blocked(a.id,$1)
+ WHERE p.active AND mine.active AND c.community AND a.id<>$1 AND a.id<>$2 AND NOT member_blocked(a.id,$1) AND NOT member_blocked(a.id,$2)
+ AND ($1=$2 OR delegate_allowed($1,$2))
  AND date_part('year',age(c.birth_date)) BETWEEN (mine.details->>'min_age')::int AND (mine.details->>'max_age')::int
  AND date_part('year',age(me.birth_date)) BETWEEN (p.details->>'min_age')::int AND (p.details->>'max_age')::int
- ORDER BY p.updated_at DESC LIMIT 50`, id)
+ ORDER BY p.updated_at DESC LIMIT 50`, id, viewer)
 }
 func (s *Server) matrimonyInterests(w http.ResponseWriter, r *http.Request, id string) {
 	s.memberRows(w, r, `SELECT a.id,a.handle,i.sender=$1 outgoing,i.status FROM matrimony_interests i JOIN member_accounts a ON a.id=CASE WHEN i.sender=$1 THEN i.recipient ELSE i.sender END WHERE (i.sender=$1 OR i.recipient=$1) AND NOT member_blocked($1,a.id) ORDER BY i.created_at DESC`, id)

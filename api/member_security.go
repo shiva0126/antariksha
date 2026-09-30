@@ -107,6 +107,8 @@ func (s *Server) exportMember(w http.ResponseWriter, r *http.Request, id string)
 	// Explicit allowlists exclude password hashes, tokens and other members' private messages.
 	s.memberRows(w, r, `SELECT a.handle,a.email,a.birth_date,a.birth_time,a.profile,a.created_at,
  COALESCE((SELECT json_agg(json_build_object('kind',n.kind,'created_at',n.created_at,'read_at',n.read_at,'dismissed',n.dismissed)) FROM member_notifications n WHERE n.recipient=a.id),'[]') notifications,
+ COALESCE((SELECT json_agg(g) FROM matrimony_delegates g WHERE g.owner=a.id OR g.delegate=a.id),'[]') family_assistance_grants,
+ COALESCE((SELECT json_agg(l) FROM matrimony_shortlist l WHERE l.owner=a.id OR l.delegate=a.id),'[]') family_shortlists,
  (SELECT to_jsonb(s)-'account_id' FROM member_settings s WHERE s.account_id=a.id) settings,
  COALESCE((SELECT json_agg(json_build_object('id',p.id,'caption',p.caption,'audience',p.audience,'created_at',p.created_at)) FROM community_posts p WHERE p.owner=a.id),'[]') posts,
  COALESCE((SELECT json_agg(json_build_object('id',c.id,'body',c.body,'post_id',c.post_id)) FROM community_comments c WHERE c.owner=a.id),'[]') comments,

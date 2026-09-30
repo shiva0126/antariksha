@@ -150,8 +150,56 @@ func TestCommunityAccessMatrix(t *testing.T) {
 	expect(request(b, "GET", path, nil), 404)
 
 	// Matched-only messaging and revocation, followed by block propagation.
-	for _, u := range []user{a, b} {
+	for _, u := range []user{a, b, c} {
 		expect(request(u, "PUT", "/api/matrimony/me", map[string]any{"active": true, "consent": true, "details": matrimonyDetails{Introduction: "Hello", MinAge: 18, MaxAge: 60}}), 200)
+	}
+	// Helpers require owner grant, adult community participation, shared family
+	// membership and explicit acceptance. They never inherit message access.
+	expect(request(a, "POST", path+"/members", map[string]string{"action": "invite", "handle": b.handle}), 200)
+	expect(request(b, "POST", path+"/members", map[string]string{"action": "accept"}), 200)
+	grant := map[string]string{"action": "grant", "handle": b.handle, "family_id": group}
+	expect(request(c, "POST", "/api/matrimony/delegates", grant), 404)
+	expect(request(a, "POST", "/api/matrimony/delegates", grant), 200)
+	delegatedPath := "/api/matrimony/assistance/" + a.id
+	expect(request(b, "GET", delegatedPath, nil), 403)
+	expect(request(b, "POST", "/api/matrimony/delegates", map[string]string{"action": "accept", "owner": a.id}), 200)
+	expect(request(b, "GET", delegatedPath, nil), 200)
+	expect(request(c, "GET", delegatedPath, nil), 403)
+	expect(request(b, "GET", "/api/matrimony/messages/"+a.id, nil), 403)
+	pick := map[string]string{"owner": a.id, "candidate": c.id, "note": "Shared hiking interest"}
+	expect(request(b, "POST", "/api/matrimony/shortlist", pick), 200)
+	expect(request(c, "POST", "/api/matrimony/shortlist", pick), 404)
+	if !strings.Contains(request(a, "GET", "/api/matrimony/shortlist", nil).Body.String(), "Shared hiking interest") {
+		t.Fatal("owner cannot review shortlist")
+	}
+	if strings.Contains(request(c, "GET", "/api/matrimony/shortlist", nil).Body.String(), "Shared hiking interest") {
+		t.Fatal("shortlist leaked")
+	}
+	// Recheck eligibility on read, not merely when the suggestion was created.
+	expect(request(c, "PUT", "/api/matrimony/me", map[string]any{"active": true, "consent": true, "details": matrimonyDetails{MinAge: 70, MaxAge: 90}}), 200)
+	if strings.Contains(request(a, "GET", "/api/matrimony/shortlist", nil).Body.String(), "Shared hiking interest") {
+		t.Fatal("ineligible candidate still visible")
+	}
+	expect(request(c, "PUT", "/api/matrimony/me", map[string]any{"active": true, "consent": true, "details": matrimonyDetails{MinAge: 18, MaxAge: 60}}), 200)
+	if _, err = pool.Exec(context.Background(), `UPDATE matrimony_delegates SET expires_at=now()-INTERVAL '1 second' WHERE owner=$1 AND delegate=$2`, a.id, b.id); err != nil {
+		t.Fatal(err)
+	}
+	expect(request(b, "GET", delegatedPath, nil), 403)
+	expect(request(b, "POST", "/api/matrimony/shortlist", pick), 404)
+	expect(request(a, "POST", "/api/matrimony/delegates", grant), 200)
+	expect(request(b, "GET", delegatedPath, nil), 403)
+	expect(request(b, "POST", "/api/matrimony/delegates", map[string]string{"action": "accept", "owner": a.id}), 200)
+	expect(request(a, "POST", "/api/matrimony/delegates", map[string]string{"action": "revoke", "delegate": b.id}), 200)
+	expect(request(b, "GET", delegatedPath, nil), 403)
+	if strings.Contains(request(a, "GET", "/api/matrimony/shortlist", nil).Body.String(), "Shared hiking interest") {
+		t.Fatal("revoked shortlist retained")
+	}
+	expect(request(a, "POST", "/api/matrimony/delegates", grant), 200)
+	expect(request(b, "POST", "/api/matrimony/delegates", map[string]string{"action": "accept", "owner": a.id}), 200)
+	expect(request(b, "POST", path+"/members", map[string]string{"action": "leave"}), 200)
+	expect(request(b, "GET", delegatedPath, nil), 403)
+	if strings.Contains(request(a, "GET", "/api/matrimony/delegates", nil).Body.String(), b.id) {
+		t.Fatal("departed helper grant retained")
 	}
 	expect(request(a, "POST", "/api/matrimony/messages/"+b.id, map[string]string{"body": "hello"}), 403)
 	expect(request(a, "POST", "/api/matrimony/interests", map[string]string{"target": b.id, "action": "send"}), 200)
@@ -172,7 +220,15 @@ func TestCommunityAccessMatrix(t *testing.T) {
 	}
 	expect(request(a, "POST", "/api/matrimony/messages/"+b.id, map[string]string{"body": "another"}), 200)
 	expect(request(c, "GET", "/api/matrimony/messages/"+b.id, nil), 403)
+	expect(request(a, "POST", path+"/members", map[string]string{"action": "invite", "handle": b.handle}), 200)
+	expect(request(b, "POST", path+"/members", map[string]string{"action": "accept"}), 200)
+	expect(request(a, "POST", "/api/matrimony/delegates", grant), 200)
+	expect(request(b, "POST", "/api/matrimony/delegates", map[string]string{"action": "accept", "owner": a.id}), 200)
 	expect(request(b, "POST", "/api/community/blocks", map[string]any{"target": a.id, "block": true}), 200)
+	var grantsLeft int
+	if err = pool.QueryRow(context.Background(), `SELECT count(*) FROM matrimony_delegates WHERE owner=$1 AND delegate=$2`, a.id, b.id).Scan(&grantsLeft); err != nil || grantsLeft != 0 {
+		t.Fatal("block did not remove grant")
+	}
 	if strings.Contains(request(b, "GET", "/api/me/notifications", nil).Body.String(), a.handle) {
 		t.Fatal("blocked actor leaked into notifications")
 	}

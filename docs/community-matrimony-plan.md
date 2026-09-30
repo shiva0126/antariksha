@@ -16,6 +16,11 @@ Private family groups support invitations, viewer/editor permissions, relationsh
 maps and revocation. Matrimony supports separate opt-in, reciprocal age filters,
 shared-interest explanations, interest acceptance, messaging and unmatching.
 Security includes recovery keys, logout-all, export and account deletion.
+Family-assisted shortlisting is implemented: the adult owner grants a shared-family
+member 30-day access, the helper accepts, and eligible suggestions can be saved with
+a private note. Helpers cannot publish profiles, send interests as the owner, read
+conversations or access contacts. Revocation, family departure and blocking remove
+the grant and its shortlist; eligibility and expiry are rechecked on access.
 An in-app notification inbox records family invitations, follow requests, matrimony
 interests and messages transactionally. Read/dismiss and cursor pagination are
 supported; access is rechecked on every fetch and mutation. Repeated pending
@@ -33,7 +38,7 @@ embeddings require funded credentials. No OAuth connection, email verification,
 ID verification, or automated external social-account discovery is claimed.
 
 Remaining roadmap (not implemented): video/stories, push notifications, advanced
-assessment validation, family profile claiming/delegated matchmaking,
+assessment validation, verified family profile claiming, delegated edit suggestions,
 cloud chart sync and the richer field-level visibility model below. Reflection
 prompts are not a validated personality assessment. This build must not be
 advertised as a completed or production-audited matrimony platform.
