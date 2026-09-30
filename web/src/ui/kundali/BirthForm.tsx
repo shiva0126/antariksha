@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import type { ChartInput } from '../../api/types';
 import { useT } from '../../i18n';
 import { PlaceSearch } from '../common/PlaceSearch';
+import { accountBirth } from '../common/profiles';
 import { defaultPlace, nearestPlace, placeLabel, timeZones, type Place } from '../common/places';
 
 export interface BirthDetails extends ChartInput { name: string; place: string }
@@ -11,7 +12,7 @@ export interface BirthDraft { name: string; date: string; time: string; place?: 
 export const draftFrom = (b?: BirthDetails): BirthDraft => {
   const near = b ? nearestPlace(b.lat, b.lon) : defaultPlace;
   const place = near ?? (b ? { name: b.place, region: '', lat: b.lat, lon: b.lon, tz: b.tz } : undefined);
-  return { name: b?.name ?? '', date: b?.date ?? '1996-05-14', time: b?.time ?? '10:15', place, custom: false, lat: String(b?.lat ?? ''), lon: String(b?.lon ?? ''), tz: b?.tz ?? 'Asia/Kolkata' };
+  return { name: b?.name ?? '', date: b?.date ?? accountBirth()?.date ?? '', time: b?.time ?? accountBirth()?.time ?? '', place, custom: false, lat: String(b?.lat ?? ''), lon: String(b?.lon ?? ''), tz: b?.tz ?? 'Asia/Kolkata' };
 };
 
 /** Validates a draft; returns details or an error message. */

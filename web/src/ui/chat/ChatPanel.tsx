@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { getChatHistory, postChat } from '../../api/client';
 import type { ChartInput, ChatMessage } from '../../api/types';
+import { chatKey } from '../common/profiles';
 
 const suggestions = [
   'What does my chart say about my career?',
@@ -13,7 +14,7 @@ const suggestions = [
   'What does my Saturn mean?',
 ];
 
-const storageKey = (b: ChartInput) => `antariksha.chat.${b.date}.${b.time}.${b.lat}.${b.lon}.${b.tz}`;
+const storageKey = chatKey;
 const load = (k: string) => { try { return localStorage.getItem(k) ?? undefined; } catch { return undefined; } };
 const save = (k: string, v?: string) => { try { v ? localStorage.setItem(k, v) : localStorage.removeItem(k); } catch { /* private mode */ } };
 

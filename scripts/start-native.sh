@@ -47,6 +47,15 @@ if ! psql -Atqc 'SELECT 1 FROM native_schema_migrations WHERE version=5' | grep 
   psql -v ON_ERROR_STOP=1 --single-transaction -f db/migrations/000005_accounts.up.sql -c 'INSERT INTO native_schema_migrations(version) VALUES(5)'
 fi
 "$GO_BIN" build -buildvcs=false -o bin/panchang-api ./cmd/panchang-api
+if ! psql -Atqc 'SELECT 1 FROM native_schema_migrations WHERE version=6' | grep -q '^1$'; then
+  psql -v ON_ERROR_STOP=1 --single-transaction -f db/migrations/000006_community.up.sql -c 'INSERT INTO native_schema_migrations(version) VALUES(6)'
+fi
+if ! psql -Atqc 'SELECT 1 FROM native_schema_migrations WHERE version=7' | grep -q '^1$'; then
+  psql -v ON_ERROR_STOP=1 --single-transaction -f db/migrations/000007_chat_access.up.sql -c 'INSERT INTO native_schema_migrations(version) VALUES(7)'
+fi
+if ! psql -Atqc 'SELECT 1 FROM native_schema_migrations WHERE version=8' | grep -q '^1$'; then
+  psql -v ON_ERROR_STOP=1 --single-transaction -f db/migrations/000008_email_onboarding.up.sql -c 'INSERT INTO native_schema_migrations(version) VALUES(8)'
+fi
 "$GO_BIN" build -buildvcs=false -o bin/corpus ./cmd/corpus
 (cd web && npm run build)
 export DATABASE_URL="postgresql:///panchang?host=$RUNTIME&port=55432&user=panchang&sslmode=disable"

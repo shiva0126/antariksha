@@ -12,7 +12,7 @@ func do(t *testing.T, s *Server, method, path, body string) (int, map[string]any
 	t.Helper()
 	var r = httptest.NewRequest(method, path, strings.NewReader(body))
 	w := httptest.NewRecorder()
-	s.Handler().ServeHTTP(w, r)
+	s.mux.ServeHTTP(w, r)
 	var v map[string]any
 	_ = json.Unmarshal(w.Body.Bytes(), &v)
 	return w.Code, v, w.Body.String()

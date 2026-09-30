@@ -49,7 +49,7 @@ func NewServerWithReading(e Calculator, c Cache, l *slog.Logger, rs *reading.Ser
 	s.routes()
 	return s
 }
-func (s *Server) Handler() http.Handler { return recoverer(cors(s.mux), s.logger) }
+func (s *Server) Handler() http.Handler { return recoverer(cors(s.requireAccount(s.mux)), s.logger) }
 func (s *Server) routes() {
 	s.mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) { writeJSON(w, 200, map[string]string{"status": "ok"}) })
 	s.mux.HandleFunc("GET /api/panchang", s.panchang)
@@ -63,6 +63,7 @@ func (s *Server) routes() {
 	s.mux.HandleFunc("GET /api/chat/history", s.chatHistory)
 	s.featureRoutes()
 	s.accountRoutes()
+	s.communityRoutes()
 }
 
 func (s *Server) chart(w http.ResponseWriter, r *http.Request) {
@@ -249,7 +250,7 @@ func params(r *http.Request) (time.Time, engine.Location, error) {
 	if _, e = time.LoadLocation(tz); e != nil || tz == "" {
 		return d, engine.Location{}, fmt.Errorf("invalid IANA timezone")
 	}
-	return d, engine.Location{lat, lon, tz}, nil
+	return d, engine.Location{Lat: lat, Lon: lon, TZ: tz}, nil
 }
 func (s *Server) get(ctx context.Context, d time.Time, l engine.Location) (engine.Day, error) {
 	if x, ok, e := s.cache.Get(ctx, d, l.Lat, l.Lon); e != nil {

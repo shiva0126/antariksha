@@ -1,16 +1,36 @@
 # Antariksha: profiles, community, family and matrimony
 
-Status: approved product direction; implementation roadmap, not a claim that
-these features are deployed. Updated 2026-09-29.
+Status: core community implementation available for validation, with the broader
+roadmap below still containing future work. Updated 2026-09-30.
 
-Implementation progress: private accounts and profile editing are now implemented
-using handle/password sign-in, PostgreSQL sessions, consent acknowledgement,
-profile export and account deletion. The My profile page exposes these flows.
-Phone OTP, recovery, legacy-chat ownership migration, social posts and all later
-phases remain unfinished. M0 is therefore not yet complete. The initial account
-slice has database-backed isolation, cross-origin rejection, logout revocation
-and deletion tests. HTTPS deployment must terminate TLS in Go or explicitly
-configure secure-cookie handling at the trusted proxy before public launch.
+Implemented: login-first email/password accounts; registration collects DOB and
+birth time, while interests stay separate. Existing handle accounts still work.
+All application APIs require a session. Charts stored on the device are scoped
+by account; conversations have authenticated owners. Legacy unowned charts and
+conversations are not automatically assigned to a new account.
+
+Community includes optional adult opt-in, self-declared social links, avatars,
+private reflection prompts, chronological text/photo posts, audience controls,
+approved followers, comments, likes, bookmarks, blocks and a post moderation queue.
+Private family groups support invitations, viewer/editor permissions, relationship
+maps and revocation. Matrimony supports separate opt-in, reciprocal age filters,
+shared-interest explanations, interest acceptance, messaging and unmatching.
+Security includes recovery keys, logout-all, export and account deletion.
+
+Provider-dependent: encrypted phone linking uses Twilio Verify but requires real
+credentials and an encryption key; it is not phone-based login. Hosted AI and
+embeddings require funded credentials. No OAuth connection, email verification,
+ID verification, or automated external social-account discovery is claimed.
+
+Remaining roadmap (not implemented): video/stories, push notifications, advanced
+assessment validation, family profile claiming/delegated matchmaking, reviewable
+legacy-data import and the richer field-level visibility model below. Reflection
+prompts are not a validated personality assessment. This build must not be
+advertised as a completed or production-audited matrimony platform.
+
+Public launch still requires HTTPS (`COOKIE_SECURE=true` behind a trusted TLS
+proxy), moderator staffing, retention/backups policy and an independent security
+review. See `docs/community-operations.md` for configuration and validation.
 
 ## Product
 

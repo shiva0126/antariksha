@@ -24,7 +24,7 @@ func TestPanchangValidation(t *testing.T) {
 	s := NewServer(fakeCalc{}, NoCache{}, nil)
 	r := httptest.NewRequest("GET", "/api/panchang?date=nope", nil)
 	w := httptest.NewRecorder()
-	s.Handler().ServeHTTP(w, r)
+	s.mux.ServeHTTP(w, r)
 	if w.Code != 400 {
 		t.Fatalf("status %d", w.Code)
 	}
@@ -33,7 +33,7 @@ func TestPanchang(t *testing.T) {
 	s := NewServer(fakeCalc{}, NoCache{}, nil)
 	r := httptest.NewRequest("GET", "/api/panchang?date=2026-09-22&lat=12.97&lon=77.59&tz=Asia/Kolkata", nil)
 	w := httptest.NewRecorder()
-	s.Handler().ServeHTTP(w, r)
+	s.mux.ServeHTTP(w, r)
 	if w.Code != 200 {
 		t.Fatalf("status %d: %s", w.Code, w.Body.String())
 	}
@@ -42,7 +42,7 @@ func TestChartFacts(t *testing.T) {
 	s := NewServer(fakeCalc{}, NoCache{}, nil)
 	r := httptest.NewRequest("GET", "/api/chart/facts?date=2026-09-22&time=10:15&lat=12.97&lon=77.59&tz=Asia%2FKolkata&as_of=2026-09-22T00:00:00Z", nil)
 	w := httptest.NewRecorder()
-	s.Handler().ServeHTTP(w, r)
+	s.mux.ServeHTTP(w, r)
 	if w.Code != 200 {
 		t.Fatalf("status %d: %s", w.Code, w.Body.String())
 	}
@@ -51,7 +51,7 @@ func TestReading(t *testing.T) {
 	s := NewServer(fakeCalc{}, NoCache{}, nil)
 	r := httptest.NewRequest("GET", "/api/reading?date=2026-09-22&time=10:15&lat=12.97&lon=77.59&tz=Asia%2FKolkata&as_of=2026-09-22T00:00:00Z", nil)
 	w := httptest.NewRecorder()
-	s.Handler().ServeHTTP(w, r)
+	s.mux.ServeHTTP(w, r)
 	if w.Code != 200 {
 		t.Fatalf("status %d: %s", w.Code, w.Body.String())
 	}
@@ -59,7 +59,7 @@ func TestReading(t *testing.T) {
 
 func TestChatPersistsHistory(t *testing.T) {
 	s := NewServer(realEngine(t), NoCache{}, nil)
-	h := s.Handler()
+	h := s.mux
 	post := func(body string) map[string]any {
 		r := httptest.NewRequest("POST", "/api/chat", strings.NewReader(body))
 		w := httptest.NewRecorder()

@@ -41,7 +41,7 @@ func TestMemberIsolationAndSessionRevocation(t *testing.T) {
 	}()
 	var cookies []*http.Cookie
 	for _, h := range handles {
-		w := request("POST", "/api/auth/register", `{"handle":"`+h+`","password":"test-password-long","consent":true}`, "http://example.com", nil)
+		w := request("POST", "/api/auth/register", `{"handle":"`+h+`","email":"`+h+`@example.com","birth_date":"1996-01-01","birth_time":"10:15","password":"test-password-long","consent":true}`, "http://example.com", nil)
 		if w.Code != 201 {
 			t.Fatalf("register: %d %s", w.Code, w.Body.String())
 		}

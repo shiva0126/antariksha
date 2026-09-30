@@ -401,6 +401,9 @@ func (s *Server) calendarICS(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) deleteChat(w http.ResponseWriter, r *http.Request) {
 	sid := r.URL.Query().Get("session_id")
+	if !s.chatAccess(w, r, sid, false) {
+		return
+	}
 	if !sessionIDPattern.MatchString(sid) {
 		problem(w, 400, fmt.Errorf("invalid session_id"))
 		return

@@ -3,6 +3,7 @@ import type { ChartInput, ChartResponse, ChatMessage, MatchResponse, MuhurtaEven
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const r = await fetch(path, init);
   const body = await r.json().catch(() => ({ error: r.statusText }));
+  if(r.status===401)window.dispatchEvent(new Event('antariksha-signed-out'));
   if (!r.ok) throw new Error(body.error || `Request failed (${r.status})`);
   return body as T;
 }

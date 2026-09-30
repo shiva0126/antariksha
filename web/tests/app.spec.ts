@@ -1,5 +1,14 @@
 import { test, expect, type Page } from '@playwright/test';
 
+let suiteCookies: Awaited<ReturnType<ReturnType<Page['context']>['cookies']>> = [];
+test.beforeEach(async ({ page }) => {
+ if(suiteCookies.length){await page.context().addCookies(suiteCookies);return;}
+ const response=await page.request.post('/api/auth/register',{headers:{Origin:'http://127.0.0.1:3000'},data:{email:`browser_${Date.now()}_${Math.random().toString(36).slice(2)}@example.com`,password:'browser-test-password',birth_date:'1996-05-14',birth_time:'10:15',consent:true}});
+ expect(response.status()).toBe(201);
+ suiteCookies=await page.context().cookies();
+});
+test.afterAll(async ({request})=>{await request.delete('/api/me',{headers:{Origin:'http://127.0.0.1:3000',Cookie:suiteCookies.map(c=>`${c.name}=${c.value}`).join('; ')}});});
+
 async function openChart(page: Page) {
   await page.goto('/');
   await page.evaluate(() => localStorage.clear());
@@ -163,12 +172,12 @@ test('delete all my data removes chats from the server', async ({ page, request 
   await page.getByRole('tab', { name: 'Ask Antariksha' }).click();
   await page.getByRole('button', { name: 'Explain my yogas' }).click();
   await expect(page.locator('.msg-assistant:not(:has(.typing))')).toHaveCount(1);
-  expect(await page.evaluate(() => Object.keys(localStorage).some(k => k.startsWith('antariksha.chat.')))).toBe(true);
-  const sid = await page.evaluate(() => Object.keys(localStorage).filter(k => k.startsWith('antariksha.chat.')).map(k => localStorage.getItem(k))[0]);
+  expect(await page.evaluate(() => Object.keys(localStorage).some(k => k.includes('.chat.')))).toBe(true);
+  const sid = await page.evaluate(() => Object.keys(localStorage).filter(k => k.includes('.chat.')).map(k => localStorage.getItem(k))[0]);
   await page.goto('/#privacy');
-  await page.getByRole('button', { name: 'Delete all my data' }).click();
+  await page.getByRole('button', { name: 'Delete charts on this device' }).click();
   await expect(page.getByRole('status')).toContainText('Deleted 1 conversation');
-  const r = await request.get(`/api/chat/history?session_id=${sid}`);
+  const r = await page.request.get(`/api/chat/history?session_id=${sid}`);
   expect(r.status()).toBe(404);
 });
 

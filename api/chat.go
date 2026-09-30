@@ -187,6 +187,9 @@ func (s *Server) chat(w http.ResponseWriter, r *http.Request) {
 	hash := reading.ChartHash(req.Birth, "en")
 	sid := req.SessionID
 	if sid != "" {
+		if !s.chatAccess(w, r, sid, false) {
+			return
+		}
 		h, ok, err := s.chats.Session(r.Context(), sid)
 		if err != nil {
 			problem(w, 500, err)
@@ -200,6 +203,10 @@ func (s *Server) chat(w http.ResponseWriter, r *http.Request) {
 		sid = newSessionID()
 		if err = s.chats.CreateSession(r.Context(), sid, hash, req.Birth); err != nil {
 			problem(w, 500, err)
+			return
+		}
+		if !s.chatAccess(w, r, sid, true) {
+			_ = s.chats.Delete(r.Context(), sid)
 			return
 		}
 	}
@@ -243,6 +250,9 @@ func (s *Server) chat(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) chatHistory(w http.ResponseWriter, r *http.Request) {
 	sid := r.URL.Query().Get("session_id")
+	if !s.chatAccess(w, r, sid, false) {
+		return
+	}
 	if !sessionIDPattern.MatchString(sid) {
 		problem(w, 400, fmt.Errorf("invalid session_id"))
 		return
