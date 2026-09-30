@@ -1,0 +1,17 @@
+[Unit]
+Description=Astrisk free encrypted localhost.run tunnel
+After=network-online.target panchang.service
+Requires=panchang.service
+
+[Service]
+Type=simple
+WorkingDirectory=%h/panchang
+ExecStart=/usr/bin/ssh -tt -o StrictHostKeyChecking=accept-new -o ExitOnForwardFailure=yes -o ServerAliveInterval=30 -o ServerAliveCountMax=3 -R 80:localhost:3000 nokey@localhost.run
+Restart=always
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+UMask=0077
+
+[Install]
+WantedBy=default.target

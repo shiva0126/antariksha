@@ -87,6 +87,23 @@ is already occupied by another application and must not be replaced. Use
    `systemctl --user enable --now astrisk-edge.service` start the native proxy.
    Test from a separate internet connection, not just the same LAN.
 
+## Temporary public access through localhost.run
+
+When Airtel CGNAT prevents inbound connections, `deploy/astrisk-tunnel.service`
+provides a free encrypted SSH tunnel to the API/frontend on port 3000. It does
+not require Docker, a public IP, or Cloudflare. The service prints its generated
+HTTPS URL in the user journal:
+
+```bash
+systemctl --user enable --now astrisk-tunnel.service
+journalctl --user -u astrisk-tunnel.service -f
+```
+
+The free no-key URL changes when the tunnel reconnects. Registering an SSH key at
+localhost.run can provide a longer-lived free subdomain. This URL is suitable for
+testing and demos; keep the application login enabled and do not expose database
+or administration ports.
+
 Windows must remain awake with WSL running. A Linux user service cannot boot WSL
 by itself. Configure Windows startup and user lingering only with administrator
 access; neither is assumed to be enabled. Restart recovery for the native
