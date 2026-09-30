@@ -1,8 +1,8 @@
 # Community validation build
 
 The native application runs on port 3000 via `panchang.service`. No Docker is used.
-Start from a fresh checkout with `scripts/start-native.sh`; migrations 6–8 add
-community tables, conversation ownership, and email/birth onboarding. Back up the
+Start from a fresh checkout with `scripts/start-native.sh`; migrations 6–9 add
+community tables, conversation ownership, email/birth onboarding and notifications. Back up the
 database before upgrading. New API requests require an authenticated session;
 `/healthz` remains public. Existing clients must register/login first.
 
@@ -59,7 +59,18 @@ delete their own accounts; do not use a production database for test traffic.
 The astronomy route unit tests exercise the inner router deliberately; a separate
 authentication-boundary regression test ensures the public handler rejects guests.
 Legacy unowned chats remain inaccessible; possession of a session ID is not proof
-of ownership. Browser-saved legacy charts are not automatically imported.
+of ownership. Browser-saved legacy charts are not automatically imported. My account
+has a preview/select/consent importer which preserves the original records and
+imports only validated chart inputs, never old chat IDs.
+
+The Community Notifications tab is an in-app inbox, not browser push, email or SMS.
+Database triggers commit source events and notifications atomically. Reads exclude
+blocked actors and revoked invitations; accepting a pending request removes its
+actionable notice. Message notices require an active mutual connection and adult
+community eligibility. No message text is copied. New source events are captured
+from migration 9 onward; old events are not backfilled. Notifications are included
+in account export and cascade on account deletion. No background delivery worker
+or third-party notification provider is needed for this inbox.
 
 Known limitations and remaining roadmap are tracked in `community-matrimony-plan.md`.
 Do not publish this validation build as fully audited or claim unavailable providers

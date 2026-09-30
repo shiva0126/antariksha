@@ -16,6 +16,16 @@ Private family groups support invitations, viewer/editor permissions, relationsh
 maps and revocation. Matrimony supports separate opt-in, reciprocal age filters,
 shared-interest explanations, interest acceptance, messaging and unmatching.
 Security includes recovery keys, logout-all, export and account deletion.
+An in-app notification inbox records family invitations, follow requests, matrimony
+interests and messages transactionally. Read/dismiss and cursor pagination are
+supported; access is rechecked on every fetch and mutation. Repeated pending
+requests do not reset dismissed notices; a newly revoked/reissued invitation can
+produce a new notice. Notifications contain no message text.
+
+My account now offers explicit preview/select/consent import of legacy device-saved
+charts. Original device records are preserved, duplicates skipped, invalid entries
+excluded, and old conversations are never claimed. Imported charts remain local
+to this account and browser, not cloud-synced.
 
 Provider-dependent: encrypted phone linking uses Twilio Verify but requires real
 credentials and an encryption key; it is not phone-based login. Hosted AI and
@@ -23,8 +33,8 @@ embeddings require funded credentials. No OAuth connection, email verification,
 ID verification, or automated external social-account discovery is claimed.
 
 Remaining roadmap (not implemented): video/stories, push notifications, advanced
-assessment validation, family profile claiming/delegated matchmaking, reviewable
-legacy-data import and the richer field-level visibility model below. Reflection
+assessment validation, family profile claiming/delegated matchmaking,
+cloud chart sync and the richer field-level visibility model below. Reflection
 prompts are not a validated personality assessment. This build must not be
 advertised as a completed or production-audited matrimony platform.
 

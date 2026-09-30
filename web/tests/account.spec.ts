@@ -20,6 +20,15 @@ test('private account registration, profile editing and deletion', async ({ page
     await expect(page.getByRole('status')).toHaveText('Private profile saved.');
     await page.reload();
     await expect(page.getByLabel('Hobbies and interests')).toHaveValue('Reading and hiking');
+    await page.evaluate(()=>localStorage.setItem('antariksha.birth',JSON.stringify({name:'Legacy chart',date:'1990-01-01',time:'06:30',lat:12.97,lon:77.59,tz:'Asia/Kolkata',place:'Bengaluru'})));
+    await page.getByText('Import charts saved before accounts existed',{exact:true}).click();
+    await page.getByRole('button',{name:'Review old device charts'}).click();
+    await expect(page.getByRole('button',{name:'Import selected charts'})).toBeDisabled();
+    await page.getByLabel(/Legacy chart ·/).check();
+    await page.getByLabel('These are my charts or I have permission to import them.').check();
+    await page.getByRole('button',{name:'Import selected charts'}).click();
+    await expect(page.getByText(/Imported 1 chart/)).toBeVisible();
+    expect(await page.evaluate(()=>localStorage.getItem('antariksha.birth'))).not.toBeNull();
     await page.getByRole('button',{name:'Sign out',exact:true}).click();
     await expect(page.getByRole('heading',{name:'Welcome to Antariksha'})).toBeVisible();
     await page.getByLabel('Email',{exact:true}).fill(email);

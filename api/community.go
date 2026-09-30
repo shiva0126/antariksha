@@ -56,6 +56,7 @@ func (s *Server) communityRoutes() {
 	s.familyRoutes()
 	s.matrimonyRoutes()
 	s.securityRoutes()
+	s.notificationRoutes()
 }
 func (s *Server) memberRows(w http.ResponseWriter, r *http.Request, query string, args ...any) {
 	rows, err := s.membersDB().Query(r.Context(), `SELECT row_to_json(q) FROM (`+query+`) q`, args...)

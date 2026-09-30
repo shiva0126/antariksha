@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { memberAPI } from './community/shared';
 import { localDataKeys, setProfileOwner } from './common/profiles';
+import {LegacyImport} from './common/LegacyImport';
 const fields = {name:'Display name',city:'City',bio:'About me',hobbies:'Hobbies and interests',goals:'What I want to learn or experience'};
 export function AccountPage(){
  const [member,setMember]=useState<any>(),[profile,setProfile]=useState<Record<string,string>>({}),[message,setMessage]=useState(''),[busy,setBusy]=useState(false);
@@ -13,5 +14,5 @@ export function AccountPage(){
  {Object.entries(fields).map(([key,label])=><label key={key} style={{display:'grid',gap:8,marginBottom:16}}>{label}<textarea rows={key==='name'||key==='city'?1:3} maxLength={key==='name'||key==='city'?100:key==='bio'?2000:1000} value={profile[key]||''} onChange={e=>setProfile({...profile,[key]:e.target.value})}/></label>)}<button disabled={busy}>Save private profile</button></form>
  <p><a href="#community">Security, recovery key and full export</a></p><button disabled={busy} onClick={()=>void action(async()=>{await memberAPI('/api/auth/logout','POST',{});signedOut();})}>Sign out</button>
  <details><summary>Delete this account</summary><p>Permanently removes this account, posts, owned family groups, messages and conversations. Copies others saved outside the app cannot be removed.</p><button disabled={busy} onClick={()=>{if(confirm('Permanently delete this account and its data?'))void action(async()=>{await memberAPI('/api/me','DELETE');for(const key of localDataKeys())localStorage.removeItem(key);signedOut();});}}>Delete my account</button></details></>}
- <p role="status">{message}</p></section>;
+ <LegacyImport/><p role="status">{message}</p></section>;
 }

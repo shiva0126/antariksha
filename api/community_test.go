@@ -122,9 +122,27 @@ func TestCommunityAccessMatrix(t *testing.T) {
 	_ = pool.QueryRow(context.Background(), `SELECT id FROM family_groups WHERE owner=$1`, a.id).Scan(&group)
 	path := "/api/families/" + group
 	expect(request(a, "POST", path+"/members", map[string]string{"action": "invite", "handle": b.handle, "role": "viewer"}), 200)
+	noticeResponse := request(b, "GET", "/api/me/notifications", nil)
+	expect(noticeResponse, 200)
+	if !strings.Contains(noticeResponse.Body.String(), `"kind":"family"`) {
+		t.Fatal("family notification missing")
+	}
+	var noticeID int64
+	if err = pool.QueryRow(context.Background(), `SELECT id FROM member_notifications WHERE recipient=$1 AND kind='family'`, b.id).Scan(&noticeID); err != nil {
+		t.Fatal(err)
+	}
+	noticePath := fmt.Sprintf("/api/me/notifications/%d", noticeID)
+	expect(request(c, "POST", noticePath, map[string]string{"action": "read"}), 404)
+	expect(request(b, "POST", noticePath, map[string]string{"action": "read"}), 200)
+	if !strings.Contains(request(b, "GET", "/api/me/notifications", nil).Body.String(), `"read":true`) {
+		t.Fatal("read state missing")
+	}
 	expect(request(b, "GET", path, nil), 404)
 	expect(request(b, "POST", path+"/members", map[string]string{"action": "accept"}), 200)
 	expect(request(b, "GET", path, nil), 200)
+	if strings.Contains(request(b, "GET", "/api/me/notifications", nil).Body.String(), `"kind":"family"`) {
+		t.Fatal("accepted invitation still actionable")
+	}
 	expect(request(c, "GET", path, nil), 404)
 	expect(request(b, "POST", path+"/people", map[string]any{"name": "Person", "consent": true}), 403)
 	expect(request(a, "POST", path+"/people", map[string]any{"name": "Person", "consent": true}), 200)
@@ -140,8 +158,24 @@ func TestCommunityAccessMatrix(t *testing.T) {
 	expect(request(a, "POST", "/api/matrimony/messages/"+b.id, map[string]string{"body": "hello"}), 403)
 	expect(request(b, "POST", "/api/matrimony/interests", map[string]string{"target": a.id, "action": "accept"}), 200)
 	expect(request(a, "POST", "/api/matrimony/messages/"+b.id, map[string]string{"body": "hello"}), 200)
+	notices := request(b, "GET", "/api/me/notifications", nil)
+	expect(notices, 200)
+	if !strings.Contains(notices.Body.String(), `"kind":"message"`) || strings.Contains(notices.Body.String(), "hello") {
+		t.Fatal("notification content invalid")
+	}
+	if err = pool.QueryRow(context.Background(), `SELECT id FROM member_notifications WHERE recipient=$1 AND kind='message'`, b.id).Scan(&noticeID); err != nil {
+		t.Fatal(err)
+	}
+	expect(request(b, "POST", fmt.Sprintf("/api/me/notifications/%d", noticeID), map[string]string{"action": "dismiss"}), 200)
+	if strings.Contains(request(b, "GET", "/api/me/notifications", nil).Body.String(), `"kind":"message"`) {
+		t.Fatal("dismissed notification leaked")
+	}
+	expect(request(a, "POST", "/api/matrimony/messages/"+b.id, map[string]string{"body": "another"}), 200)
 	expect(request(c, "GET", "/api/matrimony/messages/"+b.id, nil), 403)
 	expect(request(b, "POST", "/api/community/blocks", map[string]any{"target": a.id, "block": true}), 200)
+	if strings.Contains(request(b, "GET", "/api/me/notifications", nil).Body.String(), a.handle) {
+		t.Fatal("blocked actor leaked into notifications")
+	}
 	expect(request(a, "POST", "/api/matrimony/messages/"+b.id, map[string]string{"body": "hello"}), 403)
 	expect(request(b, "GET", fmt.Sprintf("/api/community/posts/%d/comments", public), nil), 404)
 

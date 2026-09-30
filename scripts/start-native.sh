@@ -57,6 +57,9 @@ if ! psql -Atqc 'SELECT 1 FROM native_schema_migrations WHERE version=8' | grep 
   psql -v ON_ERROR_STOP=1 --single-transaction -f db/migrations/000008_email_onboarding.up.sql -c 'INSERT INTO native_schema_migrations(version) VALUES(8)'
 fi
 "$GO_BIN" build -buildvcs=false -o bin/corpus ./cmd/corpus
+if ! psql -Atqc 'SELECT 1 FROM native_schema_migrations WHERE version=9' | grep -q '^1$'; then
+  psql -v ON_ERROR_STOP=1 --single-transaction -f db/migrations/000009_notifications.up.sql -c 'INSERT INTO native_schema_migrations(version) VALUES(9)'
+fi
 (cd web && npm run build)
 export DATABASE_URL="postgresql:///panchang?host=$RUNTIME&port=55432&user=panchang&sslmode=disable"
 if [[ "${CORPUS_DB:-}" == 1 ]]; then
