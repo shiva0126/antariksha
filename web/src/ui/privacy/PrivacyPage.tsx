@@ -26,7 +26,7 @@ export function PrivacyPage() {
       <header className="page-head"><div><p className="kicker">Your data</p><h1>Privacy</h1></div></header>
       <article className="card prose">
         <h3>Free, with no payments</h3>
-        <p>Antariksha is free. It takes no payment, has no premium tier and sells no remedies, gemstones or consultations.</p>
+        <p>Astrisk is free. It takes no payment, has no premium tier and sells no remedies, gemstones or consultations.</p>
         <h3>What is stored, and where</h3>
         <p><b>On this device:</b> the birth profiles you save, your language and calendar settings, and a random ID linking each profile to its conversation.</p>
         <p><b>On the server:</b> your email, password hash, birth details, profiles, posts, connections, family groups and messages are stored. Conversations retain the chart details and questions; readings are cached. If a language model is enabled, questions and chart facts are sent to that provider. Phone verification, when configured, sends your number to the SMS provider; the number is stored encrypted. Community posts follow their selected audience. Social links are supplied by you, not discovered by searching for your identity.</p>

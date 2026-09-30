@@ -2,7 +2,7 @@
 // itself. Translations are hand-written; native-speaker review is welcome.
 export const KEYS = [
   'Kundali', 'Matching', 'Muhurta', 'Daily Panchang', 'Hindu Calendar', 'Today', 'Chart', 'Planets', 'Dasha', 'Ashtakavarga',
-  'Strength', 'Reading', 'Ask Antariksha', 'Report', 'Lagna', 'Moon sign', 'Nakshatra', 'Sun sign', 'Current dasha', 'Edit birth details',
+  'Strength', 'Reading', 'Ask Astrisk', 'Report', 'Lagna', 'Moon sign', 'Nakshatra', 'Sun sign', 'Current dasha', 'Edit birth details',
   'Your chart', 'Reveal my chart', 'Birth date', 'Birth time', 'Birthplace', 'Name', 'Vaara', 'Tithi', 'Yoga', 'Karana',
   'Sunrise', 'Sunset', 'Moonrise', 'Moonset', 'Sun and Moon', 'Muhurta windows', 'Choghadiya', 'Day', 'Night', 'Abhijit muhurta',
   'Rahu kaal', 'Yamaganda', 'Gulika kaal', 'Location', 'Panchang calendar', 'Festivals and observances this month', 'paksha', 'month', 'Profiles', 'Add profile',

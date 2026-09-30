@@ -6,9 +6,9 @@ export function LoginPage({ onSignedIn }: { onSignedIn: () => Promise<void> }) {
   const [email, setEmail] = useState(''), [password, setPassword] = useState('');
   const [date, setDate] = useState(''), [time, setTime] = useState(''), [key, setKey] = useState('');
   const [busy, setBusy] = useState(false), [error, setError] = useState(''), [legacy, setLegacy] = useState(false);
-  const title = mode === 'register' ? 'Begin your journey' : mode === 'recover' ? 'Recover your account' : 'Welcome to Antariksha';
+  const title = mode === 'register' ? 'Begin your journey' : mode === 'recover' ? 'Recover your account' : 'Welcome to Astrisk';
   return <main className="login-screen"><section className="login-card">
-    <div className="login-emblem" aria-hidden>अ</div><p className="kicker">ANTARIKSHA</p>
+    <div className="login-emblem" aria-hidden>✦</div><p className="kicker">ASTRISK.SPACE</p>
     <h1>{title}</h1><p className="login-intro">{mode === 'register' ? 'A few details to create your private account.' : mode === 'recover' ? 'Use the recovery key you saved in account security.' : 'Sign in to enter your personal universe.'}</p>
     <form onSubmit={async event => { event.preventDefault(); setBusy(true); setError(''); try {
       const response = await fetch('/api/auth/' + mode, { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(mode === 'recover' ? { handle: email, key, password } : { ...(legacy ? { handle: email } : { email }), password, ...(mode === 'register' ? { birth_date: date, birth_time: time, consent: true } : {}) }) });

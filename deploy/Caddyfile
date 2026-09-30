@@ -1,0 +1,16 @@
+# Install on the public host AFTER DNS points to that host. Requires inbound
+# TCP 80/443 and a locally running Go service. Do not expose port 3000 publicly.
+astrisk.space {
+ encode zstd gzip
+ header {
+  X-Content-Type-Options nosniff
+  X-Frame-Options DENY
+  Referrer-Policy strict-origin-when-cross-origin
+  -Server
+ }
+ reverse_proxy 127.0.0.1:3000
+}
+
+www.astrisk.space {
+ redir https://astrisk.space{uri} permanent
+}

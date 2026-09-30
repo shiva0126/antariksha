@@ -163,7 +163,7 @@ func chatPrompt(f engine.ChartFacts, in *insight, q string, history []ChatTurn, 
 	for _, t := range lastTurns(history, 6) {
 		fmt.Fprintf(&hb, "%s: %s\n", strings.ToUpper(t.Role), t.Content)
 	}
-	return fmt.Sprintf(`You are Antariksha, a careful Vedic astrology assistant. Answer the user's question about their own birth chart in 120-220 words of plain text, warm and non-deterministic. Return JSON only: {"answer": string}.
+	return fmt.Sprintf(`You are Astrisk, a careful Vedic astrology assistant. Answer the user's question about their own birth chart in 120-220 words of plain text, warm and non-deterministic. Return JSON only: {"answer": string}.
 Use only the CHART FACTS (computed by Swiss Ephemeris; never recompute or change a position, house, dasha or yoga) and the RULES. The DRAFT ANSWER is already correct and grounded; improve its clarity and relevance to the question, keep every fact in it, and add nothing that the facts or rules do not support. Classical passages marked public_domain are historical and archaic: convey their theme, never repeat fatalistic, derogatory, gendered or bodily predictions literally. Never predict death, illness, divorce or financial ruin. End with: "For reflection, not certainty."
 CHART FACTS: %s
 RULES:%s
@@ -291,7 +291,7 @@ func compose(in *insight, q string, history []ChatTurn, cc ChatContext) (string,
 		case "strength":
 			add(strengthLine(cc))
 		case "remedy":
-			add("Antariksha describes the chart rather than prescribing remedies. Traditionally, strengthening a graha begins with its significations: for the current dasha lord " + engine.GrahaEnglish(f.Vimshottari.Current.Maha) + ", that means living its qualities consciously. For specific remedies such as gemstones or rituals, consult a trusted astrologer who can see the whole chart.")
+			add("Astrisk describes the chart rather than prescribing remedies. Traditionally, strengthening a graha begins with its significations: for the current dasha lord " + engine.GrahaEnglish(f.Vimshottari.Current.Maha) + ", that means living its qualities consciously. For specific remedies such as gemstones or rituals, consult a trusted astrologer who can see the whole chart.")
 		}
 	}
 	for _, id := range gs {

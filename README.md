@@ -1,8 +1,12 @@
-# Antariksha: Panchang, Kundali and a chart-grounded assistant
+# Astrisk: Panchang, Kundali and a chart-grounded assistant
+
+Domain: **astrisk.space**. Branding is updated; public DNS/HTTPS cutover is tracked
+in [the domain deployment guide](docs/astrisk-domain.md). The GitHub repository and
+internal storage identifiers retain their original names for compatibility.
 
 Free for everyone: no payments, no premium tier, no remedies for sale.
 
-**Features:** Rashi kundali (South Indian, North Indian, circular and 3D views) with divisional charts D2, D3, D7, D9, D10 and D12 · Vimshottari maha, antar and pratyantar dashas · Yogini dasha · Ashtakavarga (Bhinna and Sarva) · Shadbala (six-fold strength with Ishta/Kashta phala) · yogas, dignity, combustion · a daily "Today" view (transits from Lagna and Moon, tara bala, chandra bala, Sade Sati) · a grounded reading and the **Ask Antariksha** chat, with saved Q&A · **Kundli matching** (Ashtakoota 36 gunas, doshas and cancellations, Mangal dosha for both) · a **muhurta finder** for seven event types · the daily Panchang and Hindu calendar with festivals, named Ekadashis and .ics export · Amanta or Purnimanta months · English, Hindi, Marathi, Kannada, Tamil, Telugu, Malayalam, Gujarati and Bengali · worldwide birthplace search (GeoNames) · family profiles · printable report · consent and delete-my-data.
+**Features:** Rashi kundali (South Indian, North Indian, circular and 3D views) with divisional charts D2, D3, D7, D9, D10 and D12 · Vimshottari maha, antar and pratyantar dashas · Yogini dasha · Ashtakavarga (Bhinna and Sarva) · Shadbala (six-fold strength with Ishta/Kashta phala) · yogas, dignity, combustion · a daily "Today" view (transits from Lagna and Moon, tara bala, chandra bala, Sade Sati) · a grounded reading and the **Ask Astrisk** chat, with saved Q&A · **Kundli matching** (Ashtakoota 36 gunas, doshas and cancellations, Mangal dosha for both) · a **muhurta finder** for seven event types · the daily Panchang and Hindu calendar with festivals, named Ekadashis and .ics export · Amanta or Purnimanta months · English, Hindi, Marathi, Kannada, Tamil, Telugu, Malayalam, Gujarati and Bengali · worldwide birthplace search (GeoNames) · family profiles · printable report · consent and delete-my-data.
 
 
 Go/cgo Panchang engine backed by Swiss Ephemeris, PostgreSQL read-through cache, and a React/Three.js geocentric chart client.

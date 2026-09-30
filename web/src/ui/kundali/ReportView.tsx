@@ -17,7 +17,7 @@ export function ReportView({ profile, chart, reading }: { profile: Profile; char
   return (
     <article className="report">
       <header className="report-head">
-        <p className="kicker">Antariksha · Janma kundali report</p>
+        <p className="kicker">Astrisk · Janma kundali report</p>
         <h1>{profile.name || 'Birth chart'}</h1>
         <p>{longDate(profile.date)} at {profile.time} · {profile.place} ({profile.lat.toFixed(4)}°, {profile.lon.toFixed(4)}°, {profile.tz})</p>
         <p className="muted small">Lahiri ayanamsa · whole-sign houses · Swiss Ephemeris · generated {new Date().toLocaleDateString()}</p>

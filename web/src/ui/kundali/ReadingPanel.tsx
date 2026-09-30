@@ -9,7 +9,7 @@ export function ReadingPanel({ data }: { data: ReadingResponse }) {
       <div className="card reading-lead">
         <p className="kicker">Summary</p>
         <p className="lead">{r.summary}</p>
-        <p className="muted small">{data.model === 'grounded-corpus' ? 'Composed from the chart facts and the Antariksha corpus.' : `Written by ${data.model} from the chart facts and corpus.`} {(data.grounding ?? []).length} passages consulted{classical.length ? `, ${classical.length} from classical texts` : ''}.</p>
+        <p className="muted small">{data.model === 'grounded-corpus' ? 'Composed from the chart facts and the Astrisk corpus.' : `Written by ${data.model} from the chart facts and corpus.`} {(data.grounding ?? []).length} passages consulted{classical.length ? `, ${classical.length} from classical texts` : ''}.</p>
       </div>
       <article className="card"><h3>Lagna and Moon</h3><p>{r.lagna_and_moon}</p></article>
       <div className="grid-2">

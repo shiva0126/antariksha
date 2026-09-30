@@ -14,7 +14,7 @@ func (s *Server) requireAccount(next http.Handler) http.Handler {
 			public := r.URL.Path == "/api/auth/register" || r.URL.Path == "/api/auth/login" || r.URL.Path == "/api/auth/recover"
 			if !public {
 				if _, err := s.memberID(r); err != nil {
-					problem(w, 401, fmt.Errorf("please sign in to use Antariksha"))
+					problem(w, 401, fmt.Errorf("please sign in to use Astrisk"))
 					return
 				}
 			}

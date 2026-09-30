@@ -16,7 +16,7 @@ import { StrengthTab } from './StrengthTab';
 import { TodayTab } from './TodayTab';
 
 type Tab = 'today' | 'chart' | 'planets' | 'dasha' | 'ashtaka' | 'strength' | 'reading' | 'ask' | 'report';
-const tabIds: [Tab, string][] = [['today', 'Today'], ['chart', 'Chart'], ['planets', 'Planets'], ['dasha', 'Dasha'], ['ashtaka', 'Ashtakavarga'], ['strength', 'Strength'], ['reading', 'Reading'], ['ask', 'Ask Antariksha'], ['report', 'Report']];
+const tabIds: [Tab, string][] = [['today', 'Today'], ['chart', 'Chart'], ['planets', 'Planets'], ['dasha', 'Dasha'], ['ashtaka', 'Ashtakavarga'], ['strength', 'Strength'], ['reading', 'Reading'], ['ask', 'Ask Astrisk'], ['report', 'Report']];
 
 export function KundaliPage() {
   const t = useT();

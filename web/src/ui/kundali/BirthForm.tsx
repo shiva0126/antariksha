@@ -77,7 +77,7 @@ export function BirthForm({ onSubmit, busy, initial, submitLabel }: { onSubmit: 
       <BirthFields draft={draft} onChange={setDraft} />
       <label className="consent field-wide">
         <input type="checkbox" checked={consent} onChange={e => setConsent(e.target.checked)} />
-        <span>I agree that Antariksha may use these birth details to calculate the chart and may store questions I ask so I can see my history. I am 18 or older, or have a parent's permission. Everything is free, and I can delete my data at any time. <a href="#privacy">Privacy</a></span>
+        <span>I agree that Astrisk may use these birth details to calculate the chart and may store questions I ask so I can see my history. I am 18 or older, or have a parent's permission. Everything is free, and I can delete my data at any time. <a href="#privacy">Privacy</a></span>
       </label>
       {error && <p role="alert" className="form-error field-wide">{error}</p>}
       <button className="primary field-wide" disabled={busy}>{busy ? 'Calculating your chart…' : submitLabel ?? t('Reveal my chart')}</button>

@@ -3,7 +3,9 @@ import { test, expect } from '@playwright/test';
 test('private account registration, profile editing and deletion', async ({ page }) => {
   const email='browser_' + Date.now()+'@example.com';
   await page.goto('/#account');
-  await expect(page.getByRole('heading',{name:'Welcome to Antariksha'})).toBeVisible();
+  await expect(page).toHaveTitle('Astrisk · Kundali & Panchang');
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href','https://astrisk.space/');
+  await expect(page.getByRole('heading',{name:'Welcome to Astrisk'})).toBeVisible();
   await expect(page.locator('.main-nav')).toHaveCount(0);
   const anonymous=await page.request.get('/api/chart');expect(anonymous.status()).toBe(401);
   await page.getByRole('button', { name: 'New here? Create an account', exact: true }).click();
@@ -30,7 +32,7 @@ test('private account registration, profile editing and deletion', async ({ page
     await expect(page.getByText(/Imported 1 chart/)).toBeVisible();
     expect(await page.evaluate(()=>localStorage.getItem('antariksha.birth'))).not.toBeNull();
     await page.getByRole('button',{name:'Sign out',exact:true}).click();
-    await expect(page.getByRole('heading',{name:'Welcome to Antariksha'})).toBeVisible();
+    await expect(page.getByRole('heading',{name:'Welcome to Astrisk'})).toBeVisible();
     await page.getByLabel('Email',{exact:true}).fill(email);
     await page.getByLabel('Password',{exact:true}).fill('browser-test-password');
     await page.getByRole('button',{name:'Sign in',exact:true}).click();
@@ -39,7 +41,7 @@ test('private account registration, profile editing and deletion', async ({ page
     await page.getByText('Delete this account', { exact: true }).click();
     page.once('dialog', dialog => dialog.accept());
     await page.getByRole('button', { name: 'Delete my account', exact: true }).click();
-    await expect(page.getByRole('heading',{name:'Welcome to Antariksha'})).toBeVisible();
+    await expect(page.getByRole('heading',{name:'Welcome to Astrisk'})).toBeVisible();
   }
 });
 

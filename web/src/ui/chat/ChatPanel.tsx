@@ -69,7 +69,7 @@ export function ChatPanel({ birth, name }: { birth: ChartInput; name?: string })
     } catch (e) {
       setMessages(m => m.filter(x => x.id !== optimistic.id));
       setDraft(question);
-      setError(e instanceof Error ? e.message : 'Could not reach Antariksha');
+      setError(e instanceof Error ? e.message : 'Could not reach Astrisk');
     } finally {
       setPending(false);
     }
@@ -92,14 +92,14 @@ export function ChatPanel({ birth, name }: { birth: ChartInput; name?: string })
           ))}</ol>
         )}
       </aside>
-      <section className="card chat-main" aria-label="Ask Antariksha">
+      <section className="card chat-main" aria-label="Ask Astrisk">
         <div className="chat-log" ref={logRef} aria-live="polite">
           {loading && <p className="muted">Loading your conversation…</p>}
           {!loading && messages.length === 0 && (
             <div className="chat-welcome">
-              <p className="kicker">Ask Antariksha</p>
+              <p className="kicker">Ask Astrisk</p>
               <h2>Questions about {name ? `${name}'s` : 'your'} chart</h2>
-              <p className="muted">Answers come from your computed chart and the Antariksha corpus of classical and interpretive texts. They describe tendencies for reflection, not certainties.</p>
+              <p className="muted">Answers come from your computed chart and the Astrisk corpus of classical and interpretive texts. They describe tendencies for reflection, not certainties.</p>
               <div className="chips">{suggestions.map(s => <button key={s} className="chip" onClick={() => ask(s)}>{s}</button>)}</div>
             </div>
           )}
@@ -108,7 +108,7 @@ export function ChatPanel({ birth, name }: { birth: ChartInput; name?: string })
               <div className="msg-bubble">{m.role === 'assistant' ? <Answer m={m} /> : <p>{m.content}</p>}</div>
             </div>
           ))}
-          {pending && <div className="msg msg-assistant"><div className="msg-bubble typing" aria-label="Antariksha is answering"><i /><i /><i /></div></div>}
+          {pending && <div className="msg msg-assistant"><div className="msg-bubble typing" aria-label="Astrisk is answering"><i /><i /><i /></div></div>}
         </div>
         {messages.length > 0 && !pending && (
           <div className="chips chips-inline">{suggestions.filter(s => !messages.some(m => m.content === s)).slice(0, 3).map(s => <button key={s} className="chip" onClick={() => ask(s)}>{s}</button>)}</div>

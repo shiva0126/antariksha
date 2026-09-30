@@ -48,7 +48,7 @@ test('kundali: placement, dasha, tabs and no horizontal overflow', async ({ page
 
 test('chat answers from the chart and keeps history across reloads', async ({ page }) => {
   await openChart(page);
-  await page.getByRole('tab', { name: 'Ask Antariksha' }).click();
+  await page.getByRole('tab', { name: 'Ask Astrisk' }).click();
   await page.getByRole('button', { name: 'What does my chart say about my career?' }).click();
   await expect(page.locator('.msg-assistant:not(:has(.typing))').first()).toContainText('10th house is Mesha');
   await page.getByRole('textbox', { name: 'Your question' }).fill('Do I have Mangal dosha?');
@@ -169,7 +169,7 @@ test('hindi interface and purnimanta months', async ({ page }) => {
 
 test('delete all my data removes chats from the server', async ({ page, request }) => {
   await openChart(page);
-  await page.getByRole('tab', { name: 'Ask Antariksha' }).click();
+  await page.getByRole('tab', { name: 'Ask Astrisk' }).click();
   await page.getByRole('button', { name: 'Explain my yogas' }).click();
   await expect(page.locator('.msg-assistant:not(:has(.typing))')).toHaveCount(1);
   expect(await page.evaluate(() => Object.keys(localStorage).some(k => k.includes('.chat.')))).toBe(true);

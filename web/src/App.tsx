@@ -29,7 +29,7 @@ function Shell() {
   return (
     <div className="app">
       <header className="site-header">
-        <button className="brand" onClick={() => go('kundali')} aria-label="Antariksha home"><span className="brand-mark" aria-hidden>अ</span><b>Antariksha</b></button>
+        <button className="brand" onClick={() => go('kundali')} aria-label="Astrisk home"><span className="brand-mark" aria-hidden>✦</span><b>Astrisk</b></button>
         <button className="menu-toggle" aria-expanded={menu} aria-controls="main-nav" onClick={() => setMenu(!menu)}>Menu</button>
         <nav id="main-nav" className={'main-nav' + (menu ? ' open' : '')} aria-label="Main navigation">
           {pages.map(([id, label]) => <button key={id} className={page === id ? 'active' : ''} aria-current={page === id ? 'page' : undefined} onClick={() => go(id)}>{t(label)}</button>)}
@@ -53,7 +53,7 @@ function Shell() {
         {page === 'account' && <AccountPage />}
         {page === 'community' && <CommunityPage />}
       </main>
-      <footer className="site-footer">Antariksha is free: no payments, no remedies for sale. · <a href="#privacy">Privacy & your data</a> · Swiss Ephemeris · GeoNames (CC BY 4.0) · For reflection, not certainty.</footer>
+      <footer className="site-footer">Astrisk is free: no payments, no remedies for sale. · <a href="#privacy">Privacy & your data</a> · Swiss Ephemeris · GeoNames (CC BY 4.0) · For reflection, not certainty.</footer>
     </div>
   );
 }
@@ -63,7 +63,7 @@ export default function App() {
   const [accountID,setAccountID]=useState('');
   const check=async()=>{const response=await fetch('/api/me',{credentials:'same-origin'});if(response.ok){const me=await response.json();setProfileOwner(me.id,{date:me.birth_date,time:me.birth_time?.slice(0,5)});setAccountID(me.id);}else setProfileOwner('signed-out');setSignedIn(response.ok);setLoading(false);};
   useEffect(()=>{void check().catch(()=>setLoading(false));const expired=()=>setSignedIn(false);const refresh=()=>{void check().catch(()=>setSignedIn(false));};window.addEventListener('antariksha-signed-out',expired);window.addEventListener('focus',refresh);return()=>{window.removeEventListener('antariksha-signed-out',expired);window.removeEventListener('focus',refresh);};},[]);
-  if(loading)return <main className="login-screen"><p>Opening Antariksha…</p></main>;
+  if(loading)return <main className="login-screen"><p>Opening Astrisk…</p></main>;
   if(!signedIn)return <LoginPage onSignedIn={check}/>;
   return <SettingsProvider key={accountID}><Shell /></SettingsProvider>;
 }

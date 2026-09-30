@@ -372,7 +372,7 @@ func (s *Server) calendarICS(w http.ResponseWriter, r *http.Request) {
 	}
 	includeVrat := q.Get("vrat") != "0"
 	var b strings.Builder
-	b.WriteString("BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Antariksha//Panchang//EN\r\nCALSCALE:GREGORIAN\r\nX-WR-CALNAME:Hindu festivals " + strconv.Itoa(year) + "\r\n")
+	b.WriteString("BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Astrisk//Panchang//EN\r\nCALSCALE:GREGORIAN\r\nX-WR-CALNAME:Hindu festivals " + strconv.Itoa(year) + "\r\n")
 	stamp := time.Now().UTC().Format("20060102T150405Z")
 	for d := time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC); d.Year() == year; d = d.AddDate(0, 0, 1) {
 		day, err := s.get(context.Background(), d, l)
