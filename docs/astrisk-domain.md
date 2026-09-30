@@ -56,30 +56,34 @@ The public launch safety and provider checklist remains in community-operations.
 
 ## Hosting on this Windows/WSL system
 
-The owner selected this PC as the host; a VPS is not required. It runs Ubuntu in
-WSL2 NAT mode on Windows behind a home router. Port 80 is already occupied by
-another application and must not be replaced. Use `deploy/Caddyfile.wsl` for
-internal HTTP 8088 and HTTPS 8443, mapped from public standard ports 80/443.
+The owner selected this PC as the host; a VPS is not required for LAN testing. It
+runs Ubuntu in WSL2 mirrored-network mode on Windows behind a home router. Port 80
+is already occupied by another application and must not be replaced. Use
+`deploy/Caddyfile.wsl` for HTTP 8088 and HTTPS 8443.
 
 1. `bash scripts/install-native-edge.sh` installs a pinned Caddy binary from its
    official release and checks its published cryptographic digest. It validates configuration
    but intentionally does not request certificates or start public serving.
-2. Review `scripts/connect-wsl-edge.ps1`, then run it in elevated Windows
-   PowerShell. It adds only dedicated 8088/8443 forwarding and Private-profile
-   firewall rules. It fails on existing mappings; it never resets all portproxy
-   rules. WSL address changes require manually updating these two mappings.
-3. Reserve the PC's LAN address at the router. Forward WAN TCP 80 to PC TCP 8088
-   and WAN TCP 443 to PC TCP 8443. Do not forward database or API port 3000.
-   Compare the router WAN address with the current public egress address. If they
-   differ due to carrier NAT, ask the ISP for incoming connectivity or configure
-   an authenticated tunnel instead. No tunnel is installed or connected here.
-4. Set the domain's A record to the current public IPv4, and www CNAME to the
+2. WSL mirrored networking is enabled in the Windows user's `.wslconfig`, so the
+   Linux interface uses the reserved LAN address directly (`192.168.1.3`). The
+   Windows portproxy script remains available for NAT-mode machines, but is not
+   needed in mirrored mode.
+3. The router has a DHCP reservation for `192.168.1.3` and active WAN0 TCP/UDP
+   forwards for WAN 8088 → PC 8088 and WAN 8443 → PC 8443. The firmware rejects
+   forwarding external 80/443 as reserved management ports. Do not forward the
+   database or API port 3000.
+4. The router WAN address (`100.234.203.11`) differs from the public egress address
+   (`223.185.134.11`), which is carrier-grade NAT. Direct Internet reachability is
+   therefore not available yet; ask Airtel for a public/static IPv4 (and inbound
+   ports) or use an authenticated tunnel. No tunnel is installed or connected here.
+5. Set the domain's A record to the current public IPv4, and www CNAME to the
    apex. Dynamic public IPs require a DNS update mechanism. Nameservers and email
    records can stay unchanged. The parked-domain address is not this PC.
-5. Copy `deploy/astrisk-edge.service` into the user's systemd units after checking
+6. Copy `deploy/postgres-native.service`, `deploy/panchang.service` and
+   `deploy/astrisk-edge.service` into the user's systemd units after checking
    its paths. Enable it only once DNS/networking are ready. Apply the secure-cookie
    API override when switching to HTTPS; do not enable it while using HTTP login.
-6. `systemctl --user daemon-reload` and
+7. `systemctl --user daemon-reload` and
    `systemctl --user enable --now astrisk-edge.service` start the native proxy.
    Test from a separate internet connection, not just the same LAN.
 

@@ -1,0 +1,17 @@
+[Unit]
+Description=Astrisk native PostgreSQL cache database
+After=network.target
+Before=panchang.service
+RequiresMountsFor=%h/panchang/.runtime
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=%h/panchang
+ExecStart=/bin/bash -lc 'mkdir -p "$HOME/panchang/.runtime"; PG_BIN="$HOME/panchang/.runtime/pgdist/usr/lib/postgresql/16/bin"; if [ ! -x "$PG_BIN/pg_ctl" ]; then PG_BIN=/usr/lib/postgresql/16/bin; fi; if ! "$PG_BIN/pg_ctl" -D "$HOME/panchang/.runtime/postgres" status >/dev/null 2>&1; then "$PG_BIN/pg_ctl" -D "$HOME/panchang/.runtime/postgres" -l "$HOME/panchang/.runtime/postgres.log" -o "-k $HOME/panchang/.runtime -p 55432 -c listen_addresses=''" -w start; fi'
+ExecStop=/bin/bash -lc 'PG_BIN="$HOME/panchang/.runtime/pgdist/usr/lib/postgresql/16/bin"; if [ ! -x "$PG_BIN/pg_ctl" ]; then PG_BIN=/usr/lib/postgresql/16/bin; fi; if "$PG_BIN/pg_ctl" -D "$HOME/panchang/.runtime/postgres" status >/dev/null 2>&1; then "$PG_BIN/pg_ctl" -D "$HOME/panchang/.runtime/postgres" -m fast -w stop; fi'
+TimeoutStartSec=120
+TimeoutStopSec=120
+
+[Install]
+WantedBy=default.target

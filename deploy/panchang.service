@@ -1,0 +1,18 @@
+[Unit]
+Description=Astrisk native web application and API
+Requires=postgres-native.service
+After=network-online.target postgres-native.service
+
+[Service]
+Type=simple
+WorkingDirectory=%h/panchang
+Environment=DATABASE_URL=postgresql:///panchang?host=%h/panchang/.runtime&port=55432&user=panchang&sslmode=disable
+Environment=EPHE_PATH=%h/panchang/ephe
+Environment=WEB_DIST=%h/panchang/web/dist
+Environment=HTTP_ADDR=0.0.0.0:3000
+ExecStart=%h/panchang/bin/panchang-api
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=default.target
