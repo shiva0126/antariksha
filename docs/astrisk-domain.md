@@ -6,15 +6,57 @@ browser storage keys intentionally remain unchanged so rebranding does not lose
 accounts or saved charts. Moving to a new origin still requires sign-in, and old
 origin-local browser charts do not move automatically.
 
-## Current state (2026-09-30)
+## Current deployment (2026-10-01)
 
-`astrisk.space` resolved to `2.57.91.91` and returned Hostinger's parked-domain
-page, not this application. The local native application runs on port 3000 on a
-private-address machine. Buying the domain has not provisioned a public Go/Postgres
-host. No DNS records, nameservers, ownership details or renewal settings have been
-changed. No registrar contact data belongs in the source repository.
+`https://astrisk.space` and `https://www.astrisk.space` serve Astrisk from this
+Windows/WSL PC through a named Cloudflare Tunnel on the Free plan. HTTP redirects
+to HTTPS at Cloudflare. The registrar remains Hostinger; nameservers are now
+`jermaine.ns.cloudflare.com` and `ligia.ns.cloudflare.com`. The two parked web
+records were replaced with proxied CNAME routes to tunnel `astrisk-home`.
 
-## DNS cutover — requires a public hosting target
+The tunnel connects outbound to Cloudflare and forwards locally to
+`127.0.0.1:3000`. No public/static IP or inbound router forwarding is required.
+The API production override binds only to loopback and sets `COOKIE_SECURE=true`.
+Cloudflare Universal SSL is active. Keep the tunnel credentials and account
+certificate outside Git; they live under `~/.cloudflared/`. The runtime tunnel
+configuration and binary live in ignored `.runtime/cloudflared/`.
+
+Enabled user services are `postgres-native.service`, `panchang.service`, and
+`astrisk-cloudflare.service`. User lingering is enabled. The Windows scheduled
+task `Astrisk WSL Server` starts Ubuntu at Windows sign-in and keeps WSL running.
+The task is installed with `scripts/install-windows-startup.ps1`. Windows still
+needs to stay awake, powered on, and connected to the Internet. Startup after a
+full Windows reboot requires Windows sign-in; an unattended reboot was not tested.
+
+The temporary localhost.run tunnel and direct Caddy edge are stopped and disabled.
+Their templates remain available as alternatives. Existing router forwards are
+not used by Cloudflare Tunnel.
+
+```bash
+systemctl --user status panchang.service astrisk-cloudflare.service
+journalctl --user -u astrisk-cloudflare.service -n 50
+curl https://astrisk.space/healthz
+```
+
+To recreate the connector, install the official `cloudflared` binary into
+`.runtime/cloudflared/cloudflared`, authenticate with `cloudflared tunnel login`,
+and use the existing tunnel's protected credential file (or deliberately create
+a replacement tunnel and update both DNS routes). Copy
+`deploy/cloudflared-config.example.yml` to `.runtime/cloudflared/config.yml`,
+replace the tunnel ID and credential path, and validate it with
+`cloudflared tunnel --config .runtime/cloudflared/config.yml ingress validate`.
+Install `deploy/astrisk-cloudflare.service` into `~/.config/systemd/user/`, run
+`systemctl --user daemon-reload`, then enable/start the service.
+
+The installed cloudflared version is `2026.9.3`; the downloaded Linux amd64 Debian
+package SHA-256 was checked against its official GitHub release digest:
+`bc073ef293d504cf5ac533bd0aa1c824ef6b4f358765ccaa6628a8a95cacb4b7`.
+Automatic binary updates are disabled; review and install updates explicitly.
+
+## Alternative: direct DNS cutover to a public hosting target
+
+This alternative is not used by the current Cloudflare deployment. Do not replace
+the working tunnel CNAME records unless intentionally migrating hosting.
 
 Keep the existing nameservers unless deliberately migrating DNS providers. At the
 current DNS provider, replace only the parked web records for the following names:
@@ -74,8 +116,8 @@ is already occupied by another application and must not be replaced. Use
    database or API port 3000.
 4. The router WAN address (`100.234.203.11`) differs from the public egress address
    (`223.185.134.11`), which is carrier-grade NAT. Direct Internet reachability is
-   therefore not available yet; ask Airtel for a public/static IPv4 (and inbound
-   ports) or use an authenticated tunnel. No tunnel is installed or connected here.
+   therefore not available directly. The active Cloudflare Tunnel described above
+   bypasses this limitation using outbound connections.
 5. Set the domain's A record to the current public IPv4, and www CNAME to the
    apex. Dynamic public IPs require a DNS update mechanism. Nameservers and email
    records can stay unchanged. The parked-domain address is not this PC.
@@ -104,10 +146,10 @@ localhost.run can provide a longer-lived free subdomain. This URL is suitable fo
 testing and demos; keep the application login enabled and do not expose database
 or administration ports.
 
-Windows must remain awake with WSL running. A Linux user service cannot boot WSL
-by itself. Configure Windows startup and user lingering only with administrator
-access; neither is assumed to be enabled. Restart recovery for the native
-PostgreSQL instance also needs verification before unattended/public use.
+Windows must remain awake with WSL running. The current deployment uses the
+Windows sign-in task and user lingering described above. A Linux user service
+alone cannot boot WSL. These localhost.run commands are a manual fallback and
+should not be enabled alongside the primary tunnel unless needed for diagnosis.
 
 Microsoft WSL networking reference:
 https://learn.microsoft.com/windows/wsl/networking

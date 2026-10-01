@@ -1,0 +1,11 @@
+# Copy to .runtime/cloudflared/config.yml and substitute local values.
+# Never commit tunnel credentials or the account certificate.
+tunnel: REPLACE_WITH_TUNNEL_UUID
+credentials-file: /home/YOUR_USER/.cloudflared/REPLACE_WITH_TUNNEL_UUID.json
+metrics: 127.0.0.1:2021
+ingress:
+  - hostname: astrisk.space
+    service: http://127.0.0.1:3000
+  - hostname: www.astrisk.space
+    service: http://127.0.0.1:3000
+  - service: http_status:404

@@ -1,0 +1,17 @@
+[Unit]
+Description=Astrisk Cloudflare Tunnel
+Wants=network-online.target panchang.service
+After=network-online.target panchang.service
+
+[Service]
+Type=simple
+WorkingDirectory=%h/panchang
+ExecStart=%h/panchang/.runtime/cloudflared/cloudflared --no-autoupdate tunnel --config %h/panchang/.runtime/cloudflared/config.yml run
+Restart=always
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+UMask=0077
+
+[Install]
+WantedBy=default.target
