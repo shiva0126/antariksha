@@ -64,6 +64,9 @@ fi
 if ! psql -Atqc 'SELECT 1 FROM native_schema_migrations WHERE version=10' | grep -q '^1$'; then
   psql -v ON_ERROR_STOP=1 --single-transaction -f db/migrations/000010_family_assistance.up.sql -c 'INSERT INTO native_schema_migrations(version) VALUES(10)'
 fi
+if ! psql -Atqc 'SELECT 1 FROM native_schema_migrations WHERE version=11' | grep -q '^1$'; then
+  psql -v ON_ERROR_STOP=1 --single-transaction -f db/migrations/000011_chart_storage_email.up.sql -c 'INSERT INTO native_schema_migrations(version) VALUES(11)'
+fi
 export DATABASE_URL="postgresql:///panchang?host=$RUNTIME&port=55432&user=panchang&sslmode=disable"
 if [[ "${CORPUS_DB:-}" == 1 ]]; then
   # Classical sources are fetched once and sha256-verified; offline starts

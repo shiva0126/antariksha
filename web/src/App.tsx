@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { LANGUAGES, SettingsProvider, useSettings, useT, type Lang } from './i18n';
 import { KundaliPage } from './ui/kundali/KundaliPage';
 import { MatchPage } from './ui/match/MatchPage';
@@ -8,7 +8,8 @@ import { PrivacyPage } from './ui/privacy/PrivacyPage';
 import { AccountPage } from './ui/AccountPage';
 import { CommunityPage } from './ui/community/CommunityPage';
 import { LoginPage } from './ui/LoginPage';
-import { setProfileOwner } from './ui/common/profiles';
+import { EmailLinkGate } from './ui/EmailRecovery';
+import { initializeAccountCharts, setProfileOwner } from './ui/common/profiles';
 
 type Page = 'kundali' | 'match' | 'muhurta' | 'day' | 'month' | 'privacy' | 'account' | 'community';
 const pages: [Page, string][] = [['kundali', 'Kundali'], ['match', 'Matching'], ['muhurta', 'Muhurta'], ['day', 'Daily Panchang'], ['month', 'Hindu Calendar']];
@@ -59,10 +60,14 @@ function Shell() {
 }
 
 export default function App() {
+ return <EmailLinkGate><AuthenticatedApp/></EmailLinkGate>;
+}
+function AuthenticatedApp() {
   const [signedIn,setSignedIn]=useState(false),[loading,setLoading]=useState(true);
   const [accountID,setAccountID]=useState('');
-  const check=async()=>{const response=await fetch('/api/me',{credentials:'same-origin'});if(response.ok){const me=await response.json();setProfileOwner(me.id,{date:me.birth_date,time:me.birth_time?.slice(0,5)});setAccountID(me.id);}else setProfileOwner('signed-out');setSignedIn(response.ok);setLoading(false);};
-  useEffect(()=>{void check().catch(()=>setLoading(false));const expired=()=>setSignedIn(false);const refresh=()=>{void check().catch(()=>setSignedIn(false));};window.addEventListener('antariksha-signed-out',expired);window.addEventListener('focus',refresh);return()=>{window.removeEventListener('antariksha-signed-out',expired);window.removeEventListener('focus',refresh);};},[]);
+  const sequence=useRef(0),identity=useRef('');
+  const check=async()=>{const run=++sequence.current;const response=await fetch('/api/me',{credentials:'same-origin'});if(run!==sequence.current)return;if(response.ok){const me=await response.json();if(run!==sequence.current)return;if(identity.current!==me.id){setLoading(true);setSignedIn(false);}identity.current=me.id;setProfileOwner(me.id,{date:me.birth_date,time:me.birth_time?.slice(0,5)});await initializeAccountCharts().catch(()=>{});if(run!==sequence.current)return;setAccountID(me.id);}else{identity.current='';setProfileOwner('signed-out');}setSignedIn(response.ok);setLoading(false);};
+  useEffect(()=>{void check().catch(()=>setLoading(false));const expired=()=>{sequence.current++;identity.current='';setProfileOwner('signed-out');setSignedIn(false);setLoading(false);};const refresh=()=>{void check().catch(()=>{setSignedIn(false);setLoading(false);});};window.addEventListener('antariksha-signed-out',expired);window.addEventListener('focus',refresh);return()=>{sequence.current++;window.removeEventListener('antariksha-signed-out',expired);window.removeEventListener('focus',refresh);};},[]);
   if(loading)return <main className="login-screen"><p>Opening Astrisk…</p></main>;
   if(!signedIn)return <LoginPage onSignedIn={check}/>;
   return <SettingsProvider key={accountID}><Shell /></SettingsProvider>;

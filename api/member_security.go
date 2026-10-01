@@ -94,6 +94,9 @@ func (s *Server) recoverMember(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	_, err = tx.Exec(r.Context(), `DELETE FROM member_sessions WHERE account_id=$1`, id)
+	if err == nil {
+		_, err = tx.Exec(r.Context(), `DELETE FROM member_email_tokens WHERE account_id=$1`, id)
+	}
 	if err != nil || tx.Commit(r.Context()) != nil {
 		problem(w, 500, fmt.Errorf("recovery unavailable"))
 		return
@@ -106,6 +109,7 @@ func (s *Server) logoutAll(w http.ResponseWriter, r *http.Request, id string) {
 func (s *Server) exportMember(w http.ResponseWriter, r *http.Request, id string) {
 	// Explicit allowlists exclude password hashes, tokens and other members' private messages.
 	s.memberRows(w, r, `SELECT a.handle,a.email,a.birth_date,a.birth_time,a.profile,a.created_at,
+ COALESCE((SELECT profiles FROM member_chart_store WHERE account_id=a.id),'[]') saved_charts,
  COALESCE((SELECT json_agg(json_build_object('kind',n.kind,'created_at',n.created_at,'read_at',n.read_at,'dismissed',n.dismissed)) FROM member_notifications n WHERE n.recipient=a.id),'[]') notifications,
  COALESCE((SELECT json_agg(g) FROM matrimony_delegates g WHERE g.owner=a.id OR g.delegate=a.id),'[]') family_assistance_grants,
  COALESCE((SELECT json_agg(l) FROM matrimony_shortlist l WHERE l.owner=a.id OR l.delegate=a.id),'[]') family_shortlists,

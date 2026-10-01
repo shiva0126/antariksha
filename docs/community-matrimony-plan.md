@@ -1,7 +1,7 @@
 # Antariksha: profiles, community, family and matrimony
 
 Status: core community implementation available for validation, with the broader
-roadmap below still containing future work. Updated 2026-09-30.
+roadmap below still containing future work. Updated 2026-10-01.
 
 Implemented: login-first email/password accounts; registration collects DOB and
 birth time, while interests stay separate. Existing handle accounts still work.
@@ -30,16 +30,18 @@ produce a new notice. Notifications contain no message text.
 My account now offers explicit preview/select/consent import of legacy device-saved
 charts. Original device records are preserved, duplicates skipped, invalid entries
 excluded, and old conversations are never claimed. Imported charts remain local
-to this account and browser, not cloud-synced.
+to this account and browser. Explicit Save/Load controls now support private cloud
+chart storage, with revision conflicts and recovery of the previous device copy.
 
 Provider-dependent: encrypted phone linking uses Twilio Verify but requires real
 credentials and an encryption key; it is not phone-based login. Hosted AI and
-embeddings require funded credentials. No OAuth connection, email verification,
-ID verification, or automated external social-account discovery is claimed.
+embeddings require funded credentials. SMTP email verification/recovery is implemented
+but delivery is unconfigured. No OAuth connection, ID verification, or automated
+external social-account discovery is claimed.
 
 Remaining roadmap (not implemented): video/stories, push notifications, advanced
 assessment validation, verified family profile claiming, delegated edit suggestions,
-cloud chart sync and the richer field-level visibility model below. Reflection
+the richer field-level visibility model below. Reflection
 prompts are not a validated personality assessment. This build must not be
 advertised as a completed or production-audited matrimony platform.
 

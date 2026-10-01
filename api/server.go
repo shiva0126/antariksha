@@ -27,6 +27,7 @@ type Server struct {
 	logger  *slog.Logger
 	reading *reading.Service
 	chats   ChatStore
+	mailer  EmailSender
 }
 
 func NewServer(e Calculator, c Cache, l *slog.Logger) *Server {
@@ -47,6 +48,7 @@ func NewServerWithReading(e Calculator, c Cache, l *slog.Logger, rs *reading.Ser
 		s.chats = PostgresChatStore{Pool: pc.Pool}
 	}
 	s.routes()
+	s.mailer = configuredSMTP()
 	return s
 }
 func (s *Server) Handler() http.Handler { return recoverer(cors(s.requireAccount(s.mux)), s.logger) }
@@ -63,6 +65,8 @@ func (s *Server) routes() {
 	s.mux.HandleFunc("GET /api/chat/history", s.chatHistory)
 	s.featureRoutes()
 	s.accountRoutes()
+	s.chartStoreRoutes()
+	s.emailRoutes()
 	s.communityRoutes()
 }
 

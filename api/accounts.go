@@ -228,12 +228,17 @@ func (s *Server) getMember(w http.ResponseWriter, r *http.Request) {
 	var handle string
 	var email, date, birthTime string
 	var raw []byte
+	var verified bool
 	err = s.cache.(PostgresCache).Pool.QueryRow(r.Context(), `SELECT handle,profile,COALESCE(email,''),COALESCE(to_char(birth_date,'YYYY-MM-DD'),''),COALESCE(to_char(birth_time,'HH24:MI'),'') FROM member_accounts WHERE id=$1`, id).Scan(&handle, &raw, &email, &date, &birthTime)
 	if err != nil {
 		problem(w, 500, fmt.Errorf("profile unavailable"))
 		return
 	}
-	writeJSON(w, 200, map[string]any{"id": id, "handle": handle, "email": email, "birth_date": date, "birth_time": birthTime, "profile": json.RawMessage(raw), "visibility": "private", "phone_verification_available": phoneReady()})
+	if err = s.membersDB().QueryRow(r.Context(), `SELECT email_verified_at IS NOT NULL FROM member_accounts WHERE id=$1`, id).Scan(&verified); err != nil {
+		problem(w, 500, fmt.Errorf("profile unavailable"))
+		return
+	}
+	writeJSON(w, 200, map[string]any{"id": id, "handle": handle, "email": email, "birth_date": date, "birth_time": birthTime, "profile": json.RawMessage(raw), "visibility": "private", "phone_verification_available": phoneReady(), "email_verified": verified, "email_delivery_available": s.mailer != nil})
 }
 func (s *Server) updateMember(w http.ResponseWriter, r *http.Request) {
 	id, err := s.memberID(r)

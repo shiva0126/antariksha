@@ -1,9 +1,9 @@
 # Community validation build
 
 The native application runs on port 3000 via `panchang.service`. No Docker is used.
-Start from a fresh checkout with `scripts/start-native.sh`; migrations 6–10 add
+Start from a fresh checkout with `scripts/start-native.sh`; migrations 6–11 add
 community tables, conversation ownership, email/birth onboarding, notifications
-and family-assisted shortlisting. Back up the
+family-assisted shortlisting, private account charts and email recovery. Back up the
 database before upgrading. New API requests require an authenticated session;
 `/healthz` remains public. Existing clients must register/login first.
 
@@ -12,7 +12,7 @@ database before upgrading. New API requests require an authenticated session;
 Opening the app shows email/password sign-in. Create account asks for email,
 password (12–72 bytes), DOB and birth time. Birth place is selected when making a
 chart; birth time is local, not sufficient by itself to calculate a chart.
-Email ownership is not yet verified. Users with pre-email accounts can use the
+Email verification is available when SMTP delivery is configured. Users with pre-email accounts can use the
 explicit legacy-handle option. Hobbies and personal details live in My account;
 community sharing and private reflection prompts live under Profile & interests.
 Community and matrimony are separate opt-ins. DOB is self-declared, not verified ID.
@@ -57,14 +57,30 @@ identity, age or suitability. SMS cost, email verification, moderators, retentio
 backups, abuse response and production TLS remain operator responsibilities.
 
 Recovery uses a one-time key generated after password reauthentication. It revokes
-all sessions. No email reset messages are sent. Store the key securely.
+all sessions and pending email tokens. Store the key securely. Optional SMTP
+verification and password reset use hashed, expiring, single-use links. Configure
+the variables in `deploy/email.env.example` through a protected service environment;
+STARTTLS is required. Delivery remains disabled on the current installation until
+a provider is supplied. Personal mailbox credentials are not collected by the app.
+
+Private charts can be explicitly saved from My profile or Kundali and loaded on
+another device. Existing device charts are never uploaded automatically. Concurrent
+saves return a conflict; loading the account copy retains a recoverable device copy.
+Charts are included in account export and deleted with the account.
+
+Install `deploy/astrisk-backup.service` and `.timer` in the user systemd directory
+and enable the timer for daily database archives. `scripts/backup-native.sh` uses
+private permissions and SHA-256 checksums. `scripts/restore-native-test.sh <archive>`
+restores into a fresh disposable database and removes only that database afterward.
+Backups are retained locally without automatic pruning. An off-device encrypted
+copy and a retention schedule still need operator configuration.
 
 ## Validation
 
 Run `go test ./...`; supply `ACCOUNT_TEST_DATABASE_URL` to also run PostgreSQL-backed
 account isolation, media access, family permission, matching, blocking, moderation
 and recovery tests. `npm run build` in `web` type-checks and builds the UI.
-Run `npx playwright test` in `web` against the running port-3000 service for browser
+Run `PLAYWRIGHT_BASE_URL=http://127.0.0.1:3001 npx playwright test` in `web` against an isolated service for browser
 login, chart, Panchang, language, privacy and community flows. Tests create and
 delete their own accounts; do not use a production database for test traffic.
 

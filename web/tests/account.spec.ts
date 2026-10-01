@@ -45,8 +45,8 @@ test('private account registration, profile editing and deletion', async ({ page
   }
 });
 
-test('switching accounts never displays the previous saved chart',async({page})=>{
- const headers={Origin:'http://127.0.0.1:3000'};
+test('switching accounts never displays the previous saved chart',async({page,baseURL})=>{
+ const headers={Origin:baseURL!};
  const register=async(suffix:string)=>{const response=await page.request.post('/api/auth/register',{headers,data:{email:`isolation_${Date.now()}_${suffix}@example.com`,password:'isolation-test-password',birth_date:'1996-05-14',birth_time:'10:15',consent:true}});expect(response.status()).toBe(201);};
  await register('a');
  const first=await page.context().cookies();

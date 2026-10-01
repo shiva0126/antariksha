@@ -1,0 +1,10 @@
+[Unit]
+Description=Back up Astrisk PostgreSQL
+After=postgres-native.service
+Requires=postgres-native.service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash %h/panchang/scripts/backup-native.sh
+UMask=0077
+NoNewPrivileges=true

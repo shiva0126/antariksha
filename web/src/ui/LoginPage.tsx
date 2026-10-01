@@ -1,12 +1,16 @@
-import { useState } from 'react';
+import { useEffect,useState } from 'react';
+import { EmailRecovery } from './EmailRecovery';
 import './login.css';
 
 export function LoginPage({ onSignedIn }: { onSignedIn: () => Promise<void> }) {
+  const [emailRecovery,setEmailRecovery]=useState(false),[emailAvailable,setEmailAvailable]=useState(false);
+  useEffect(()=>{fetch('/api/auth/options').then(r=>r.json()).then(o=>setEmailAvailable(o.email_delivery_available)).catch(()=>{});},[]);
   const [mode, setMode] = useState<'login' | 'register' | 'recover'>('login');
   const [email, setEmail] = useState(''), [password, setPassword] = useState('');
   const [date, setDate] = useState(''), [time, setTime] = useState(''), [key, setKey] = useState('');
   const [busy, setBusy] = useState(false), [error, setError] = useState(''), [legacy, setLegacy] = useState(false);
   const title = mode === 'register' ? 'Begin your journey' : mode === 'recover' ? 'Recover your account' : 'Welcome to Astrisk';
+  if(emailRecovery)return <EmailRecovery action="request" onBack={()=>setEmailRecovery(false)}/>;
   return <main className="login-screen"><section className="login-card">
     <div className="login-emblem" aria-hidden>✦</div><p className="kicker">ASTRISK.SPACE</p>
     <h1>{title}</h1><p className="login-intro">{mode === 'register' ? 'A few details to create your private account.' : mode === 'recover' ? 'Use the recovery key you saved in account security.' : 'Sign in to enter your personal universe.'}</p>
@@ -25,6 +29,7 @@ export function LoginPage({ onSignedIn }: { onSignedIn: () => Promise<void> }) {
       <button className="primary block" disabled={busy}>{busy ? 'Please wait…' : mode === 'register' ? 'Create account' : mode === 'recover' ? 'Reset password' : 'Sign in'}</button>
     </form>
     <div className="login-links"><button onClick={() => { setMode(mode === 'register' ? 'login' : 'register'); setLegacy(false); setError(''); }}>{mode === 'register' ? 'Already registered? Sign in' : 'New here? Create an account'}</button>{mode === 'login' && <button onClick={() => { setMode('recover'); setError(''); }}>Forgot password?</button>}</div>
+    {mode==='recover'&&<p>{emailAvailable?<button onClick={()=>setEmailRecovery(true)}>Send an email reset link instead</button>:'Email reset is not available yet. Use your saved recovery key.'}</p>}
     {mode === 'login' && <details className="login-legacy"><summary>Existing account without an email?</summary><label><input type="checkbox" checked={legacy} onChange={e => setLegacy(e.target.checked)} /> Use my original handle</label></details>}
     <p className="login-foot">Your profile starts private. You choose what to share.</p>
   </section></main>;

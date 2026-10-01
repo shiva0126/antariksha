@@ -45,6 +45,14 @@ https://www.drikpanchang.com/panchang/day-panchang.html?geoname-id=1277333
 
 For that date: sunrise 06:09; sunset 18:16; Shukla Ekadashi until 21:43; Uttara Ashadha until 07:06; Atiganda until 16:29; Vanija until 08:55; Bhadrapada month. The regression test checks the names and month exactly and the times within one minute. This is one external date check, not the originally requested five-date/ten-date certification.
 
+On 1 October 2026, the Bengaluru month view was also inspected for 1–10 October:
+https://www.drikpanchang.com/panchang/month-panchang.html?geoname-id=1277333
+All ten dates pass exact tithi/nakshatra names and sunrise, sunset and nakshatra
+end times within one minute. October 1 additionally checks tithi, yoga and karana
+end times. Combined with September 22, there are eleven dated external checks;
+only two have all limb end times. Five independent birth-chart yoga/dasha
+comparisons remain outstanding.
+
 Moon events are reported within sunrise-to-sunrise, with a date on events after midnight, using the geometric lunar disc centre without refraction. Sunrise/sunset use the apparent upper limb. Rahu/Ketu use true nodes; mean-node charts can differ.
 
 ## UI checks

@@ -14,6 +14,7 @@ import { ReadingPanel } from './ReadingPanel';
 import { ReportView } from './ReportView';
 import { StrengthTab } from './StrengthTab';
 import { TodayTab } from './TodayTab';
+import { ChartStorage } from '../common/ChartStorage';
 
 type Tab = 'today' | 'chart' | 'planets' | 'dasha' | 'ashtaka' | 'strength' | 'reading' | 'ask' | 'report';
 const tabIds: [Tab, string][] = [['today', 'Today'], ['chart', 'Chart'], ['planets', 'Planets'], ['dasha', 'Dasha'], ['ashtaka', 'Ashtakavarga'], ['strength', 'Strength'], ['reading', 'Reading'], ['ask', 'Ask Astrisk'], ['report', 'Report']];
@@ -33,6 +34,7 @@ export function KundaliPage() {
 
   useEffect(() => { try { sessionStorage.setItem('antariksha.tab', tab); } catch { /* ignore */ } }, [tab]);
   useEffect(() => { saveProfiles(profiles, activeId); }, [profiles, activeId]);
+  useEffect(() => {const reload=()=>{const state=loadProfiles();setProfiles(state.profiles);setActiveId(state.active);setMode(state.profiles.length?'view':'new');};window.addEventListener('astrisk-charts-loaded',reload);return()=>window.removeEventListener('astrisk-charts-loaded',reload);},[]);
 
   useEffect(() => {
     if (!profile || mode !== 'view') return;
@@ -81,12 +83,14 @@ export function KundaliPage() {
         {error && <p role="alert" className="form-error">{error}</p>}
         {profiles.length > 0 && <button className="ghost" onClick={() => setMode('view')}>← Back to {profile?.name || 'my chart'}</button>}
         <p className="hero-foot">Lahiri sidereal · whole-sign houses · Swiss Ephemeris</p>
+        <ChartStorage />
       </section>
     );
   }
 
   return (
     <div className="page kundali">
+      <ChartStorage />
       {!chart ? <div className="card loading-card">{busy ? 'Calculating the chart…' : error}</div> : (
         <>
           <ProfileBar profile={profile} profiles={profiles} chart={chart} reading={reading}
