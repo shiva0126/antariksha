@@ -5,6 +5,12 @@ test('private numerology, tropical Western chart and tarot explain their methods
  expect((await page.request.post('/api/auth/register',{headers,data:{email:`readings_browser_${Date.now()}@example.com`,password:'readings-browser-password',birth_date:'1996-05-14',birth_time:'10:15',consent:true}})).status()).toBe(201);
  try{
   await page.goto('/#readings');await expect(page.getByRole('heading',{name:'More readings'})).toBeVisible();
+  await page.getByText('Reading library & AI availability',{exact:true}).click();
+  const library=page.locator('details[aria-label="Reading library status"]');
+  await expect(library).toContainText('AI provider not configured');
+  await expect(library).toContainText('Semantic enrichment is not ready');
+  await expect(library.getByRole('listitem').filter({hasText:'Lal Kitab (five original volumes)'})).toContainText('Not acquired');
+  await page.getByText('Reading library & AI availability',{exact:true}).click();
   await page.getByLabel('Name for numerology (optional)').fill('John');
   await page.getByRole('button',{name:'Read my numbers'}).click();
   await page.getByText('Our numerology convention',{exact:true}).click();

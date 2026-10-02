@@ -2,6 +2,7 @@ import {useState} from 'react';
 import {BirthFields,draftFrom,resolveDraft} from './kundali/BirthForm';
 import {accountBirth} from './common/profiles';
 import {memberAPI} from './community/shared';
+import {ReadingLibrary} from './common/ReadingLibrary';
 import './readings.css';
 
 type NumberMeaning={number:number;steps:number[];meaning:string;reflection:string};
@@ -11,7 +12,7 @@ type Western={summary:string[];note:string;houses:{system:string;cusps:number[]}
 
 export function MoreReadings(){
  const [mode,setMode]=useState<'numerology'|'western'|'tarot'>('numerology');
- return <div className="page more-readings"><header className="page-heading"><p className="kicker">Three ways to reflect</p><h1>More readings</h1><p>Clear explanations, with the method behind each result. These symbolic traditions are not scientific personality tests or predictions.</p></header><div className="tabs" role="tablist" aria-label="Reading method">{(['numerology','western','tarot'] as const).map(v=><button key={v} role="tab" aria-selected={mode===v} onClick={()=>setMode(v)}>{v==='western'?'Western astrology':v[0].toUpperCase()+v.slice(1)}</button>)}</div><section role="tabpanel" aria-label={mode} key={mode}>{mode==='numerology'?<Numerology/>:mode==='western'?<WesternChart/>:<TarotDraw/>}</section><p className="disclaimer">For reflection, not certainty. Use qualified professionals for medical, legal or financial decisions. These readings are not added to your public profile, and switching methods clears the current result.</p></div>;
+ return <div className="page more-readings"><header className="page-heading"><p className="kicker">Three ways to reflect</p><h1>More readings</h1><p>Clear explanations, with the method behind each result. These symbolic traditions are not scientific personality tests or predictions.</p></header><ReadingLibrary/><div className="tabs" role="tablist" aria-label="Reading method">{(['numerology','western','tarot'] as const).map(v=><button key={v} role="tab" aria-selected={mode===v} onClick={()=>setMode(v)}>{v==='western'?'Western astrology':v[0].toUpperCase()+v.slice(1)}</button>)}</div><section role="tabpanel" aria-label={mode} key={mode}>{mode==='numerology'?<Numerology/>:mode==='western'?<WesternChart/>:<TarotDraw/>}</section><p className="disclaimer">For reflection, not certainty. Use qualified professionals for medical, legal or financial decisions. These readings are not added to your public profile, and switching methods clears the current result.</p></div>;
 }
 function Numerology(){
  const [date,setDate]=useState(accountBirth()?.date??''),[name,setName]=useState(''),[year,setYear]=useState(new Date().getFullYear()),[result,setResult]=useState<Numbers>(),[busy,setBusy]=useState(false),[error,setError]=useState('');

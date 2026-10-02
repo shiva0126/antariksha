@@ -48,10 +48,11 @@ type authoredFile struct {
 	System   string `json:"system"`
 	Language string `json:"language"`
 	Entries  []struct {
-		DocType string `json:"doc_type"`
-		Key     string `json:"key"`
-		Title   string `json:"title"`
-		Body    string `json:"body"`
+		DocType    string               `json:"doc_type"`
+		Key        string               `json:"key"`
+		Title      string               `json:"title"`
+		Body       string               `json:"body"`
+		References []EditorialReference `json:"references,omitempty"`
 	} `json:"entries"`
 }
 
@@ -170,6 +171,7 @@ func authored(m Manifest) ([]Entry, error) {
 	}
 	sort.Strings(names)
 	var out []Entry
+	vocab := vocabulary()
 	for _, name := range names {
 		b, err := files.ReadFile(name)
 		if err != nil {
@@ -188,7 +190,15 @@ func authored(m Manifest) ([]Entry, error) {
 			lang = "en"
 		}
 		for _, x := range f.Entries {
-			out = append(out, Entry{System: f.System, DocType: x.DocType, Key: x.Key, Language: lang, Title: x.Title, Body: strings.TrimSpace(x.Body), SourceID: s.ID, Source: provenance(s, ""), Rights: s.Rights})
+			context, err := editorialProvenance(m, f.System, x.DocType, x.Key, x.References)
+			if err != nil {
+				return nil, fmt.Errorf("%s: %w", name, err)
+			}
+			entry := Entry{System: f.System, DocType: x.DocType, Key: x.Key, Language: lang, Title: x.Title, Body: strings.TrimSpace(x.Body), SourceID: s.ID, Source: provenance(s, "") + context, Rights: s.Rights}
+			if err := gate(m, vocab, entry); err != nil {
+				return nil, err
+			}
+			out = append(out, entry)
 		}
 	}
 	return out, nil

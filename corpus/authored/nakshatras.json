@@ -3,32 +3,329 @@
   "system": "parashari",
   "language": "en",
   "entries": [
-    {"doc_type": "nakshatra", "key": "ashwini", "title": "Moon in Ashwini", "body": "Ashwini (Mesha 0°–13°20′) is ruled by Ketu and presided over by the Ashwini Kumaras, the divine physicians. It gives quickness, initiative, healing ability and a youthful, adventurous spirit, and favours fresh starts. Haste is the caution."},
-    {"doc_type": "nakshatra", "key": "bharani", "title": "Moon in Bharani", "body": "Bharani (Mesha 13°20′–26°40′) is ruled by Venus under Yama, lord of restraint. It gives intensity, endurance, creative and sensual power, and the capacity to carry heavy responsibilities. Moral seriousness is its strength, and excess its caution."},
-    {"doc_type": "nakshatra", "key": "krittika", "title": "Moon in Krittika", "body": "Krittika (Mesha 26°40′–Vrishabha 10°) is ruled by the Sun under Agni. It gives a sharp, discerning, purifying nature, courage and leadership, and a cutting honesty that can wound. It favours clarity and protection of others."},
-    {"doc_type": "nakshatra", "key": "rohini", "title": "Moon in Rohini", "body": "Rohini (Vrishabha 10°–23°20′), ruled by the Moon under Brahma, is the Moon's favourite star. It gives beauty, charm, creativity, fertility and love of comfort and the arts, with growth and prosperity. Possessiveness is the caution."},
-    {"doc_type": "nakshatra", "key": "mrigashira", "title": "Moon in Mrigashira", "body": "Mrigashira (Vrishabha 23°20′–Mithuna 6°40′) is ruled by Mars under Soma. It gives a searching, curious and gentle mind that loves travel and research, and suits exploration and learning. Restlessness and indecision are the cautions."},
-    {"doc_type": "nakshatra", "key": "ardra", "title": "Moon in Ardra", "body": "Ardra (Mithuna 6°40′–20°) is ruled by Rahu under Rudra, the storm. It gives intellectual intensity, emotional storms that clear the air, and skill in research and technology. Growth comes through upheaval and renewal."},
-    {"doc_type": "nakshatra", "key": "punarvasu", "title": "Moon in Punarvasu", "body": "Punarvasu (Mithuna 20°–Karka 3°20′) is ruled by Jupiter under Aditi. It gives return and renewal, optimism, generosity, philosophical outlook and contentment with simple things. It favours recovery after setbacks."},
-    {"doc_type": "nakshatra", "key": "pushya", "title": "Moon in Pushya", "body": "Pushya (Karka 3°20′–16°40′) is ruled by Saturn under Brihaspati. It is traditionally among the most auspicious nakshatras, giving nourishment, protection, devotion, discipline and a caring, dutiful nature. It suits teaching and counselling."},
-    {"doc_type": "nakshatra", "key": "ashlesha", "title": "Moon in Ashlesha", "body": "Ashlesha (Karka 16°40′–30°) is ruled by Mercury under the Nagas. It gives penetrating insight, strategic intelligence, hypnotic persuasion and depth in psychology or medicine. Suspicion and manipulation are the shadow, and healing is its higher use."},
-    {"doc_type": "nakshatra", "key": "magha", "title": "Moon in Magha", "body": "Magha (Simha 0°–13°20′) is ruled by Ketu under the Pitris, the ancestors. It gives dignity, respect for lineage and tradition, leadership and a regal bearing. Pride and attachment to status are the cautions."},
-    {"doc_type": "nakshatra", "key": "purva_phalguni", "title": "Moon in Purva Phalguni", "body": "Purva Phalguni (Simha 13°20′–26°40′) is ruled by Venus under Bhaga. It gives enjoyment, creativity, affection, generosity and talent in the arts, and favours relationships and celebration. Indulgence is the caution."},
-    {"doc_type": "nakshatra", "key": "uttara_phalguni", "title": "Moon in Uttara Phalguni", "body": "Uttara Phalguni (Simha 26°40′–Kanya 10°) is ruled by the Sun under Aryaman. It gives loyalty, reliability, a sense of contract and duty, and helpful leadership. It favours partnerships and patronage."},
-    {"doc_type": "nakshatra", "key": "hasta", "title": "Moon in Hasta", "body": "Hasta (Kanya 10°–23°20′) is ruled by the Moon under Savitar. It gives manual dexterity, wit, resourcefulness and skill in crafts and healing arts, and cleverness in trade. Restless cunning is the caution."},
-    {"doc_type": "nakshatra", "key": "chitra", "title": "Moon in Chitra", "body": "Chitra (Kanya 23°20′–Tula 6°40′) is ruled by Mars under Tvashtar, the divine architect. It gives artistry, design sense, charisma and love of beautiful things, and suits architecture and the arts. Vanity is the caution."},
-    {"doc_type": "nakshatra", "key": "swati", "title": "Moon in Swati", "body": "Swati (Tula 6°40′–20°) is ruled by Rahu under Vayu, the wind. It gives independence, adaptability, diplomacy and business skill, bending but not breaking. It favours trade and self-directed paths. Scattered energy is the caution."},
-    {"doc_type": "nakshatra", "key": "vishakha", "title": "Moon in Vishakha", "body": "Vishakha (Tula 20°–Vrishchika 3°20′) is ruled by Jupiter under Indra and Agni. It gives determination, focus on goals, ambition and eventual triumph. Single-mindedness can become impatience or jealousy."},
-    {"doc_type": "nakshatra", "key": "anuradha", "title": "Moon in Anuradha", "body": "Anuradha (Vrishchika 3°20′–16°40′) is ruled by Saturn under Mitra. It gives devotion, friendship, loyalty and success abroad or in organisations, and the ability to thrive in difficult conditions."},
-    {"doc_type": "nakshatra", "key": "jyeshtha", "title": "Moon in Jyeshtha", "body": "Jyeshtha (Vrishchika 16°40′–30°) is ruled by Mercury under Indra. It gives seniority, protective leadership, courage and resourcefulness, with a sense of responsibility for others. Pride and secrecy are the cautions."},
-    {"doc_type": "nakshatra", "key": "mula", "title": "Moon in Mula", "body": "Mula (Dhanu 0°–13°20′) is ruled by Ketu under Nirriti. It gives a drive to reach the root of things, philosophical inquiry and research. It can bring the uprooting of old structures that leads to truth."},
-    {"doc_type": "nakshatra", "key": "purva_ashadha", "title": "Moon in Purva Ashadha", "body": "Purva Ashadha (Dhanu 13°20′–26°40′) is ruled by Venus under Apas, the waters. It gives invincibility of spirit, persuasion, pride and purification, and a strong sense of conviction. It favours inspiring others."},
-    {"doc_type": "nakshatra", "key": "uttara_ashadha", "title": "Moon in Uttara Ashadha", "body": "Uttara Ashadha (Dhanu 26°40′–Makara 10°) is ruled by the Sun under the Vishvadevas. It gives integrity, lasting victory, a sense of duty and leadership grounded in righteousness. Its success is slow but permanent."},
-    {"doc_type": "nakshatra", "key": "shravana", "title": "Moon in Shravana", "body": "Shravana (Makara 10°–23°20′) is ruled by the Moon under Vishnu. It gives listening, learning, the preservation of knowledge, teaching, counselling and a good reputation, along with devotion and organisational skill."},
-    {"doc_type": "nakshatra", "key": "dhanishtha", "title": "Moon in Dhanishtha", "body": "Dhanishtha (Makara 23°20′–Kumbha 6°40′) is ruled by Mars under the Vasus. It gives wealth, rhythm and music, generosity, ambition and adaptability in groups. Its success is social."},
-    {"doc_type": "nakshatra", "key": "shatabhisha", "title": "Moon in Shatabhisha", "body": "Shatabhisha (Kumbha 6°40′–20°) is ruled by Rahu under Varuna. It gives healing, secrecy, independent and scientific thinking, and interest in medicine, astrology or technology. Solitude may be sought."},
-    {"doc_type": "nakshatra", "key": "purva_bhadrapada", "title": "Moon in Purva Bhadrapada", "body": "Purva Bhadrapada (Kumbha 20°–Meena 3°20′) is ruled by Jupiter under Aja Ekapada. It gives intensity, idealism, austerity and a transformative, sometimes extreme, drive for spiritual or social causes."},
-    {"doc_type": "nakshatra", "key": "uttara_bhadrapada", "title": "Moon in Uttara Bhadrapada", "body": "Uttara Bhadrapada (Meena 3°20′–16°40′) is ruled by Saturn under Ahir Budhnya. It gives depth, wisdom, self-control, compassion and steady spiritual strength, and favours a stable, generous life."},
-    {"doc_type": "nakshatra", "key": "revati", "title": "Moon in Revati", "body": "Revati (Meena 16°40′–30°) is ruled by Mercury under Pushan, the nourisher and guide of travellers. It gives gentleness, compassion, protectiveness, artistic sensitivity and safe journeys. It completes the zodiac with a sense of fulfilment."}
+    {
+      "doc_type": "nakshatra",
+      "key": "ashwini",
+      "title": "Moon in Ashwini",
+      "body": "A nakshatra is one of the Moon's traditional sky divisions. For Ashwini, this original reflection explores starting something with care. Choose a small first step and check what preparation it needs. The historical passage for this division is cited as context, not as a personality test or a promise about health, wealth, morality or relationships. You can reject a theme that does not fit your experience. Reflection: How can you make a fresh start without rushing past useful advice?",
+      "references": [
+        {
+          "source_id": "brihat-jataka-iyer-1885",
+          "ref": "16.1"
+        }
+      ]
+    },
+    {
+      "doc_type": "nakshatra",
+      "key": "bharani",
+      "title": "Moon in Bharani",
+      "body": "A nakshatra is one of the Moon's traditional sky divisions. For Bharani, this original reflection explores carrying responsibilities without ignoring limits. Name what is genuinely yours to do and what needs to be shared. The historical passage for this division is cited as context, not as a personality test or a promise about health, wealth, morality or relationships. You can reject a theme that does not fit your experience. Reflection: Which commitment could be made more manageable?",
+      "references": [
+        {
+          "source_id": "brihat-jataka-iyer-1885",
+          "ref": "16.1"
+        }
+      ]
+    },
+    {
+      "doc_type": "nakshatra",
+      "key": "krittika",
+      "title": "Moon in Krittika",
+      "body": "A nakshatra is one of the Moon's traditional sky divisions. For Krittika, this original reflection explores clarity without unnecessary harshness. Before offering criticism, ask whether it is useful, accurate and welcome. The historical passage for this division is cited as context, not as a personality test or a promise about health, wealth, morality or relationships. You can reject a theme that does not fit your experience. Reflection: How could you say something honestly while respecting the other person?",
+      "references": [
+        {
+          "source_id": "brihat-jataka-iyer-1885",
+          "ref": "16.2"
+        }
+      ]
+    },
+    {
+      "doc_type": "nakshatra",
+      "key": "rohini",
+      "title": "Moon in Rohini",
+      "body": "A nakshatra is one of the Moon's traditional sky divisions. For Rohini, this original reflection explores comfort and making room for growth. Notice a routine you enjoy and decide whether it supports your current priorities. The historical passage for this division is cited as context, not as a personality test or a promise about health, wealth, morality or relationships. You can reject a theme that does not fit your experience. Reflection: What would help you enjoy something familiar without resisting every change?",
+      "references": [
+        {
+          "source_id": "brihat-jataka-iyer-1885",
+          "ref": "16.2"
+        }
+      ]
+    },
+    {
+      "doc_type": "nakshatra",
+      "key": "mrigashira",
+      "title": "Moon in Mrigashira",
+      "body": "A nakshatra is one of the Moon's traditional sky divisions. For Mrigashira, this original reflection explores curiosity with enough time to learn. Write down a question, choose a reliable starting source and follow it through. The historical passage for this division is cited as context, not as a personality test or a promise about health, wealth, morality or relationships. You can reject a theme that does not fit your experience. Reflection: Which question deserves focused attention rather than another quick search?",
+      "references": [
+        {
+          "source_id": "brihat-jataka-iyer-1885",
+          "ref": "16.3"
+        }
+      ]
+    },
+    {
+      "doc_type": "nakshatra",
+      "key": "ardra",
+      "title": "Moon in Ardra",
+      "body": "A nakshatra is one of the Moon's traditional sky divisions. For Ardra, this original reflection explores understanding a difficult situation carefully. Separate what you know from what you fear or assume before taking action. The historical passage for this division is cited as context, not as a personality test or a promise about health, wealth, morality or relationships. You can reject a theme that does not fit your experience. Reflection: What information or support would help you see the situation more clearly?",
+      "references": [
+        {
+          "source_id": "brihat-jataka-iyer-1885",
+          "ref": "16.3"
+        }
+      ]
+    },
+    {
+      "doc_type": "nakshatra",
+      "key": "punarvasu",
+      "title": "Moon in Punarvasu",
+      "body": "A nakshatra is one of the Moon's traditional sky divisions. For Punarvasu, this original reflection explores trying again with a workable plan. Look at what a previous attempt taught you and change one part of your approach. The historical passage for this division is cited as context, not as a personality test or a promise about health, wealth, morality or relationships. You can reject a theme that does not fit your experience. Reflection: What would make another attempt kinder and more realistic?",
+      "references": [
+        {
+          "source_id": "brihat-jataka-iyer-1885",
+          "ref": "16.4"
+        }
+      ]
+    },
+    {
+      "doc_type": "nakshatra",
+      "key": "pushya",
+      "title": "Moon in Pushya",
+      "body": "A nakshatra is one of the Moon's traditional sky divisions. For Pushya, this original reflection explores care that includes the person giving it. Ask what help is wanted instead of deciding for someone else, and state your limits. The historical passage for this division is cited as context, not as a personality test or a promise about health, wealth, morality or relationships. You can reject a theme that does not fit your experience. Reflection: How can you offer support without neglecting your own needs?",
+      "references": [
+        {
+          "source_id": "brihat-jataka-iyer-1885",
+          "ref": "16.5"
+        }
+      ]
+    },
+    {
+      "doc_type": "nakshatra",
+      "key": "ashlesha",
+      "title": "Moon in Ashlesha",
+      "body": "A nakshatra is one of the Moon's traditional sky divisions. For Ashlesha, this original reflection explores trust, privacy and clear boundaries. Check an interpretation with the person involved rather than assuming hidden motives. The historical passage for this division is cited as context, not as a personality test or a promise about health, wealth, morality or relationships. You can reject a theme that does not fit your experience. Reflection: What would a respectful conversation about trust look like?",
+      "references": [
+        {
+          "source_id": "brihat-jataka-iyer-1885",
+          "ref": "16.5"
+        }
+      ]
+    },
+    {
+      "doc_type": "nakshatra",
+      "key": "magha",
+      "title": "Moon in Magha",
+      "body": "A nakshatra is one of the Moon's traditional sky divisions. For Magha, this original reflection explores choosing your relationship with tradition. Consider which inherited customs you value and which do not fit your life. The historical passage for this division is cited as context, not as a personality test or a promise about health, wealth, morality or relationships. You can reject a theme that does not fit your experience. Reflection: What would you keep, adapt or leave behind by choice?",
+      "references": [
+        {
+          "source_id": "brihat-jataka-iyer-1885",
+          "ref": "16.6"
+        }
+      ]
+    },
+    {
+      "doc_type": "nakshatra",
+      "key": "purva_phalguni",
+      "title": "Moon in Purva Phalguni",
+      "body": "A nakshatra is one of the Moon's traditional sky divisions. For Purva Phalguni, this original reflection explores enjoyment and shared creative time. Make space for an activity you like without making productivity its only purpose. The historical passage for this division is cited as context, not as a personality test or a promise about health, wealth, morality or relationships. You can reject a theme that does not fit your experience. Reflection: What would feel enjoyable and freely chosen this week?",
+      "references": [
+        {
+          "source_id": "brihat-jataka-iyer-1885",
+          "ref": "16.6"
+        }
+      ]
+    },
+    {
+      "doc_type": "nakshatra",
+      "key": "uttara_phalguni",
+      "title": "Moon in Uttara Phalguni",
+      "body": "A nakshatra is one of the Moon's traditional sky divisions. For Uttara Phalguni, this original reflection explores agreements that remain fair over time. Discuss what each person expects instead of relying only on unspoken duty. The historical passage for this division is cited as context, not as a personality test or a promise about health, wealth, morality or relationships. You can reject a theme that does not fit your experience. Reflection: Which agreement would benefit from being made explicit?",
+      "references": [
+        {
+          "source_id": "brihat-jataka-iyer-1885",
+          "ref": "16.7"
+        }
+      ]
+    },
+    {
+      "doc_type": "nakshatra",
+      "key": "hasta",
+      "title": "Moon in Hasta",
+      "body": "A nakshatra is one of the Moon's traditional sky divisions. For Hasta, this original reflection explores learning through practical effort. Try a small hands-on task, allow mistakes and notice what becomes easier with practice. The historical passage for this division is cited as context, not as a personality test or a promise about health, wealth, morality or relationships. You can reject a theme that does not fit your experience. Reflection: What would you enjoy learning by doing?",
+      "references": [
+        {
+          "source_id": "brihat-jataka-iyer-1885",
+          "ref": "16.7"
+        }
+      ]
+    },
+    {
+      "doc_type": "nakshatra",
+      "key": "chitra",
+      "title": "Moon in Chitra",
+      "body": "A nakshatra is one of the Moon's traditional sky divisions. For Chitra, this original reflection explores creating something that is useful as well as appealing. Ask who a design or project is for and test whether it works for them. The historical passage for this division is cited as context, not as a personality test or a promise about health, wealth, morality or relationships. You can reject a theme that does not fit your experience. Reflection: What would make your idea more thoughtful, not just more impressive?",
+      "references": [
+        {
+          "source_id": "brihat-jataka-iyer-1885",
+          "ref": "16.8"
+        }
+      ]
+    },
+    {
+      "doc_type": "nakshatra",
+      "key": "swati",
+      "title": "Moon in Swati",
+      "body": "A nakshatra is one of the Moon's traditional sky divisions. For Swati, this original reflection explores independence alongside connection. Name a choice you want to make yourself and the cooperation that choice still needs. The historical passage for this division is cited as context, not as a personality test or a promise about health, wealth, morality or relationships. You can reject a theme that does not fit your experience. Reflection: Where would flexibility help without abandoning an important boundary?",
+      "references": [
+        {
+          "source_id": "brihat-jataka-iyer-1885",
+          "ref": "16.8"
+        }
+      ]
+    },
+    {
+      "doc_type": "nakshatra",
+      "key": "vishakha",
+      "title": "Moon in Vishakha",
+      "body": "A nakshatra is one of the Moon's traditional sky divisions. For Vishakha, this original reflection explores pursuing a goal without narrowing your whole life around it. Check whether your current goal still matters and whether the effort is sustainable. The historical passage for this division is cited as context, not as a personality test or a promise about health, wealth, morality or relationships. You can reject a theme that does not fit your experience. Reflection: What would meaningful progress look like without comparing yourself with everyone else?",
+      "references": [
+        {
+          "source_id": "brihat-jataka-iyer-1885",
+          "ref": "16.9"
+        }
+      ]
+    },
+    {
+      "doc_type": "nakshatra",
+      "key": "anuradha",
+      "title": "Moon in Anuradha",
+      "body": "A nakshatra is one of the Moon's traditional sky divisions. For Anuradha, this original reflection explores friendship and reciprocal support. Notice whether help and attention can move both ways in a relationship. The historical passage for this division is cited as context, not as a personality test or a promise about health, wealth, morality or relationships. You can reject a theme that does not fit your experience. Reflection: How could you ask for support as clearly as you offer it?",
+      "references": [
+        {
+          "source_id": "brihat-jataka-iyer-1885",
+          "ref": "16.9"
+        }
+      ]
+    },
+    {
+      "doc_type": "nakshatra",
+      "key": "jyeshtha",
+      "title": "Moon in Jyeshtha",
+      "body": "A nakshatra is one of the Moon's traditional sky divisions. For Jyeshtha, this original reflection explores responsibility that does not turn into control. Ask what another person wants before stepping in to protect or lead them. The historical passage for this division is cited as context, not as a personality test or a promise about health, wealth, morality or relationships. You can reject a theme that does not fit your experience. Reflection: Where could sharing responsibility be more helpful than taking it all on?",
+      "references": [
+        {
+          "source_id": "brihat-jataka-iyer-1885",
+          "ref": "16.10"
+        }
+      ]
+    },
+    {
+      "doc_type": "nakshatra",
+      "key": "mula",
+      "title": "Moon in Mula",
+      "body": "A nakshatra is one of the Moon's traditional sky divisions. For Mula, this original reflection explores asking what is underneath a problem. Break a confusing issue into causes you can check rather than assuming a hidden fate. The historical passage for this division is cited as context, not as a personality test or a promise about health, wealth, morality or relationships. You can reject a theme that does not fit your experience. Reflection: Which assumption would be useful to examine?",
+      "references": [
+        {
+          "source_id": "brihat-jataka-iyer-1885",
+          "ref": "16.10"
+        }
+      ]
+    },
+    {
+      "doc_type": "nakshatra",
+      "key": "purva_ashadha",
+      "title": "Moon in Purva Ashadha",
+      "body": "A nakshatra is one of the Moon's traditional sky divisions. For Purva Ashadha, this original reflection explores conviction with room for feedback. Explain why an idea matters to you and ask what you may have overlooked. The historical passage for this division is cited as context, not as a personality test or a promise about health, wealth, morality or relationships. You can reject a theme that does not fit your experience. Reflection: What evidence would persuade you to adjust your view?",
+      "references": [
+        {
+          "source_id": "brihat-jataka-iyer-1885",
+          "ref": "16.11"
+        }
+      ]
+    },
+    {
+      "doc_type": "nakshatra",
+      "key": "uttara_ashadha",
+      "title": "Moon in Uttara Ashadha",
+      "body": "A nakshatra is one of the Moon's traditional sky divisions. For Uttara Ashadha, this original reflection explores consistency guided by chosen principles. Make one commitment specific enough to review and realistic enough to sustain. The historical passage for this division is cited as context, not as a personality test or a promise about health, wealth, morality or relationships. You can reject a theme that does not fit your experience. Reflection: Which promise can you keep without sacrificing necessary rest?",
+      "references": [
+        {
+          "source_id": "brihat-jataka-iyer-1885",
+          "ref": "16.11"
+        }
+      ]
+    },
+    {
+      "doc_type": "nakshatra",
+      "key": "shravana",
+      "title": "Moon in Shravana",
+      "body": "A nakshatra is one of the Moon's traditional sky divisions. For Shravana, this original reflection explores listening before reaching a conclusion. Try summarising what someone said and ask whether you understood correctly. The historical passage for this division is cited as context, not as a personality test or a promise about health, wealth, morality or relationships. You can reject a theme that does not fit your experience. Reflection: What might you learn by asking one more question?",
+      "references": [
+        {
+          "source_id": "brihat-jataka-iyer-1885",
+          "ref": "16.12"
+        }
+      ]
+    },
+    {
+      "doc_type": "nakshatra",
+      "key": "dhanishtha",
+      "title": "Moon in Dhanishtha",
+      "body": "A nakshatra is one of the Moon's traditional sky divisions. For Dhanishtha, this original reflection explores finding a workable rhythm with other people. Discuss timing and responsibilities when planning a shared activity. The historical passage for this division is cited as context, not as a personality test or a promise about health, wealth, morality or relationships. You can reject a theme that does not fit your experience. Reflection: What would help everyone contribute without needing to work in the same way?",
+      "references": [
+        {
+          "source_id": "brihat-jataka-iyer-1885",
+          "ref": "16.12"
+        }
+      ]
+    },
+    {
+      "doc_type": "nakshatra",
+      "key": "shatabhisha",
+      "title": "Moon in Shatabhisha",
+      "body": "A nakshatra is one of the Moon's traditional sky divisions. For Shatabhisha, this original reflection explores inquiry while respecting privacy. Separate reliable information from speculation, especially about health or another person. The historical passage for this division is cited as context, not as a personality test or a promise about health, wealth, morality or relationships. You can reject a theme that does not fit your experience. Reflection: Where do you need better evidence rather than a stronger assumption?",
+      "references": [
+        {
+          "source_id": "brihat-jataka-iyer-1885",
+          "ref": "16.13"
+        }
+      ]
+    },
+    {
+      "doc_type": "nakshatra",
+      "key": "purva_bhadrapada",
+      "title": "Moon in Purva Bhadrapada",
+      "body": "A nakshatra is one of the Moon's traditional sky divisions. For Purva Bhadrapada, this original reflection explores putting ideals into proportionate action. Choose a concrete contribution without demanding that you or others be perfect. The historical passage for this division is cited as context, not as a personality test or a promise about health, wealth, morality or relationships. You can reject a theme that does not fit your experience. Reflection: What small action would express a value you care about?",
+      "references": [
+        {
+          "source_id": "brihat-jataka-iyer-1885",
+          "ref": "16.13"
+        }
+      ]
+    },
+    {
+      "doc_type": "nakshatra",
+      "key": "uttara_bhadrapada",
+      "title": "Moon in Uttara Bhadrapada",
+      "body": "A nakshatra is one of the Moon's traditional sky divisions. For Uttara Bhadrapada, this original reflection explores steadiness that still allows change. Notice when patience helps and when asking for help or changing course would be wiser. The historical passage for this division is cited as context, not as a personality test or a promise about health, wealth, morality or relationships. You can reject a theme that does not fit your experience. Reflection: What would make your next step both calm and practical?",
+      "references": [
+        {
+          "source_id": "brihat-jataka-iyer-1885",
+          "ref": "16.14"
+        }
+      ]
+    },
+    {
+      "doc_type": "nakshatra",
+      "key": "revati",
+      "title": "Moon in Revati",
+      "body": "A nakshatra is one of the Moon's traditional sky divisions. For Revati, this original reflection explores careful transitions and offering help respectfully. Before a change, check practical needs, communicate plans and allow room for uncertainty. The historical passage for this division is cited as context, not as a personality test or a promise about health, wealth, morality or relationships. You can reject a theme that does not fit your experience. Reflection: What would help you or someone else feel supported during a transition?",
+      "references": [
+        {
+          "source_id": "brihat-jataka-iyer-1885",
+          "ref": "16.14"
+        }
+      ]
+    }
   ]
 }

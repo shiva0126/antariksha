@@ -103,7 +103,8 @@ func firstSentence(s string, max int) string {
 	}
 	r := []rune(s)[:max]
 	if i := strings.LastIndexAny(string(r), ".;"); i > 40 {
-		return string(r[:i+1])
+		// LastIndexAny returns a byte offset, not a rune offset.
+		return string(r)[:i+1]
 	}
 	return strings.TrimSpace(string(r)) + "…"
 }
@@ -163,13 +164,13 @@ func (in *insight) placement(id string) string {
 func (in *insight) grahaMeaning(id string) string {
 	h := in.entry(engine.DocGrahaInHouse, fmt.Sprintf("%s_in_%d", id, in.house(id)))
 	s := in.entry(engine.DocGrahaInSign, id+"_in_"+engine.Slug(in.signs[in.signIdx(id)]))
-	out := firstSentence(h, 420)
+	out := h
 	if s != "" {
-		out += " " + firstSentence(s, 220)
+		out += " " + s
 	}
 	if in.f.Combustion[id] {
 		if d := in.entry(engine.DocDignity, "combust_"+id); d != "" {
-			out += " " + firstSentence(d, 200)
+			out += " " + d
 		}
 	}
 	return strings.TrimSpace(out)

@@ -3,46 +3,233 @@
   "system": "parashari",
   "language": "en",
   "entries": [
-    {"doc_type": "dignity", "key": "dignity_exalted", "title": "Exaltation (uccha)", "body": "An exalted graha is at its strongest classical sign dignity and can deliver its good significations fully. Expression still depends on the house, aspects, combustion and the rest of the chart. Exaltation does not make a planet's hard lessons disappear; it gives the resources to meet them."},
-    {"doc_type": "dignity", "key": "dignity_own", "title": "Own sign (svakshetra)", "body": "A graha in its own sign acts with confidence and self-sufficiency, like a person at home. Its results are reliable and stable, and the houses it rules are protected."},
-    {"doc_type": "dignity", "key": "dignity_friendly", "title": "Friendly sign", "body": "A graha in the sign of a natural friend is comfortable and cooperative. It produces moderately good results, supported by its dispositor."},
-    {"doc_type": "dignity", "key": "dignity_neutral", "title": "Neutral sign", "body": "A graha in a neutral sign gives neither added strength nor weakness from its sign. Its results depend chiefly on house, aspects and conjunctions."},
-    {"doc_type": "dignity", "key": "dignity_enemy", "title": "Enemy sign", "body": "A graha in the sign of a natural enemy works with some friction, like a guest in an unwelcoming house. Its results may come with effort or compromise, and a strong dispositor or benefic aspects help."},
-    {"doc_type": "dignity", "key": "dignity_debilitated", "title": "Debilitation (neecha)", "body": "A debilitated graha is at its weakest sign dignity. Its significations may need conscious effort, or may come late or in unusual forms. Classical texts give many conditions for cancellation (neecha bhanga), after which the planet can give strong results after early struggle."},
-
-    {"doc_type": "dignity", "key": "exalted_sun", "title": "Exalted Sun", "body": "The Sun exalted in Mesha brings strong vitality, confidence, leadership and recognition, with good relations with authority when otherwise supported. Pride and impatience are the risks of excess."},
-    {"doc_type": "dignity", "key": "own_sun", "title": "Sun in its own sign", "body": "The Sun in Simha is dignified. It gives natural authority, generosity and creative self-expression, with steady self-esteem and leadership."},
-    {"doc_type": "dignity", "key": "debilitated_sun", "title": "Debilitated Sun", "body": "The Sun in Tula is debilitated. Self-assertion yields to diplomacy and partnership, and confidence or relations with the father and authority may need work. It can mature into fair, cooperative leadership, especially with neecha bhanga."},
-    {"doc_type": "dignity", "key": "exalted_moon", "title": "Exalted Moon", "body": "The Moon exalted in Vrishabha gives emotional stability, contentment, a pleasant nature and material comfort. It is classically one of the most fortunate conditions for peace of mind."},
-    {"doc_type": "dignity", "key": "own_moon", "title": "Moon in its own sign", "body": "The Moon in Karka is at home. It gives nurturing instincts, intuition and emotional depth, with strong attachment to family and home."},
-    {"doc_type": "dignity", "key": "debilitated_moon", "title": "Debilitated Moon", "body": "The Moon in Vrishchika is debilitated. Feelings are intense and private, and the mind can be prone to worry or turbulence. It also gives psychological depth and resilience, and supportive aspects or neecha bhanga ease it considerably."},
-    {"doc_type": "dignity", "key": "exalted_mars", "title": "Exalted Mars", "body": "Mars exalted in Makara gives disciplined, effective energy, strategic courage and great capacity for sustained work and command."},
-    {"doc_type": "dignity", "key": "own_mars", "title": "Mars in its own sign", "body": "Mars in Mesha or Vrishchika is strong. It gives courage, initiative and resilience. In Mesha it is direct; in Vrishchika it is strategic and intense."},
-    {"doc_type": "dignity", "key": "debilitated_mars", "title": "Debilitated Mars", "body": "Mars in Karka is debilitated. Action is coloured by emotion, and anger may be suppressed or come out indirectly. It can express as fierce protectiveness of home and family. With neecha bhanga it becomes a source of strength."},
-    {"doc_type": "dignity", "key": "exalted_mercury", "title": "Exalted Mercury", "body": "Mercury exalted in Kanya gives analytical excellence, precision, skill with language, accounts and science, and practical intelligence."},
-    {"doc_type": "dignity", "key": "own_mercury", "title": "Mercury in its own sign", "body": "Mercury in Mithuna or Kanya is strong. It gives quick intelligence, skill in communication and trade, and adaptability."},
-    {"doc_type": "dignity", "key": "debilitated_mercury", "title": "Debilitated Mercury", "body": "Mercury in Meena is debilitated. Logic yields to intuition and imagination, which is excellent for poetry and spirituality but harder for precise detail. A strong Jupiter or neecha bhanga helps."},
-    {"doc_type": "dignity", "key": "exalted_jupiter", "title": "Exalted Jupiter", "body": "Jupiter exalted in Karka gives wisdom, compassion, protection, prosperity and devotion. It is classically among the most beneficial conditions in a chart."},
-    {"doc_type": "dignity", "key": "own_jupiter", "title": "Jupiter in its own sign", "body": "Jupiter in Dhanu or Meena is strong. It gives wisdom, generosity, faith and good fortune, and supports the houses it rules."},
-    {"doc_type": "dignity", "key": "debilitated_jupiter", "title": "Debilitated Jupiter", "body": "Jupiter in Makara is debilitated. Faith and optimism meet practical demands, and wisdom becomes pragmatic. Guidance may come late or from unexpected sources. Neecha bhanga can make it a builder of lasting institutions."},
-    {"doc_type": "dignity", "key": "exalted_venus", "title": "Exalted Venus", "body": "Venus exalted in Meena gives selfless love, artistic and musical refinement, devotion and happiness in relationships."},
-    {"doc_type": "dignity", "key": "own_venus", "title": "Venus in its own sign", "body": "Venus in Vrishabha or Tula is strong. It gives comfort, beauty, harmony and happiness in relationships, and supports wealth and the arts."},
-    {"doc_type": "dignity", "key": "debilitated_venus", "title": "Debilitated Venus", "body": "Venus in Kanya is debilitated. Affection is shown through service and discernment rather than romance, and fulfilment in love may need patience. It gives skill in crafts and healing. Neecha bhanga eases it."},
-    {"doc_type": "dignity", "key": "exalted_saturn", "title": "Exalted Saturn", "body": "Saturn exalted in Tula gives justice, fairness, discipline and lasting achievement through balanced effort. It is classically among Saturn's finest conditions."},
-    {"doc_type": "dignity", "key": "own_saturn", "title": "Saturn in its own sign", "body": "Saturn in Makara or Kumbha is strong. It gives patience, organisational ability, endurance and a steady rise through work."},
-    {"doc_type": "dignity", "key": "debilitated_saturn", "title": "Debilitated Saturn", "body": "Saturn in Mesha is debilitated. Patience clashes with impulse, bringing frustration or conflict with authority. Discipline learned through experience becomes real strength, especially with neecha bhanga."},
-
-    {"doc_type": "dignity", "key": "combust_moon", "title": "Combust Moon", "body": "The Moon close to the Sun is near the new moon (amavasya). Classically the Moon is weak in pakshabala then, and the mind may feel less buoyant or more inward. It is an introspective condition, and care for rest and emotional support is advised."},
-    {"doc_type": "dignity", "key": "combust_mars", "title": "Combust Mars", "body": "Mars within the Sun's orb loses independent expression. Energy and assertion are absorbed by the Sun's agenda, sometimes as frustration or heat, and Mars's significations need conscious channelling."},
-    {"doc_type": "dignity", "key": "combust_mercury", "title": "Combust Mercury", "body": "Mercury is combust very often because it never strays far from the Sun. Classically its independent judgement is overshadowed by the ego, so thinking serves identity. Many traditions soften this for Mercury, and deep combustion within a few degrees matters most."},
-    {"doc_type": "dignity", "key": "combust_jupiter", "title": "Combust Jupiter", "body": "Jupiter within the Sun's orb has its wisdom and blessings partly eclipsed. Guidance, faith or teachers may be less visible, and the houses Jupiter rules may need extra support."},
-    {"doc_type": "dignity", "key": "combust_venus", "title": "Combust Venus", "body": "Venus within the Sun's orb has comfort, affection and artistic expression subordinated to the ego or to duty. Relationships and pleasures may need conscious space."},
-    {"doc_type": "dignity", "key": "combust_saturn", "title": "Combust Saturn", "body": "Saturn within the Sun's orb brings the natural tension between the two into focus. Authority and duty clash, relations with the father or superiors may be strained, and Saturn's endurance is tested."},
-
-    {"doc_type": "dignity", "key": "retrograde_mars", "title": "Retrograde Mars", "body": "Retrograde Mars is classically strong (chesta bala) but turns its energy inward. Action is revisited, repeated or delayed, and old conflicts can resurface. Strategic reconsideration before acting is its gift."},
-    {"doc_type": "dignity", "key": "retrograde_mercury", "title": "Retrograde Mercury", "body": "Retrograde Mercury gives a reflective, non-linear and original mind that revisits ideas and learns deeply on the second pass. Communication benefits from review, and intuitive leaps are common."},
-    {"doc_type": "dignity", "key": "retrograde_jupiter", "title": "Retrograde Jupiter", "body": "Retrograde Jupiter gives an internalised, independent philosophy and wisdom developed through re-examining inherited beliefs. Its blessings may come after reflection or later in life."},
-    {"doc_type": "dignity", "key": "retrograde_venus", "title": "Retrograde Venus", "body": "Retrograde Venus gives an unconventional or deeply reflective approach to love, values and beauty. Past relationships may be revisited, and taste is individual."},
-    {"doc_type": "dignity", "key": "retrograde_saturn", "title": "Retrograde Saturn", "body": "Retrograde Saturn internalises discipline and responsibility, often as an inner critic. Karmic lessons are revisited until mastered, and it gives great persistence once the lessons are understood."}
+    {
+      "doc_type": "dignity",
+      "key": "dignity_exalted",
+      "title": "Exaltation (uccha)",
+      "body": "Exalted means a planet occupies a sign this tradition treats as supportive. It is a chart classification, not a measure of talent or a promise of good events. Other chart conditions are considered separately. Reflection: where could preparation and support help you make use of an opportunity?"
+    },
+    {
+      "doc_type": "dignity",
+      "key": "dignity_own",
+      "title": "Own sign (svakshetra)",
+      "body": "An own sign is a sign traditionally associated with that planet. Astrologers use the image of being at home to discuss a familiar way of expressing its theme. This does not guarantee confidence, stability or protection. Reflection: which familiar approach helps you, and when would another approach be useful?"
+    },
+    {
+      "doc_type": "dignity",
+      "key": "dignity_friendly",
+      "title": "Friendly sign",
+      "body": "Friendly describes a traditional relationship between planets in a table, not whether you or another person are friendly. You can use the symbolism to reflect on cooperation without treating it as a prediction. Reflection: what kind of support would make your next step easier?"
+    },
+    {
+      "doc_type": "dignity",
+      "key": "dignity_neutral",
+      "title": "Neutral sign",
+      "body": "Neutral means the selected planet-relationship table assigns neither friendship nor enmity here. It does not mean an average personality or an unimportant life area. Lived experience comes first. Reflection: what do you actually notice in this area, without forcing a label onto it?"
+    },
+    {
+      "doc_type": "dignity",
+      "key": "dignity_enemy",
+      "title": "Enemy sign",
+      "body": "Enemy is an old technical term for a relationship between planets. It does not identify an enemy in your life or predict conflict. A more useful reflection is how two priorities might need balancing. Reflection: what would a workable compromise look like while respecting your boundaries?"
+    },
+    {
+      "doc_type": "dignity",
+      "key": "dignity_debilitated",
+      "title": "Debilitation (neecha)",
+      "body": "Debilitated is a traditional sign classification, not a disability, failure or personal weakness. The engine separately checks conditions that offset this label. There is no requirement to suffer before succeeding. Reflection: what practical support would help you approach a difficulty on your own terms?"
+    },
+    {
+      "doc_type": "dignity",
+      "key": "exalted_sun",
+      "title": "Exalted Sun",
+      "body": "The Sun in Mesha receives an exalted sign classification. A useful symbolic discussion is about self-expression and speaking with purpose. This does not establish leadership ability, health, recognition or relationships with a parent. Your actual circumstances and choices matter more than this label. Reflection: How can you state what you need while leaving room for another person's view?"
+    },
+    {
+      "doc_type": "dignity",
+      "key": "own_sun",
+      "title": "Sun in its own sign",
+      "body": "The Sun in Simha receives a traditional own-sign classification. A useful symbolic discussion is about self-expression and speaking with purpose. This does not establish leadership ability, health, recognition or relationships with a parent. Your actual circumstances and choices matter more than this label. Reflection: How can you state what you need while leaving room for another person's view?"
+    },
+    {
+      "doc_type": "dignity",
+      "key": "debilitated_sun",
+      "title": "Debilitated Sun",
+      "body": "The Sun in Tula receives a traditionally challenging sign label. A useful symbolic discussion is about self-expression and speaking with purpose. This does not establish leadership ability, health, recognition or relationships with a parent. This label is not a personal weakness; any offsetting chart conditions are computed separately. Reflection: How can you state what you need while leaving room for another person's view?"
+    },
+    {
+      "doc_type": "dignity",
+      "key": "exalted_moon",
+      "title": "Exalted Moon",
+      "body": "The Moon in Vrishabha receives an exalted sign classification. A useful symbolic discussion is about care, belonging and familiar comforts. This does not establish emotional stability, mental health or family circumstances. Your actual circumstances and choices matter more than this label. Reflection: What helps you feel settled, and how could you explain the support you want?"
+    },
+    {
+      "doc_type": "dignity",
+      "key": "own_moon",
+      "title": "Moon in its own sign",
+      "body": "The Moon in Karka receives a traditional own-sign classification. A useful symbolic discussion is about care, belonging and familiar comforts. This does not establish emotional stability, mental health or family circumstances. Your actual circumstances and choices matter more than this label. Reflection: What helps you feel settled, and how could you explain the support you want?"
+    },
+    {
+      "doc_type": "dignity",
+      "key": "debilitated_moon",
+      "title": "Debilitated Moon",
+      "body": "The Moon in Vrishchika receives a traditionally challenging sign label. A useful symbolic discussion is about care, belonging and familiar comforts. This does not establish emotional stability, mental health or family circumstances. This label is not a personal weakness; any offsetting chart conditions are computed separately. Reflection: What helps you feel settled, and how could you explain the support you want?"
+    },
+    {
+      "doc_type": "dignity",
+      "key": "exalted_mars",
+      "title": "Exalted Mars",
+      "body": "Mars in Makara receives an exalted sign classification. A useful symbolic discussion is about directing effort and setting boundaries. This does not establish anger, physical capacity, danger to a partner or professional success. Your actual circumstances and choices matter more than this label. Reflection: Which action would be constructive, and what can wait until you have more information?"
+    },
+    {
+      "doc_type": "dignity",
+      "key": "own_mars",
+      "title": "Mars in its own sign",
+      "body": "Mars in Mesha or Vrishchika receives a traditional own-sign classification. A useful symbolic discussion is about directing effort and setting boundaries. This does not establish anger, physical capacity, danger to a partner or professional success. Your actual circumstances and choices matter more than this label. Reflection: Which action would be constructive, and what can wait until you have more information?"
+    },
+    {
+      "doc_type": "dignity",
+      "key": "debilitated_mars",
+      "title": "Debilitated Mars",
+      "body": "Mars in Karka receives a traditionally challenging sign label. A useful symbolic discussion is about directing effort and setting boundaries. This does not establish anger, physical capacity, danger to a partner or professional success. This label is not a personal weakness; any offsetting chart conditions are computed separately. Reflection: Which action would be constructive, and what can wait until you have more information?"
+    },
+    {
+      "doc_type": "dignity",
+      "key": "exalted_mercury",
+      "title": "Exalted Mercury",
+      "body": "Mercury in Kanya receives an exalted sign classification. A useful symbolic discussion is about curiosity and making ideas understandable. This does not establish intelligence, learning difficulties or a suitable profession. Your actual circumstances and choices matter more than this label. Reflection: What would help you explain a complicated idea in steps someone else can follow?"
+    },
+    {
+      "doc_type": "dignity",
+      "key": "own_mercury",
+      "title": "Mercury in its own sign",
+      "body": "Mercury in Mithuna or Kanya receives a traditional own-sign classification. A useful symbolic discussion is about curiosity and making ideas understandable. This does not establish intelligence, learning difficulties or a suitable profession. Your actual circumstances and choices matter more than this label. Reflection: What would help you explain a complicated idea in steps someone else can follow?"
+    },
+    {
+      "doc_type": "dignity",
+      "key": "debilitated_mercury",
+      "title": "Debilitated Mercury",
+      "body": "Mercury in Meena receives a traditionally challenging sign label. A useful symbolic discussion is about curiosity and making ideas understandable. This does not establish intelligence, learning difficulties or a suitable profession. This label is not a personal weakness; any offsetting chart conditions are computed separately. Reflection: What would help you explain a complicated idea in steps someone else can follow?"
+    },
+    {
+      "doc_type": "dignity",
+      "key": "exalted_jupiter",
+      "title": "Exalted Jupiter",
+      "body": "Jupiter in Karka receives an exalted sign classification. A useful symbolic discussion is about learning and evaluating guidance. This does not establish wisdom, morality, prosperity or religious commitment. Your actual circumstances and choices matter more than this label. Reflection: Which advice fits your circumstances, and what information would help you decide?"
+    },
+    {
+      "doc_type": "dignity",
+      "key": "own_jupiter",
+      "title": "Jupiter in its own sign",
+      "body": "Jupiter in Dhanu or Meena receives a traditional own-sign classification. A useful symbolic discussion is about learning and evaluating guidance. This does not establish wisdom, morality, prosperity or religious commitment. Your actual circumstances and choices matter more than this label. Reflection: Which advice fits your circumstances, and what information would help you decide?"
+    },
+    {
+      "doc_type": "dignity",
+      "key": "debilitated_jupiter",
+      "title": "Debilitated Jupiter",
+      "body": "Jupiter in Makara receives a traditionally challenging sign label. A useful symbolic discussion is about learning and evaluating guidance. This does not establish wisdom, morality, prosperity or religious commitment. This label is not a personal weakness; any offsetting chart conditions are computed separately. Reflection: Which advice fits your circumstances, and what information would help you decide?"
+    },
+    {
+      "doc_type": "dignity",
+      "key": "exalted_venus",
+      "title": "Exalted Venus",
+      "body": "Venus in Meena receives an exalted sign classification. A useful symbolic discussion is about appreciation, creativity and mutual care. This does not establish attractiveness, sexuality, artistic talent or relationship success. Your actual circumstances and choices matter more than this label. Reflection: How would you ask what another person enjoys rather than assuming you know?"
+    },
+    {
+      "doc_type": "dignity",
+      "key": "own_venus",
+      "title": "Venus in its own sign",
+      "body": "Venus in Vrishabha or Tula receives a traditional own-sign classification. A useful symbolic discussion is about appreciation, creativity and mutual care. This does not establish attractiveness, sexuality, artistic talent or relationship success. Your actual circumstances and choices matter more than this label. Reflection: How would you ask what another person enjoys rather than assuming you know?"
+    },
+    {
+      "doc_type": "dignity",
+      "key": "debilitated_venus",
+      "title": "Debilitated Venus",
+      "body": "Venus in Kanya receives a traditionally challenging sign label. A useful symbolic discussion is about appreciation, creativity and mutual care. This does not establish attractiveness, sexuality, artistic talent or relationship success. This label is not a personal weakness; any offsetting chart conditions are computed separately. Reflection: How would you ask what another person enjoys rather than assuming you know?"
+    },
+    {
+      "doc_type": "dignity",
+      "key": "exalted_saturn",
+      "title": "Exalted Saturn",
+      "body": "Saturn in Tula receives an exalted sign classification. A useful symbolic discussion is about sustainable commitments and fair responsibilities. This does not establish discipline, karmic debt, punishment or conflict with authority. Your actual circumstances and choices matter more than this label. Reflection: Which expectation needs clarifying or renegotiating so that effort includes rest?"
+    },
+    {
+      "doc_type": "dignity",
+      "key": "own_saturn",
+      "title": "Saturn in its own sign",
+      "body": "Saturn in Makara or Kumbha receives a traditional own-sign classification. A useful symbolic discussion is about sustainable commitments and fair responsibilities. This does not establish discipline, karmic debt, punishment or conflict with authority. Your actual circumstances and choices matter more than this label. Reflection: Which expectation needs clarifying or renegotiating so that effort includes rest?"
+    },
+    {
+      "doc_type": "dignity",
+      "key": "debilitated_saturn",
+      "title": "Debilitated Saturn",
+      "body": "Saturn in Mesha receives a traditionally challenging sign label. A useful symbolic discussion is about sustainable commitments and fair responsibilities. This does not establish discipline, karmic debt, punishment or conflict with authority. This label is not a personal weakness; any offsetting chart conditions are computed separately. Reflection: Which expectation needs clarifying or renegotiating so that effort includes rest?"
+    },
+    {
+      "doc_type": "dignity",
+      "key": "combust_moon",
+      "title": "The Moon close to the Sun",
+      "body": "Combustion means the moon is within the engine's selected angular distance of the Sun. For the Moon this occurs around the new-moon phase. The flag does not establish emotional stability, mental health or family circumstances. If the symbolism is useful, explore care, belonging and familiar comforts without treating it as a prediction. Reflection: What helps you feel settled, and how could you explain the support you want?"
+    },
+    {
+      "doc_type": "dignity",
+      "key": "combust_mars",
+      "title": "Mars close to the Sun",
+      "body": "Combustion means mars is within the engine's selected angular distance of the Sun. The flag does not establish anger, physical capacity, danger to a partner or professional success. If the symbolism is useful, explore directing effort and setting boundaries without treating it as a prediction. Reflection: Which action would be constructive, and what can wait until you have more information?"
+    },
+    {
+      "doc_type": "dignity",
+      "key": "combust_mercury",
+      "title": "Mercury close to the Sun",
+      "body": "Combustion means mercury is within the engine's selected angular distance of the Sun. This is common for Mercury, which stays near the Sun, and traditions differ in interpreting it. The flag does not establish intelligence, learning difficulties or a suitable profession. If the symbolism is useful, explore curiosity and making ideas understandable without treating it as a prediction. Reflection: What would help you explain a complicated idea in steps someone else can follow?"
+    },
+    {
+      "doc_type": "dignity",
+      "key": "combust_jupiter",
+      "title": "Jupiter close to the Sun",
+      "body": "Combustion means jupiter is within the engine's selected angular distance of the Sun. The flag does not establish wisdom, morality, prosperity or religious commitment. If the symbolism is useful, explore learning and evaluating guidance without treating it as a prediction. Reflection: Which advice fits your circumstances, and what information would help you decide?"
+    },
+    {
+      "doc_type": "dignity",
+      "key": "combust_venus",
+      "title": "Venus close to the Sun",
+      "body": "Combustion means venus is within the engine's selected angular distance of the Sun. The flag does not establish attractiveness, sexuality, artistic talent or relationship success. If the symbolism is useful, explore appreciation, creativity and mutual care without treating it as a prediction. Reflection: How would you ask what another person enjoys rather than assuming you know?"
+    },
+    {
+      "doc_type": "dignity",
+      "key": "combust_saturn",
+      "title": "Saturn close to the Sun",
+      "body": "Combustion means saturn is within the engine's selected angular distance of the Sun. The flag does not establish discipline, karmic debt, punishment or conflict with authority. If the symbolism is useful, explore sustainable commitments and fair responsibilities without treating it as a prediction. Reflection: Which expectation needs clarifying or renegotiating so that effort includes rest?"
+    },
+    {
+      "doc_type": "dignity",
+      "key": "retrograde_mars",
+      "title": "Retrograde Mars",
+      "body": "Retrograde describes apparent backward motion from Earth's viewpoint, not a planet physically reversing its orbit. For mars, a symbolic prompt is to review directing effort and setting boundaries. It does not establish anger, physical capacity, danger to a partner or professional success or predict delays and returning events. Reflection: Which action would be constructive, and what can wait until you have more information?"
+    },
+    {
+      "doc_type": "dignity",
+      "key": "retrograde_mercury",
+      "title": "Retrograde Mercury",
+      "body": "Retrograde describes apparent backward motion from Earth's viewpoint, not a planet physically reversing its orbit. For mercury, a symbolic prompt is to review curiosity and making ideas understandable. It does not establish intelligence, learning difficulties or a suitable profession or predict delays and returning events. Reflection: What would help you explain a complicated idea in steps someone else can follow?"
+    },
+    {
+      "doc_type": "dignity",
+      "key": "retrograde_jupiter",
+      "title": "Retrograde Jupiter",
+      "body": "Retrograde describes apparent backward motion from Earth's viewpoint, not a planet physically reversing its orbit. For jupiter, a symbolic prompt is to review learning and evaluating guidance. It does not establish wisdom, morality, prosperity or religious commitment or predict delays and returning events. Reflection: Which advice fits your circumstances, and what information would help you decide?"
+    },
+    {
+      "doc_type": "dignity",
+      "key": "retrograde_venus",
+      "title": "Retrograde Venus",
+      "body": "Retrograde describes apparent backward motion from Earth's viewpoint, not a planet physically reversing its orbit. For venus, a symbolic prompt is to review appreciation, creativity and mutual care. It does not establish attractiveness, sexuality, artistic talent or relationship success or predict delays and returning events. Reflection: How would you ask what another person enjoys rather than assuming you know?"
+    },
+    {
+      "doc_type": "dignity",
+      "key": "retrograde_saturn",
+      "title": "Retrograde Saturn",
+      "body": "Retrograde describes apparent backward motion from Earth's viewpoint, not a planet physically reversing its orbit. For saturn, a symbolic prompt is to review sustainable commitments and fair responsibilities. It does not establish discipline, karmic debt, punishment or conflict with authority or predict delays and returning events. Reflection: Which expectation needs clarifying or renegotiating so that effort includes rest?"
+    }
   ]
 }

@@ -1,4 +1,5 @@
 import type { ReadingResponse } from '../../api/types';
+import {ReadingLibrary} from '../common/ReadingLibrary';
 
 export function ReadingPanel({ data }: { data: ReadingResponse }) {
   const r = data.reading;
@@ -6,6 +7,7 @@ export function ReadingPanel({ data }: { data: ReadingResponse }) {
   const classical = (data.grounding ?? []).filter(g => g.source.includes('[public_domain]'));
   return (
     <div className="reading">
+      <ReadingLibrary/>
       <div className="card reading-lead">
         <p className="kicker">Summary</p>
         <p className="lead">{r.summary}</p>

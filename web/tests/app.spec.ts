@@ -42,6 +42,9 @@ test('kundali: placement, dasha, tabs and no horizontal overflow', async ({ page
   await expect(page.locator('.dasha-list li').nth(1)).toContainText('Ketu');
   await page.getByRole('tab', { name: 'Reading' }).click();
   await expect(page.locator('.reading')).not.toContainText('engine fact for reflective');
+  await page.getByText('Sources and interpretation limits',{exact:true}).click();
+  await expect(page.locator('.reading')).toContainText('not literal translations');
+  await expect(page.locator('.reading')).toContainText('passage context:');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   expect(errors).toEqual([]);
 });

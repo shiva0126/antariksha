@@ -56,6 +56,16 @@ go run ./cmd/corpus search -q "Jupiter in a kendra from the Moon"
 
 The English self-authored entries were revised to explain themes in ordinary language, offer optional reflection questions and avoid presenting a chart as evidence about a person's lived experience. Historical public-domain passages remain available for grounding and citations, but reading and chat responses do not repeat old prediction wording verbatim. These authored explanations are editorial interpretations, not translations.
 
+### Editorial update — 2 October 2026
+
+The follow-up rewrites 38 dignity/combustion/retrograde guides and 27 nakshatra guides, and expands seven yoga guides with examples, relationship reflections and limitations. These are 72 revised entries, **not 72 new books or additional corpus rows**. The 27 nakshatra and seven yoga entries now declare 34 concept-level sets of editorial references to already cleared Brihat Jataka passages. Build checks reject unknown verses, references to another concept/school, duplicate references and uncleared sources. Commentary is explicitly marked original editorial discussion, not translation or independent scholarly review.
+
+The same Foster Press 1885 edition has a [Public Domain Mark in the Wellcome Collection](https://wellcomecollection.org/works/afmgm695). In contrast, the [Bhrigu Sutras transcription checked on Sanskrit Documents](https://sanskritdocuments.org/doc_z_misc_sociology_astrology/bhrigusUtram.html) requires permission for commercial copying/reposting. It has not been acquired or ingested; find another cleared edition or obtain permission. A text's ancient origin does not clear every digital transcription.
+
+Readings now keep complete planet-guide paragraphs rather than clipping sentences. The cache key includes a digest of the retrieved bodies, titles and provenance plus model identity, so corpus edits invalidate generated prose automatically. This does not rewrite past conversation messages.
+
+**More readings → Reading library & AI availability** and the Kundali Reading tab display actual database entry counts by source, pending/blocked sources, provider configuration and embedding readiness. A listed manifest source is never presented as an ingested book merely because it appears in the catalogue. Live API access, embeddings, new book editions and external kundli verification are still separate requirements.
+
 ## Retrieval and model status
 
 The optional runtime semantic path and reading validation changes are documented in [Detailed matching explanations](match-explanations.md). `GET /api/reading/status` exposes current aggregate readiness to signed-in users. With `RAG_SEMANTIC_ENABLED=true`, chat enrichment searches only detected Parashari facts in English and only vectors from the configured model; exact-key retrieval remains the primary path. This flag alone does not create vectors or acquire books.
@@ -75,3 +85,5 @@ The system PostgreSQL has no pgvector. `scripts/install-pgvector.sh` builds a us
 ## Tests
 
 `go test ./corpus` covers the gate, segmentation, matching, coverage and namespacing, plus the public-domain build if `corpus/raw` has been acquired. Set `CORPUS_TEST_DATABASE_URL` to a disposable migrated database to also exercise sync, re-embedding and HNSW search against a fake embeddings server.
+
+The 2 October editorial release passed all Go packages, targeted vet/race checks, the database source-count test, frontend unit/build checks, and two browser journeys covering Kundali and the additional readings. An isolated PostgreSQL load retained 447 entries; five-chart exact retrieval found all required tokens (269 passages). Production sync updated 72 rows, retained 375 unchanged, and removed none. The corpus validator still fails its embedding requirement (447 unembedded) and skips semantic search; automated OCR checks are not a substitute for a human passage review or independent chart validation.

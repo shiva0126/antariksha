@@ -33,7 +33,7 @@
       "rights": "public_domain",
       "rights_basis": "Sanskrit original is ancient. The English translation and notes were published in 1885, before 1929 (US public domain), and archive.org records possible-copyright-status NOT_IN_COPYRIGHT.",
       "system": "parashari",
-      "notes": "The archive.org OCR text layer is used; no new OCR is needed. Excerpts are hand-corrected and must fuzzy-match the segmented OCR of the cited verse, which proves provenance. Chapters mapped: XIII, XIV, XVI, XVII and XX."
+      "notes": "The archive.org OCR text layer is used; no new OCR is needed. Excerpts must fuzzy-match the segmented OCR of the cited verse, providing an automated provenance check, not a scholarly review. Chapters mapped: XIII, XIV, XVI, XVII and XX. Cross-checked 2026-10-02: Wellcome Collection identifies the same Foster Press 1885 edition with a Public Domain Mark: https://wellcomecollection.org/works/afmgm695 ."
     },
     {
       "id": "bphs-santhanam",
@@ -61,7 +61,7 @@
       "rights": "not_acquired",
       "rights_basis": "The original is public domain, but no pre-1929 English translation was located, and the common English editions are modern. Its graha-in-house aphorisms are covered by antariksha-authored-v1 and by Brihat Jataka ch. XX.",
       "system": "parashari",
-      "notes": "Bhrigu Samhita (a set of pre-written horoscopes) is out of scope."
+      "notes": "Bhrigu Samhita (a set of pre-written horoscopes) is out of scope. Sourcing check 2026-10-02: https://sanskritdocuments.org/doc_z_misc_sociology_astrology/bhrigusUtram.html offers a Sanskrit transcription but its footer requires permission for commercial copying/reposting. Do not acquire or ingest that transcription without permission; locate a separately cleared edition. No Bhrigu text imported."
     },
     {
       "id": "saravali",

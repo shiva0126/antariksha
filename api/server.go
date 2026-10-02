@@ -168,7 +168,7 @@ func (s *Server) readingHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Current-dasha facts depend on the as-of day, so it is part of the key.
-	hash := reading.ChartHash(in, "en") + ":" + asOf.UTC().Format("2006-01-02")
+	hash := reading.ChartHash(in, "en") + ":" + asOf.UTC().Format("2006-01-02") + ":" + reading.GroundingHash(rules) + ":" + s.reading.CacheModel()
 	if store, ok := s.cache.(interface {
 		GetReading(context.Context, string) (CachedReading, bool, error)
 	}); ok {
@@ -222,7 +222,7 @@ func (s *Server) readingStream(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "text/event-stream")
-	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Cache-Control", "no-store")
 	w.Header().Set("Connection", "keep-alive")
 	fl, ok := w.(http.Flusher)
 	if !ok {
