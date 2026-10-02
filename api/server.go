@@ -66,6 +66,8 @@ func (s *Server) routes() {
 	s.featureRoutes()
 	s.accountRoutes()
 	s.chartStoreRoutes()
+	s.characterRoutes()
+	s.divinationRoutes()
 	s.emailRoutes()
 	s.communityRoutes()
 }

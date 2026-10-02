@@ -118,6 +118,16 @@
       "rights": "not_acquired",
       "rights_basis": "The original is public domain. No edition has been cleared yet. This text belongs to the jaimini namespace only.",
       "system": "jaimini"
+    },
+    {
+      "id": "lal-kitab-original-1939-1952",
+      "title": "Lal Kitab (five original volumes)",
+      "author": "Rup Chand Joshi (attributed)",
+      "edition": "1939, 1940, 1941, 1942 and 1952 editions; edition and rights require review",
+      "rights": "not_acquired",
+      "rights_basis": "No text ingested. These 20th-century editions are not treated as public domain. Author attribution and term, edition provenance, Indian/Pakistani/US rights and publisher permissions require specialist review. A digital scan is not a commercial reuse license.",
+      "system": "lalkitab",
+      "notes": "Separate school and vocabulary from Parashari. Copyright Office of India 2024 application list includes a Lal Kitab titled ILM SAMUNDRIK KI LAL KITAB KE FARMAN 1939; an application is not a final ownership ruling. Source: https://copyright.gov.in/Documents/New_Applications/New_Applications_November_2024.pdf"
     }
   ]
 }

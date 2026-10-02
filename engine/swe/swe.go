@@ -22,6 +22,9 @@ const (
 	Mars         = int(C.SE_MARS)
 	Jupiter      = int(C.SE_JUPITER)
 	Saturn       = int(C.SE_SATURN)
+	Uranus       = int(C.SE_URANUS)
+	Neptune      = int(C.SE_NEPTUNE)
+	Pluto        = int(C.SE_PLUTO)
 	TrueNode     = int(C.SE_TRUE_NODE)
 	Gregorian    = int(C.SE_GREG_CAL)
 	FlagSwiss    = int(C.SEFLG_SWIEPH)
@@ -61,10 +64,17 @@ func Position(jd float64, body int) (longitude, speed float64, err error) {
 }
 
 func Position3D(jd float64, body int) (longitude, latitude, distance, speed float64, err error) {
+	return position3D(jd, body, FlagSwiss|FlagSpeed|FlagSidereal)
+}
+
+func TropicalPosition3D(jd float64, body int) (longitude, latitude, distance, speed float64, err error) {
+	return position3D(jd, body, FlagSwiss|FlagSpeed)
+}
+
+func position3D(jd float64, body, flags int) (longitude, latitude, distance, speed float64, err error) {
 	var xx [6]C.double
 	var serr [256]C.char
-	flags := C.int(FlagSwiss | FlagSpeed | FlagSidereal)
-	ret := C.swe_calc_ut(C.double(jd), C.int(body), flags, &xx[0], &serr[0])
+	ret := C.swe_calc_ut(C.double(jd), C.int(body), C.int(flags), &xx[0], &serr[0])
 	if ret < 0 {
 		return 0, 0, 0, 0, fmt.Errorf("swe_calc_ut: %s", C.GoString(&serr[0]))
 	}
@@ -72,6 +82,24 @@ func Position3D(jd float64, body int) (longitude, latitude, distance, speed floa
 		return 0, 0, 0, 0, fmt.Errorf("Swiss ephemeris data unavailable: %s", C.GoString(&serr[0]))
 	}
 	return float64(xx[0]), float64(xx[1]), float64(xx[2]), float64(xx[3]), nil
+}
+
+func TropicalHouses(jd, latitude, longitude float64, wholeSign bool) (float64, []float64, error) {
+	var cusps [13]C.double
+	var ascmc [10]C.double
+	system := C.int('P')
+	if wholeSign {
+		system = C.int('W')
+	}
+	ret := C.swe_houses_ex(C.double(jd), 0, C.double(latitude), C.double(longitude), system, &cusps[0], &ascmc[0])
+	if ret < 0 {
+		return 0, nil, fmt.Errorf("house calculation unavailable at this latitude; choose whole-sign houses")
+	}
+	out := make([]float64, 12)
+	for i := range out {
+		out[i] = float64(cusps[i+1])
+	}
+	return float64(ascmc[0]), out, nil
 }
 
 func Ascendant(jd, latitude, longitude float64) (float64, error) {

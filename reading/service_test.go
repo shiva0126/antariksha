@@ -106,7 +106,7 @@ func TestPromptCarriesKeyedRules(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(p, "RULE yoga:gajakesari") || !strings.Contains(p, "never repeat their fatalistic") {
+	if !strings.Contains(p, "HISTORICAL REFERENCE yoga:gajakesari") || !strings.Contains(p, "explain a humane present-day theme") || strings.Contains(p, "RULE yoga:gajakesari") || strings.Contains(p, "body") {
 		t.Fatal(p)
 	}
 }
@@ -134,7 +134,7 @@ func TestGroundedReadingIsComplete(t *testing.T) {
 	if r.Themes.Career == "" || r.Themes.Relationships == "" || r.Themes.Strengths == "" || r.Themes.GrowthAreas == "" {
 		t.Fatalf("empty themes %+v", r.Themes)
 	}
-	if !strings.Contains(r.Dashas.Current, "Venus mahadasha with Jupiter antardasha") {
+	if !strings.Contains(r.Dashas.Current, "Venus") || !strings.Contains(r.Dashas.Current, "Jupiter") || strings.Contains(r.Dashas.Current, "mahadasha with") {
 		t.Fatalf("dasha %q", r.Dashas.Current)
 	}
 	if err := validate(r, f); err != nil {
@@ -169,7 +169,7 @@ func TestChatAnswersByTopic(t *testing.T) {
 		}
 		return a
 	}
-	if a := ask("How will my career go?", nil); !contains(a.Topics, "career") || !strings.Contains(a.Answer, "10th house is Mesha") || len(a.Sources) == 0 {
+	if a := ask("How will my career go?", nil); !contains(a.Topics, "career") || !strings.Contains(a.Answer, "work, responsibility") || !strings.Contains(a.Answer, "Chart position details") || len(a.Sources) == 0 {
 		t.Fatalf("career: %+v", a)
 	}
 	if a := ask("Do I have mangal dosha?", nil); !strings.Contains(a.Answer, "Mangal dosha") {

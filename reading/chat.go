@@ -157,14 +157,18 @@ func chatPrompt(f engine.ChartFacts, in *insight, q string, history []ChatTurn, 
 	}
 	var rb strings.Builder
 	for _, r := range in.used {
+		if strings.Contains(r.Source, "[public_domain]") {
+			fmt.Fprintf(&rb, "\nHISTORICAL REFERENCE %s:%s (%s, %s); citation metadata only, use the project's plain-language interpretation.\n", r.DocType, r.Key, r.Source, r.Ref)
+			continue
+		}
 		fmt.Fprintf(&rb, "\nRULE %s:%s (%s): %s\n", r.DocType, r.Key, r.Source, r.Body)
 	}
 	var hb strings.Builder
 	for _, t := range lastTurns(history, 6) {
 		fmt.Fprintf(&hb, "%s: %s\n", strings.ToUpper(t.Role), t.Content)
 	}
-	return fmt.Sprintf(`You are Astrisk, a careful Vedic astrology assistant. Answer the user's question about their own birth chart in 120-220 words of plain text, warm and non-deterministic. Return JSON only: {"answer": string}.
-Use only the CHART FACTS (computed by Swiss Ephemeris; never recompute or change a position, house, dasha or yoga) and the RULES. The DRAFT ANSWER is already correct and grounded; improve its clarity and relevance to the question, keep every fact in it, and add nothing that the facts or rules do not support. Classical passages marked public_domain are historical and archaic: convey their theme, never repeat fatalistic, derogatory, gendered or bodily predictions literally. Never predict death, illness, divorce or financial ruin. End with: "For reflection, not certainty."
+	return fmt.Sprintf(`You are Astrisk, a friendly Vedic astrology guide for someone new to astrology. Answer in 120-220 words of plain everyday English. Explain Indian terms the first time they appear. Start with the practical meaning and use a concrete reflection question when helpful. Return JSON only: {"answer": string}.
+Use only the CHART FACTS (computed by Swiss Ephemeris; never recompute or change a position, house, dasha or yoga) and the RULES. The DRAFT ANSWER is already correct and grounded; improve its clarity and relevance to the question, keep every fact in it, and add nothing that the facts or rules do not support. Do not treat a chart as evidence about the person's real life. Classical passages marked public_domain may be old-fashioned or harmful: explain a humane present-day theme in your own words; do not quote them. Never predict death, illness, divorce or financial ruin. End with: "For reflection, not certainty."
 CHART FACTS: %s
 RULES:%s
 CONVERSATION SO FAR:
@@ -209,19 +213,23 @@ func compose(in *insight, q string, history []ChatTurn, cc ChatContext) (string,
 		case "career":
 			add(in.houseSummary(10))
 			for _, id := range engine.GrahasInHouse(f.Chart, 10) {
-				add(fmt.Sprintf("%s: %s", in.placement(id), firstSentence(in.entry(engine.DocGrahaInHouse, id+"_in_10"), 300)))
+				add(firstSentence(in.entry(engine.DocGrahaInHouse, id+"_in_10"), 300))
+				add("Chart position details: " + in.placement(id) + ".")
 			}
 			if lord := engine.HouseLord(f.Chart, 10); in.house(lord) != 10 {
-				add(fmt.Sprintf("The 10th lord %s is in the %s house: %s", engine.GrahaEnglish(lord), ordinal(in.house(lord)), firstSentence(in.entry(engine.DocGrahaInHouse, fmt.Sprintf("%s_in_%d", lord, in.house(lord))), 280)))
+				add("A traditional career indicator is " + engine.GrahaEnglish(lord) + ". " + firstSentence(in.entry(engine.DocGrahaInHouse, fmt.Sprintf("%s_in_%d", lord, in.house(lord))), 280))
+				add("Chart position details: " + in.placement(lord) + ".")
 			}
 			add(careerYogas(in))
 			add(vargaLine(in, 10, "sun", "saturn"))
 		case "marriage":
 			add(in.houseSummary(7))
 			for _, id := range engine.GrahasInHouse(f.Chart, 7) {
-				add(fmt.Sprintf("%s: %s", in.placement(id), firstSentence(in.entry(engine.DocGrahaInHouse, id+"_in_7"), 300)))
+				add(firstSentence(in.entry(engine.DocGrahaInHouse, id+"_in_7"), 300))
+				add("Chart position details: " + in.placement(id) + ".")
 			}
-			add("Venus, the natural significator of partnership: " + in.placement("venus") + ". " + firstSentence(in.entry(engine.DocGrahaInHouse, fmt.Sprintf("venus_in_%d", in.house("venus"))), 260))
+			add("Venus is one traditional symbol for affection and partnership. " + firstSentence(in.entry(engine.DocGrahaInHouse, fmt.Sprintf("venus_in_%d", in.house("venus"))), 260))
+			add("Chart position details: " + in.placement("venus") + ".")
 			add(vargaLine(in, 9, "venus", "jupiter"))
 			add(mangal(in))
 		case "wealth":
@@ -236,14 +244,15 @@ func compose(in *insight, q string, history []ChatTurn, cc ChatContext) (string,
 		case "health":
 			add(in.houseSummary(1))
 			add(in.houseSummary(6))
-			add("For any health concern, please rely on a qualified doctor; the chart only describes constitution and tendencies.")
+			add("Astrology cannot assess or diagnose health. Please ask a qualified doctor about health concerns.")
 		case "education":
 			add(in.houseSummary(4))
 			add(in.houseSummary(5))
-			add("Mercury, significator of learning: " + in.placement("mercury") + ". Jupiter, significator of wisdom: " + in.placement("jupiter") + ".")
+			add("Mercury and Jupiter are traditionally used to reflect on learning and teaching. These are symbolic associations, not measures of ability.")
+			add("Chart position details: Mercury — " + in.placement("mercury") + "; Jupiter — " + in.placement("jupiter") + ".")
 		case "children":
 			add(in.houseSummary(5))
-			add("Jupiter, the natural significator of children: " + in.placement("jupiter") + ".")
+			add("Some astrological traditions include Jupiter as a symbol when discussing family. A chart cannot predict fertility or a child's health; consult a qualified professional for those questions.")
 		case "mangal_dosha":
 			add(mangal(in))
 		case "sade_sati":
@@ -252,36 +261,30 @@ func compose(in *insight, q string, history []ChatTurn, cc ChatContext) (string,
 			add(in.dashaLine())
 			add(in.entry(engine.DocDasha, "dasha_"+f.Vimshottari.Current.Maha))
 			if a := f.Vimshottari.Current.Antara; a != "" && a != f.Vimshottari.Current.Maha {
-				add(fmt.Sprintf("Within it, the %s antardasha colours events: %s", engine.GrahaEnglish(a), firstSentence(in.entry(engine.DocDasha, "dasha_"+a), 240)))
+				add(fmt.Sprintf("Within the longer period, a shorter phase associated with %s is also considered: %s", engine.GrahaEnglish(a), firstSentence(in.entry(engine.DocDasha, "dasha_"+a), 240)))
 			}
 			if p := f.Vimshottari.Current.Pratyantara; p != "" {
 				add(fmt.Sprintf("The finer pratyantardasha running now is %s.", engine.GrahaEnglish(p)))
 			}
 			if y := f.Yogini.Current; y.Yogini != "" {
-				add(fmt.Sprintf("In the Yogini dasha system you are in %s (ruled by %s) until %s.", y.Yogini, engine.GrahaEnglish(y.Lord), y.To))
+				add(fmt.Sprintf("A second traditional timing method, called Yogini dasha, assigns this phase to %s until %s.", engine.GrahaEnglish(y.Lord), y.To))
 			}
 		case "yoga":
 			if len(f.Yogas) == 0 {
 				add("The engine detects none of the yogas in its catalogue for this chart.")
 			}
 			for _, y := range f.Yogas {
-				m, c := in.yogaMeaning(y)
+				m, _ := in.yogaMeaning(y)
 				line := fmt.Sprintf("%s (%s): %s", y.Name, y.Strength, m)
-				if c != "" {
-					line += " Classical text: " + c
-				}
 				add(line)
 			}
 		case "nakshatra":
 			moon := in.grahas["moon"]
-			add(fmt.Sprintf("Your janma nakshatra (the Moon's star) is %s, pada %d.", moon.Nakshatra, moon.NakshatraPada))
+			add(fmt.Sprintf("Your birth star, called nakshatra in this tradition, is %s (quarter %d).", moon.Nakshatra, moon.NakshatraPada))
 			add(in.entry(engine.DocNakshatra, engine.Slug(moon.Nakshatra)))
-			if c, src := in.classic(engine.DocNakshatra, engine.Slug(moon.Nakshatra)); c != "" {
-				add(fmt.Sprintf("Classical text: \"%s\" — %s", c, src))
-			}
 		case "lagna":
 			lagna := in.signs[in.lagnaSign()]
-			add(fmt.Sprintf("Your ascendant is %s at %.2f°.", lagna, f.Chart.Ascendant.Degree))
+			add(fmt.Sprintf("Your rising sign (ascendant, or Lagna) is %s. It is the sign on the eastern horizon at birth.", lagna))
 			add(in.entry(engine.DocBhava, "lagna_"+engine.Slug(lagna)))
 			lord := engine.HouseLord(f.Chart, 1)
 			add(fmt.Sprintf("The lagna lord %s: %s.", engine.GrahaEnglish(lord), in.placement(lord)))
@@ -298,11 +301,8 @@ func compose(in *insight, q string, history []ChatTurn, cc ChatContext) (string,
 		if contains(ts, "marriage") && id == "venus" || contains(ts, "moon_sign") && id == "moon" {
 			continue
 		}
-		add(in.placement(id) + ".")
 		add(in.grahaMeaning(id))
-		if c, src := in.classic(engine.DocGrahaInHouse, fmt.Sprintf("%s_in_%d", id, in.house(id))); c != "" {
-			add(fmt.Sprintf("Classical text: \"%s\" — %s", c, src))
-		}
+		add("Chart position details: " + in.placement(id) + ".")
 	}
 	if house > 0 && !contains(ts, "career") && !contains(ts, "marriage") {
 		add(in.houseSummary(house))
@@ -337,13 +337,14 @@ func careerYogas(in *insight) string {
 	for _, y := range in.f.Yogas {
 		switch y.Type {
 		case "raja", "mahapurusha":
-			names = append(names, y.Name)
+			m, _ := in.yogaMeaning(y)
+			names = append(names, y.Name+": "+m)
 		}
 	}
 	if len(names) == 0 {
 		return ""
 	}
-	return "Yogas that support status and achievement: " + strings.Join(names, ", ") + "."
+	return "The chart has patterns traditionally called yogas (combinations). Some schools associate these with work and achievement; use them as reflection prompts, not forecasts: " + strings.Join(names, "; ") + "."
 }
 
 func mangal(in *insight) string {

@@ -1,8 +1,8 @@
 import {test,expect} from '@playwright/test';
 
-test('owner grants family assistance, helper suggests, owner revokes',async({page,browser})=>{
- const base='http://127.0.0.1:3000',headers={Origin:base};
- const helperContext=await browser.newContext(),candidateContext=await browser.newContext();
+test('owner grants family assistance, helper suggests, owner revokes',async({page,browser,baseURL})=>{
+ const base=baseURL!,headers={Origin:base};
+ const helperContext=await browser.newContext({baseURL}),candidateContext=await browser.newContext({baseURL});
  const helperPage=await helperContext.newPage();
  const requests=[page.request,helperContext.request,candidateContext.request];
  const members:any[]=[];

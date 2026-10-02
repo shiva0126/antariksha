@@ -68,6 +68,12 @@ if ! psql -Atqc 'SELECT 1 FROM native_schema_migrations WHERE version=11' | grep
   psql -v ON_ERROR_STOP=1 --single-transaction -f db/migrations/000011_chart_storage_email.up.sql -c 'INSERT INTO native_schema_migrations(version) VALUES(11)'
 fi
 export DATABASE_URL="postgresql:///panchang?host=$RUNTIME&port=55432&user=panchang&sslmode=disable"
+if ! psql -Atqc 'SELECT 1 FROM native_schema_migrations WHERE version=12' | grep -q '^1$'; then
+  psql -v ON_ERROR_STOP=1 --single-transaction -f db/migrations/000012_matrimony_biodata.up.sql -c 'INSERT INTO native_schema_migrations(version) VALUES(12)'
+fi
+if ! psql -Atqc 'SELECT 1 FROM native_schema_migrations WHERE version=13' | grep -q '^1$'; then
+  psql -v ON_ERROR_STOP=1 --single-transaction -f db/migrations/000013_character.up.sql -c 'INSERT INTO native_schema_migrations(version) VALUES(13)'
+fi
 if [[ "${CORPUS_DB:-}" == 1 ]]; then
   # Classical sources are fetched once and sha256-verified; offline starts
   # still load the full self-authored corpus.

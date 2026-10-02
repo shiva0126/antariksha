@@ -1,0 +1,11 @@
+.more-readings { max-width: 1160px; margin: auto; padding: 2rem 1rem; }
+.more-readings .tabs { display: flex; flex-wrap: wrap; gap: .7rem; margin: 1.5rem 0; }
+.more-readings [aria-selected="true"] { color: #e9cc87; border-color: #c9a459; }
+.reading-number { font-family: Georgia, serif; font-size: 4rem; color: #e9cc87; }
+.reflection-question { border-left: 2px solid #b99a60; padding-left: 1rem; }
+.tarot-spread { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,260px),1fr)); gap: 1.25rem; }
+.tarot-card { background: radial-gradient(ellipse at top,#27233a,transparent 60%),#111522; }
+.tarot-emblem { width: 92px; height: 120px; margin: 1.5rem auto; border: 1px solid #ad945e; border-radius: 50% 50% 5px 5px; display: grid; place-items: center; color: #e9cc87; }
+.tarot-emblem span { font-size: 4rem; }
+.more-readings details { margin-top: 1rem; }
+.more-readings summary { cursor: pointer; }

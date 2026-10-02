@@ -73,7 +73,8 @@ func (s *Server) accountGuard(next http.HandlerFunc) http.HandlerFunc {
 				return
 			}
 			mediaType, _, _ := mime.ParseMediaType(r.Header.Get("Content-Type"))
-			if r.Method != "DELETE" && mediaType != "application/json" && !(r.URL.Path == "/api/community/media" && mediaType == "multipart/form-data") {
+			photoUpload := r.URL.Path == "/api/community/media" || r.URL.Path == "/api/matrimony/photos"
+			if r.Method != "DELETE" && mediaType != "application/json" && !(photoUpload && mediaType == "multipart/form-data") {
 				problem(w, 415, fmt.Errorf("JSON required"))
 				return
 			}

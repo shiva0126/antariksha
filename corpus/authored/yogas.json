@@ -3,23 +3,113 @@
   "system": "parashari",
   "language": "en",
   "entries": [
-    {"doc_type": "yoga", "key": "gajakesari", "title": "Gajakesari Yoga", "body": "Jupiter in a kendra (1st, 4th, 7th or 10th) from the Moon. The name joins the elephant and the lion, and classical texts associate it with intelligence, good judgement, reputation, eloquence and the support of well-placed people. Its strength depends on Jupiter's and the Moon's dignity and on freedom from affliction or combustion. It describes a tendency, not a guarantee."},
-    {"doc_type": "yoga", "key": "budha_aditya", "title": "Budha-Aditya Yoga", "body": "The Sun and Mercury in the same sign. Classically linked to intellect, skill in work, communication and recognition for learning. Because Mercury is always close to the Sun this is very common, so its weight comes from the house, the dignity of both planets and how deeply Mercury is combust. A combust Mercury shifts the emphasis from brilliance to effort."},
-    {"doc_type": "yoga", "key": "chandra_mangala", "title": "Chandra-Mangala Yoga", "body": "The Moon and Mars in the same sign. Traditionally a wealth yoga: enterprise, the drive to earn, and resourcefulness in trade or property. The same pairing can make emotions quick and fiery. Its results improve when the sign and house are supportive and the pair is aspected by benefics."},
-    {"doc_type": "yoga", "key": "ruchaka", "title": "Ruchaka Mahapurusha Yoga", "body": "Mars in its own sign (Mesha, Vrishchika) or exaltation (Makara) in a kendra from the ascendant. It is one of the five Mahapurusha yogas and is associated with courage, physical strength, leadership in action and success in fields such as the military, sport, engineering or command. Mars's intensity also calls for discipline."},
-    {"doc_type": "yoga", "key": "bhadra", "title": "Bhadra Mahapurusha Yoga", "body": "Mercury in its own sign (Mithuna, Kanya) or exaltation (Kanya) in a kendra from the ascendant. It is associated with intelligence, eloquence, skill in trade, learning and a youthful, adaptable nature. Communication, analysis and commerce are its natural fields."},
-    {"doc_type": "yoga", "key": "hamsa", "title": "Hamsa Mahapurusha Yoga", "body": "Jupiter in its own sign (Dhanu, Meena) or exaltation (Karka) in a kendra from the ascendant. It is associated with wisdom, righteousness, respect from others, a spiritual disposition and good fortune. Teaching, counsel and dharma-oriented work suit it."},
-    {"doc_type": "yoga", "key": "malavya", "title": "Malavya Mahapurusha Yoga", "body": "Venus in its own sign (Vrishabha, Tula) or exaltation (Meena) in a kendra from the ascendant. It is associated with charm, refinement, artistic talent, comfort, vehicles and happiness in relationships. The caution is indulgence."},
-    {"doc_type": "yoga", "key": "sasa", "title": "Sasa Mahapurusha Yoga", "body": "Saturn in its own sign (Makara, Kumbha) or exaltation (Tula) in a kendra from the ascendant. It is associated with authority gained through perseverance, organisational power, leadership of groups and endurance. Results tend to mature with age."},
-    {"doc_type": "yoga", "key": "raja_yoga", "title": "Raja Yoga (kendra-trikona)", "body": "An association between the lord of a kendra (1, 4, 7, 10), representing effort and position, and the lord of a trikona (1, 5, 9), representing merit and fortune. Classically this promises rise in status and influence, especially during the dashas of the planets involved. Strength depends on their dignity and on whether they also rule difficult houses."},
-    {"doc_type": "yoga", "key": "dhana_yoga", "title": "Dhana Yoga", "body": "An association between lords of the wealth houses (2, 5, 9, 11). Tradition reads accumulation of resources and gains through the areas those houses govern, most noticeable in the relevant dashas. Afflictions or dusthana involvement reduce or delay the results."},
-    {"doc_type": "yoga", "key": "vipreet_raja_yoga", "title": "Vipreet Raja Yoga", "body": "The lord of a dusthana (6, 8, 12) placed in a dusthana. The 'reversed' raja yoga describes gains that emerge from difficulty: success after setbacks, rising when rivals fall, or strength found in crisis. Its results often come suddenly and after a period of challenge."},
-    {"doc_type": "yoga", "key": "adhi_yoga", "title": "Adhi Yoga", "body": "Natural benefics (Mercury, Jupiter, Venus) in the 6th, 7th or 8th from the Moon. Classical texts associate it with leadership, comfort, victory over opponents and good health, graded by how many benefics take part and how strong they are. Its protective support is felt through the mind and the social position."},
-    {"doc_type": "yoga", "key": "sunapha", "title": "Sunapha Yoga", "body": "Planets other than the Sun in the 2nd from the Moon. It is linked to self-earned wealth, intelligence and a good reputation. The planets forming it colour the result: Mars adds enterprise, Mercury skill, Jupiter virtue, Venus comfort and Saturn endurance."},
-    {"doc_type": "yoga", "key": "anapha", "title": "Anapha Yoga", "body": "Planets other than the Sun in the 12th from the Moon. It is associated with good health, self-control, a dignified presence and contentment. The planets forming it colour its expression, and inner resources are its hallmark."},
-    {"doc_type": "yoga", "key": "durudhara", "title": "Durudhara Yoga", "body": "Planets other than the Sun on both sides of the Moon, in the 2nd and the 12th. Traditionally it combines the qualities of Sunapha and Anapha: comforts, wealth, generosity and support around the person. A mind supported from both sides is its core image."},
-    {"doc_type": "yoga", "key": "kemadruma", "title": "Kemadruma Yoga", "body": "No planets other than the Sun in the 2nd or 12th from the Moon, and none in a kendra from it. Classically a caution about loneliness, fluctuating resources or emotional isolation. Many cancellations are recognised: planets in kendras from the lagna or Moon, a strong or aspected Moon, and benefics in upachayas. Read it as a call to build support, never as a sentence."},
-    {"doc_type": "yoga", "key": "neecha_bhanga_raja_yoga", "title": "Neecha Bhanga Raja Yoga", "body": "The cancellation of a planet's debilitation, for example when the lord of its sign of fall or of its exaltation sign occupies a kendra. Classical texts read this as turning weakness into strength: a start marked by struggle that later yields notable success in the planet's significations."},
-    {"doc_type": "yoga", "key": "kala_sarpa", "title": "Kala Sarpa (pattern)", "body": "All seven planets lie on one side of the Rahu–Ketu axis. It is not described in BPHS itself and comes from later tradition. It is read as a life of concentrated, sometimes uneven intensity, with periods of striving followed by breakthroughs. Its weight depends on the full chart, so it should not be treated as a stand-alone affliction."}
+    {
+      "doc_type": "yoga",
+      "key": "gajakesari",
+      "title": "Gajakesari Yoga",
+      "body": "Learning, good judgement and support from others are the traditional themes of this pattern. A practical way to explore it is to ask for advice, then explain your own reasoning before making a decision. It does not mean that you are automatically wise, famous or protected from difficulty."
+    },
+    {
+      "doc_type": "yoga",
+      "key": "budha_aditya",
+      "title": "Budha-Aditya Yoga",
+      "body": "This pattern connects self-expression with thinking and communication. You could practise explaining an idea clearly, writing down a plan or listening before defending your view. It is common because Mercury stays near the Sun; its presence alone does not prove exceptional intelligence."
+    },
+    {
+      "doc_type": "yoga",
+      "key": "chandra_mangala",
+      "title": "Chandra-Mangala Yoga",
+      "body": "This pattern brings together feelings and the drive to act. When something matters to you, try turning the feeling into one constructive step and give yourself time before reacting. It is not a promise of wealth or a claim that you have a quick temper."
+    },
+    {
+      "doc_type": "yoga",
+      "key": "ruchaka",
+      "title": "Ruchaka Mahapurusha Yoga",
+      "body": "Taking initiative, setting boundaries and following through are the traditional themes here. Choose a realistic challenge and work on it steadily, with space for feedback and rest. This pattern does not choose your career or measure physical ability."
+    },
+    {
+      "doc_type": "yoga",
+      "key": "bhadra",
+      "title": "Bhadra Mahapurusha Yoga",
+      "body": "Clear communication, curiosity and practical problem-solving are the themes associated with this pattern. Try breaking a complicated task into steps or checking that another person understood what you meant. Learning depends on opportunity and practice, not a chart label."
+    },
+    {
+      "doc_type": "yoga",
+      "key": "hamsa",
+      "title": "Hamsa Mahapurusha Yoga",
+      "body": "This pattern is traditionally associated with learning, guidance and a sense of purpose. Consider what you would like to learn, who can teach you and where your own experience might help someone else. It does not make a person morally superior or guarantee good fortune."
+    },
+    {
+      "doc_type": "yoga",
+      "key": "malavya",
+      "title": "Malavya Mahapurusha Yoga",
+      "body": "Appreciation, creativity and balanced relationships are the traditional themes. Make time for a creative interest or talk openly about what makes a shared space comfortable for both people. A chart cannot promise an attractive partner, a happy marriage or material comforts."
+    },
+    {
+      "doc_type": "yoga",
+      "key": "sasa",
+      "title": "Sasa Mahapurusha Yoga",
+      "body": "Patience, responsibility and building something that lasts are the themes of this pattern. A manageable routine, clear boundaries and shared responsibilities can be useful things to reflect on. You do not need to accept hardship to fulfil a chart; support and rest matter too."
+    },
+    {
+      "doc_type": "yoga",
+      "key": "raja_yoga",
+      "title": "Raja Yoga (kendra-trikona)",
+      "body": "This pattern traditionally connects personal initiative with purpose and responsibility. Reflect on a skill you would like to develop and one way to use it in work or community life. Despite its royal name, it does not promise leadership, status or success."
+    },
+    {
+      "doc_type": "yoga",
+      "key": "dhana_yoga",
+      "title": "Dhana Yoga",
+      "body": "This pattern is traditionally discussed in relation to resources, learning and opportunities. Use it as a prompt to review practical goals and the skills or support needed to pursue them. It is not a financial forecast or a reason to make an investment; seek qualified advice for financial decisions."
+    },
+    {
+      "doc_type": "yoga",
+      "key": "vipreet_raja_yoga",
+      "title": "Vipreet Raja Yoga",
+      "body": "The traditional theme is finding constructive responses to difficult circumstances. Think about a challenge you can address, the support available and one small step within your control. It does not predict a crisis or mean that suffering is necessary for success."
+    },
+    {
+      "doc_type": "yoga",
+      "key": "adhi_yoga",
+      "title": "Adhi Yoga",
+      "body": "Support, cooperation and considered decisions are the themes associated with this pattern. You might reflect on who helps you feel supported and how to ask for help clearly. It does not guarantee protection, health or victory over other people."
+    },
+    {
+      "doc_type": "yoga",
+      "key": "sunapha",
+      "title": "Sunapha Yoga",
+      "body": "This pattern traditionally points to initiative and the development of personal resources. Consider a skill you enjoy using and how regular practice could help you become more confident. It is not evidence of future income, reputation or intelligence."
+    },
+    {
+      "doc_type": "yoga",
+      "key": "anapha",
+      "title": "Anapha Yoga",
+      "body": "Space for reflection, self-direction and inner resources are the traditional themes. A quiet routine or a clear boundary around your time may be useful to consider. It does not measure wellbeing or imply that you should manage everything alone."
+    },
+    {
+      "doc_type": "yoga",
+      "key": "durudhara",
+      "title": "Durudhara Yoga",
+      "body": "This pattern is traditionally associated with support around emotional life and everyday responsibilities. Think about the balance between taking initiative and letting other people support you. The chart cannot tell whether you actually have a support network; your lived experience comes first."
+    },
+    {
+      "doc_type": "yoga",
+      "key": "kemadruma",
+      "title": "Kemadruma Yoga",
+      "body": "Some traditions use this pattern to discuss the importance of emotional support and steady routines. Treat it as a gentle invitation to identify people and habits that help you feel connected. It is not a diagnosis, a prediction of poverty or loneliness, or a reason to be afraid. Different schools use different cancellation rules."
+    },
+    {
+      "doc_type": "yoga",
+      "key": "neecha_bhanga_raja_yoga",
+      "title": "Neecha Bhanga Raja Yoga",
+      "body": "This pattern describes a chart condition that offsets another condition traditionally called challenging. In everyday terms, it is a reminder that one label never tells the whole story and that support can change how challenges are approached. It does not prove past hardship or promise future success. The technical cancellation is computed by the engine, not inferred from your life."
+    },
+    {
+      "doc_type": "yoga",
+      "key": "kala_sarpa",
+      "title": "Kala Sarpa (pattern)",
+      "body": "This is a geometric grouping of planets on one side of the Moon's nodal axis, interpreted differently across traditions. If you choose to use it symbolically, consider balance between the areas of life that receive most of your attention. It is not a curse or a reason to buy remedies. This later interpretive pattern should never outweigh the rest of the chart or your own experience."
+    }
   ]
 }

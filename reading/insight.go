@@ -177,22 +177,18 @@ func (in *insight) grahaMeaning(id string) string {
 
 // houseSummary explains a house: its sign, its lord's placement and occupants.
 func (in *insight) houseSummary(h int) string {
-	sign := engine.HouseSign(in.f.Chart, h)
 	lord := engine.HouseLord(in.f.Chart, h)
 	var b strings.Builder
-	fmt.Fprintf(&b, "Your %s house is %s, ruled by %s, which sits in the %s house (%s).", ordinal(h), in.signs[sign], engine.GrahaEnglish(lord), ordinal(in.house(lord)), in.signs[in.signIdx(lord)])
+	if t := in.entry(engine.DocBhava, fmt.Sprintf("bhava_%d", h)); t != "" {
+		b.WriteString(t)
+	}
 	occ := engine.GrahasInHouse(in.f.Chart, h)
 	if len(occ) == 0 {
-		b.WriteString(" No graha occupies it, so its lord carries most of the weight.")
+		fmt.Fprintf(&b, " There is no planet in this section of the chart; that does not mean this area of life is missing. The tradition also considers %s, the planet associated with its sign.", engine.GrahaEnglish(lord))
 	} else {
-		names := make([]string, len(occ))
-		for i, id := range occ {
-			names[i] = engine.GrahaEnglish(id)
+		for _, id := range occ {
+			fmt.Fprintf(&b, " %s: %s", engine.GrahaEnglish(id), firstSentence(in.entry(engine.DocGrahaInHouse, fmt.Sprintf("%s_in_%d", id, h)), 180))
 		}
-		fmt.Fprintf(&b, " Occupied by %s.", strings.Join(names, ", "))
-	}
-	if t := in.entry(engine.DocBhava, fmt.Sprintf("bhava_%d", h)); t != "" {
-		b.WriteString(" " + t)
 	}
 	return b.String()
 }
@@ -218,15 +214,15 @@ func (in *insight) dashaLine() string {
 	if d.Current.Maha == "" {
 		return "The current Vimshottari period could not be determined for this date."
 	}
-	line := fmt.Sprintf("You are in %s mahadasha with %s antardasha (%s to %s).", engine.GrahaEnglish(d.Current.Maha), engine.GrahaEnglish(d.Current.Antara), d.Current.From, d.Current.To)
+	line := fmt.Sprintf("The current main period is associated with %s, with a shorter %s period inside it (%s to %s). These are traditionally called mahadasha and antardasha.", engine.GrahaEnglish(d.Current.Maha), engine.GrahaEnglish(d.Current.Antara), d.Current.From, d.Current.To)
 	for _, p := range d.Sequence {
 		if p.Lord == d.Current.Maha && p.To > d.Current.From {
-			line += fmt.Sprintf(" The %s mahadasha runs until %s.", engine.GrahaEnglish(p.Lord), p.To)
+			line += fmt.Sprintf(" The main %s period runs until %s.", engine.GrahaEnglish(p.Lord), p.To)
 			break
 		}
 	}
 	if d.Upcoming.Lord != "" {
-		line += fmt.Sprintf(" %s mahadasha follows from %s.", engine.GrahaEnglish(d.Upcoming.Lord), d.Upcoming.From)
+		line += fmt.Sprintf(" The main %s period follows from %s.", engine.GrahaEnglish(d.Upcoming.Lord), d.Upcoming.From)
 	}
 	return line
 }
@@ -237,14 +233,14 @@ func (in *insight) strengths() []string {
 	for _, id := range engine.GrahaIDs {
 		switch in.f.Dignities[id].State {
 		case "exalted":
-			out = append(out, engine.GrahaEnglish(id)+" is exalted in "+in.signs[in.signIdx(id)])
+			out = append(out, engine.GrahaEnglish(id)+" has a placement traditionally considered especially supported. "+firstSentence(in.grahaMeaning(id), 180))
 		case "own":
-			out = append(out, engine.GrahaEnglish(id)+" is in its own sign "+in.signs[in.signIdx(id)])
+			out = append(out, engine.GrahaEnglish(id)+" is in a sign traditionally associated with it. "+firstSentence(in.grahaMeaning(id), 180))
 		}
 	}
 	for _, y := range in.f.Yogas {
 		if y.Type != "caution" {
-			out = append(out, y.Name+" ("+y.Strength+")")
+			out = append(out, y.Name+": "+firstSentence(in.entry(engine.DocYoga, engine.Slug(y.Name)), 180))
 		}
 	}
 	return out
@@ -255,19 +251,19 @@ func (in *insight) challenges() []string {
 	for _, id := range engine.GrahaIDs {
 		d := in.f.Dignities[id]
 		if d.State == "debilitated" {
-			s := engine.GrahaEnglish(id) + " is debilitated in " + in.signs[in.signIdx(id)]
+			s := engine.GrahaEnglish(id) + " has a placement traditionally described as challenging, not a personal weakness. " + firstSentence(in.grahaMeaning(id), 180)
 			if d.NeechaBhanga {
-				s += ", though the debilitation is cancelled"
+				s += " The engine also detects a condition that offsets that label"
 			}
 			out = append(out, s)
 		}
 		if in.f.Combustion[id] {
-			out = append(out, engine.GrahaEnglish(id)+" is combust (close to the Sun)")
+			out = append(out, engine.GrahaEnglish(id)+" is close to the Sun in the chart (called combustion). This is a symbolic caution, not a loss of ability")
 		}
 	}
 	for _, y := range in.f.Yogas {
 		if y.Type == "caution" {
-			out = append(out, y.Name+" is present")
+			out = append(out, y.Name+": "+in.entry(engine.DocYoga, engine.Slug(y.Name)))
 		}
 	}
 	sort.Strings(out)

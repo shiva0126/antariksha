@@ -54,6 +54,18 @@ go run ./cmd/corpus search -q "Jupiter in a kendra from the Moon"
 - 108 passages from *The Brihat Jataka of Varaha Mihira*, tr. N. Chidambaram Iyer (1885, public domain), chapters XIII (Chandra yogas), XIV (planet pairs), XVI (Moon's nakshatra), XVII (Moon in signs) and XX (planets in houses, dignity scaling).
 - Other canonical texts are recorded in the manifest as `not_acquired` or `copyrighted_blocked`, with notes on what clearing each would take.
 
+The English self-authored entries were revised to explain themes in ordinary language, offer optional reflection questions and avoid presenting a chart as evidence about a person's lived experience. Historical public-domain passages remain available for grounding and citations, but reading and chat responses do not repeat old prediction wording verbatim. These authored explanations are editorial interpretations, not translations.
+
+## Retrieval and model status
+
+The live schema supports `vector(1536)` and has an HNSW index, but the corpus currently has **447 rows and zero embeddings**. Reading requests retrieve on exact engine keys. Semantic search cannot return useful neighbors until vectors are generated with a configured, compatible model. No book has been used for fine-tuning. Embedding this library requires a configured provider and its API spend; check row status after loading before describing semantic search as available.
+
+## Lal Kitab and editions awaiting review
+
+`corpus/sources.json` records the original five Lal Kitab volumes in their own `lalkitab` namespace as `not_acquired`. No Lal Kitab text or modern English rendering has been ingested. A scan site is not proof of commercial reuse permission, and a 1939 or 1952 publication date alone does not settle rights across jurisdictions, authorship, translations or editions. The Copyright Office of India application list includes an application for a 1939-titled Lal Kitab edition; that record is a reason to check the claimant and edition, not a final ownership ruling. Lal Kitab should remain distinct from Parashari rules even after permissions are cleared. Its vocabulary and house conventions need reviewed implementation before its passages can be mapped to detections.
+
+Other requested texts—including BPHS, Bhrigu Sutras, Saravali, Phaladeepika, Jataka Parijata, Uttara Kalamrita, Sarvartha Chintamani, Hora Sara and Jaimini Sutras—remain source records with `not_acquired` status, not ingested books. The BPHS Santhanam English translation is explicitly blocked. A public-domain Sanskrit source still needs a careful human rendering and provenance check. References: [GRETIL's public-domain text catalogue](https://gretil.sub.uni-goettingen.de/gretil.html), [the Lal Kitab edition record on the Copyright Office site](https://copyright.gov.in/Documents/New_Applications/New_Applications_November_2024.pdf), and [Project Gutenberg's Manual of the Enumeration](https://www.gutenberg.org/ebooks/35998), which describes that separate numerology work as public domain in the US. The last source has not been added to Astrisk's corpus; territorial rights were not verified for every market, and Astrisk currently uses its own disclosed Pythagorean convention.
+
 ## pgvector without root
 
 The system PostgreSQL has no pgvector. `scripts/install-pgvector.sh` builds a user-owned relocated copy of the PostgreSQL 16 install in `.runtime/pgdist` and adds Ubuntu's `postgresql-16-pgvector` package to it. The native instance runs from that copy.

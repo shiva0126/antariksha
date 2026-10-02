@@ -5,10 +5,12 @@ import { FamilyAssistance } from './FamilyAssistance';
 import { People } from './People';
 import { FamilySpace } from './FamilySpace';
 import { Matrimony } from './Matrimony';
+import { MatrimonyModeration } from './MatrimonyModeration';
+import { MyCharacter } from './MyCharacter';
 import { CommunitySettings, Moderation, Security } from './Settings';
 import { memberAPI } from './shared';
 import './community.css';
-const tabs = ['Feed', 'Notifications', 'People', 'Family', 'Family assistance', 'Matrimony', 'Profile & interests', 'Security', 'Moderation'];
+const tabs = ['Feed', 'Notifications', 'People', 'Family', 'Family assistance', 'Matrimony', 'My character', 'Profile & interests', 'Security', 'Moderation'];
 export function CommunityPage() {
  const [moderator,setModerator]=useState(false);
  useEffect(()=>{memberAPI('/api/me/security').then(s=>setModerator(s.moderator)).catch(()=>{});},[]);
@@ -19,6 +21,8 @@ export function CommunityPage() {
  {tab === 'Feed' && <Feed />}{tab === 'People' && <People />}{tab === 'Family' && <FamilySpace />}{tab === 'Matrimony' && <Matrimony />}{tab === 'Profile & interests' && <CommunitySettings />}{tab === 'Security' && <Security />}{tab === 'Moderation' && <Moderation />}
  {tab === 'Notifications' && <Notifications navigate={setTab}/>}
  {tab === 'Family assistance' && <FamilyAssistance/>}
+ {tab === 'My character' && <MyCharacter/>}
+ {tab === 'Moderation' && <MatrimonyModeration/>}
  </>}
  </div>;
 }

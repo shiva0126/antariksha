@@ -68,8 +68,8 @@ func NewService(c Corpus, l LLM) *Service { return &Service{Corpus: c, LLM: l} }
 func ChartHash(in engine.ChartInput, language string) string {
 	b, _ := json.Marshal(struct {
 		engine.ChartInput
-		Ayanamsa, Language string
-	}{in, "lahiri", language})
+		Ayanamsa, Language, ReadingVersion string
+	}{in, "lahiri", language, "plain-language-v2"})
 	h := sha256.Sum256(b)
 	return hex.EncodeToString(h[:])
 }
@@ -138,9 +138,15 @@ func promptFor(f engine.ChartFacts, rules []Rule) (string, error) {
 	}
 	var rb strings.Builder
 	for _, r := range rules {
+		if strings.Contains(r.Source, "[public_domain]") {
+			// Historical wording stays available in the grounding record, but old
+			// predictions are not needed in a user-facing language-generation prompt.
+			fmt.Fprintf(&rb, "\nHISTORICAL REFERENCE %s:%s — %s (%s, %s). Citation metadata only; use the project-authored plain-language rule for this key.\n", r.DocType, r.Key, r.Title, r.Source, r.Ref)
+			continue
+		}
 		fmt.Fprintf(&rb, "\nRULE %s:%s — %s (%s): %s\n", r.DocType, r.Key, r.Title, r.Source, r.Body)
 	}
-	return fmt.Sprintf(`You are a careful Vedic astrology interpreter. Return only valid JSON matching this schema: {"summary":string,"lagna_and_moon":string,"grahas":[{"graha":string,"placement":string,"meaning":string}],"yogas":[{"name":string,"meaning":string,"effect":string,"strength":string}],"dashas":{"current":string,"upcoming":string},"themes":{"career":string,"relationships":string,"strengths":string,"growth_areas":string},"disclaimer":string}. The authoritative CHART FACTS below are computed by Swiss Ephemeris and Go. Never calculate, change or infer a position, house, dasha or yoga. Mention only listed yogas, and output exactly one yoga object per listed yoga. Use supportive non-deterministic language. Do not predict death, terminal illness, divorce or financial ruin. For medical, legal or financial questions advise a qualified professional. Always include: "For reflection, not certainty; this is not medical, legal or financial advice." Each INTERPRETATION RULE is keyed to a detected fact; ground your interpretation of that fact in its rules and use no rule for a fact it is not keyed to. Rules marked public_domain are historical classical passages in archaic language: convey their underlying theme, and never repeat their fatalistic, derogatory, gendered or bodily predictions literally.\nCHART FACTS:\n%s\nINTERPRETATION RULES:%s\nWrite a complete natal reading.`, string(b), rb.String()), nil
+	return fmt.Sprintf(`You are Astrisk, explaining Vedic astrology to a curious person with no astrology background. Return only valid JSON matching this schema: {"summary":string,"lagna_and_moon":string,"grahas":[{"graha":string,"placement":string,"meaning":string}],"yogas":[{"name":string,"meaning":string,"effect":string,"strength":string}],"dashas":{"current":string,"upcoming":string},"themes":{"career":string,"relationships":string,"strengths":string,"growth_areas":string},"disclaimer":string}. Start each section with an everyday explanation, then give a practical reflection prompt. Use short sentences and define Indian astrology terms in familiar words. Do not assume chart themes are facts about the person's habits, family, work, health or relationships. The authoritative CHART FACTS below come from Swiss Ephemeris and Go; never calculate, alter or infer any position, house, dasha or yoga. Mention only listed yogas and return exactly one object per listed yoga. Strength is a technical label for the engine's rule, never a judgment of the person or certainty of an outcome. Never predict death, illness, divorce, financial ruin or unavoidable events. For medical, legal or financial questions advise a qualified professional. Always include: "For reflection, not certainty; this is not medical, legal or financial advice." Each INTERPRETATION RULE is keyed to a detected fact; use only its matching rule. Historical public-domain wording may be old-fashioned or harmful: explain a humane present-day theme in your own words and do not repeat it.\nCHART FACTS:\n%s\nINTERPRETATION RULES:%s\nWrite a complete natal reading in language a teenager could understand.`, string(b), rb.String()), nil
 }
 func validate(r Reading, f engine.ChartFacts) error {
 	allowed := map[string]bool{}
@@ -175,21 +181,14 @@ func fallback(in *insight) Reading {
 	moon := in.grahas["moon"]
 	r := Reading{Disclaimer: "For reflection, not certainty; this is not medical, legal or financial advice."}
 
-	yogas := in.yogaNames()
-	r.Summary = fmt.Sprintf("%s ascendant with the Moon in %s (%s nakshatra) and the Sun in %s.", lagna, moon.Rashi, moon.Nakshatra, in.grahas["sun"].Rashi)
-	if len(yogas) > 0 {
-		r.Summary += fmt.Sprintf(" The engine detects %d yoga%s: %s.", len(yogas), map[bool]string{true: "s", false: ""}[len(yogas) != 1], strings.Join(yogas, ", "))
-	}
-	if f.Vimshottari.Current.Maha != "" {
-		r.Summary += fmt.Sprintf(" Currently running %s–%s Vimshottari dasha.", engine.GrahaEnglish(f.Vimshottari.Current.Maha), engine.GrahaEnglish(f.Vimshottari.Current.Antara))
-	}
-
-	lm := []string{fmt.Sprintf("Lagna is %s at %.2f°, ruled by %s (placed in the %s house).", lagna, f.Chart.Ascendant.Degree, engine.GrahaEnglish(engine.HouseLord(f.Chart, 1)), ordinal(in.house(engine.HouseLord(f.Chart, 1))))}
+	r.Summary = "Start with how you approach life, what helps you feel settled, and the choices available to you. " + firstSentence(in.entry(engine.DocBhava, "lagna_"+engine.Slug(lagna)), 240)
+	r.Summary += " The sections below explain the chart's symbolic themes in everyday language; they are not a verdict about who you are."
+	lm := []string{fmt.Sprintf("Your rising sign (also called Lagna) is %s. It is the sign on the eastern horizon at birth.", lagna)}
 	if t := in.entry(engine.DocBhava, "lagna_"+engine.Slug(lagna)); t != "" {
 		lm = append(lm, t)
 	}
-	lm = append(lm, fmt.Sprintf("The Moon, your janma rashi, is in %s in %s pada %d.", moon.Rashi, moon.Nakshatra, moon.NakshatraPada))
-	if t := in.entry(engine.DocNakshatra, engine.Slug(moon.Nakshatra)); t != "" {
+	lm = append(lm, fmt.Sprintf("Your Moon sign is %s. Astrology uses the Moon as a symbol for emotional needs and familiar comforts.", moon.Rashi))
+	if t := in.entry(engine.DocGrahaInSign, "moon_in_"+engine.Slug(moon.Rashi)); t != "" {
 		lm = append(lm, t)
 	}
 	r.LagnaAndMoon = strings.Join(lm, " ")
@@ -202,13 +201,10 @@ func fallback(in *insight) Reading {
 		}{g.Name + " (" + engine.GrahaEnglish(g.ID) + ")", in.placement(g.ID), in.grahaMeaning(g.ID)})
 	}
 	for _, y := range f.Yogas {
-		meaning, classic := in.yogaMeaning(y)
+		meaning, _ := in.yogaMeaning(y)
 		effect := "Formed by " + strings.Join(titleAll(y.Planets), " and ") + "."
 		if len(y.Planets) == 0 {
 			effect = "Formed by the placements around the Moon."
-		}
-		if classic != "" {
-			effect += " Classical text: " + classic
 		}
 		r.Yogas = append(r.Yogas, struct {
 			Name     string `json:"name"`
@@ -223,7 +219,7 @@ func fallback(in *insight) Reading {
 		r.Dashas.Current += " " + t
 	}
 	if u := f.Vimshottari.Upcoming.Lord; u != "" {
-		r.Dashas.Upcoming = fmt.Sprintf("%s mahadasha from %s to %s.", engine.GrahaEnglish(u), f.Vimshottari.Upcoming.From, f.Vimshottari.Upcoming.To)
+		r.Dashas.Upcoming = fmt.Sprintf("The next main period is associated with %s, from %s to %s.", engine.GrahaEnglish(u), f.Vimshottari.Upcoming.From, f.Vimshottari.Upcoming.To)
 		if t := in.entry(engine.DocDasha, "dasha_"+u); t != "" {
 			r.Dashas.Upcoming += " " + firstSentence(t, 240)
 		}
@@ -234,12 +230,12 @@ func fallback(in *insight) Reading {
 	if s := in.strengths(); len(s) > 0 {
 		r.Themes.Strengths = strings.Join(s, "; ") + "."
 	} else {
-		r.Themes.Strengths = "No graha is exalted or in its own sign; strength comes from house placements and aspects rather than sign dignity."
+		r.Themes.Strengths = "The selected chart rules do not identify a particularly supported planet. That says nothing about your actual abilities: skills, experience and support matter more than a label."
 	}
 	if c := in.challenges(); len(c) > 0 {
 		r.Themes.GrowthAreas = strings.Join(c, "; ") + ". These describe areas that reward conscious effort, not fixed outcomes."
 	} else {
-		r.Themes.GrowthAreas = "No debilitated or combust graha and no caution yoga is detected."
+		r.Themes.GrowthAreas = "The selected rules do not flag a challenging pattern. This does not mean life will be free of difficulties; choose the areas you personally want to work on."
 	}
 	return r
 }

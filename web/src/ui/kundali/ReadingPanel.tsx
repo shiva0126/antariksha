@@ -11,18 +11,19 @@ export function ReadingPanel({ data }: { data: ReadingResponse }) {
         <p className="lead">{r.summary}</p>
         <p className="muted small">{data.model === 'grounded-corpus' ? 'Composed from the chart facts and the Astrisk corpus.' : `Written by ${data.model} from the chart facts and corpus.`} {(data.grounding ?? []).length} passages consulted{classical.length ? `, ${classical.length} from classical texts` : ''}.</p>
       </div>
-      <article className="card"><h3>Lagna and Moon</h3><p>{r.lagna_and_moon}</p></article>
+      <article className="card"><h3>Your approach to life and emotions</h3><p>{r.lagna_and_moon}</p></article>
       <div className="grid-2">
         {themes.map(([k, v]) => <article className="card" key={k}><h3>{k}</h3><p>{v || '—'}</p></article>)}
       </div>
       <article className="card">
-        <h3>Yogas · {r.yogas.length}</h3>
+        <h3>Patterns in your chart · {r.yogas.length}</h3>
+        <p className="muted small">These combinations are traditionally called yogas. Their strength labels describe the engine's rule—not your worth or the certainty of an outcome.</p>
         {r.yogas.length === 0 && <p className="muted">No yoga from the engine's catalogue is present.</p>}
         {r.yogas.map(y => (
           <div className="row" key={y.name}>
             <h4>{y.name} <span className={'badge badge-' + y.strength}>{y.strength}</span></h4>
             <p>{y.meaning}</p>
-            {y.effect && <p className="muted small">{y.effect}</p>}
+            {y.effect && <details><summary>Chart details</summary><p className="muted small">{y.effect}</p></details>}
           </div>
         ))}
       </article>
@@ -31,8 +32,8 @@ export function ReadingPanel({ data }: { data: ReadingResponse }) {
         {r.grahas.map(g => (
           <div className="row" key={g.graha}>
             <h4>{g.graha}</h4>
-            <p className="muted small">{g.placement}</p>
             <p>{g.meaning}</p>
+            <details><summary>Position details</summary><p className="muted small">{g.placement}</p></details>
           </div>
         ))}
       </article>

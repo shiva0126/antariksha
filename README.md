@@ -73,8 +73,12 @@ Automated tests include concurrent chart comparisons to the upstream Swiss Ephem
 
 The frontend does no astronomy. It renders the single `/api/chart` response and lazy-loads the Three.js dome. The SVG chart remains available when WebGL is unavailable.
 
+The signed-in navigation also has **More readings**. Numerology is a documented Pythagorean letter/date method; Western astrology uses Swiss Ephemeris tropical positions and offers Placidus or whole-sign houses; Tarot draws without replacement from a 78-card deck with original reflection prompts. Each explains its convention and presents symbolic prompts in everyday language. These routes are private, require a signed-in account and do not save the submitted name or reading. The numerology endpoint uses the date you submit rather than silently assuming your account birth date.
+
 ## Interpretation layer
 
 `/api/chart/facts` returns deterministic engine output: dignity, combustion, retrograde, Vimshottari Maha–Antara periods, and yoga geometry. `/api/reading` gives a structured interpretation. With no `OPENAI_API_KEY`, it returns a safe deterministic fallback so the route remains usable. Set `OPENAI_API_KEY`, `OPENAI_BASE_URL`, and `OPENAI_MODEL` to enable an OpenAI-compatible hosted model. The post-generation validator rejects a response if its yoga names or count differ from the engine facts.
 
-Readings are grounded in a rights-cleared classical corpus: every detected fact (yoga, graha-in-house/sign, nakshatra, dasha, dignity, lagna) is fetched by exact key from `astro_corpus` (PostgreSQL + pgvector) and returned as `grounding`. It comprises self-authored entries with full engine coverage plus cited public-domain passages from the 1885 Brihat Jataka translation. See [corpus ingestion](docs/corpus.md).
+Readings use exact-key retrieval from `astro_corpus`; the engine, not the LLM, supplies placements, periods and detected yogas. The user-facing fallback explains key ideas before traditional terms and keeps technical placement details expandable. The LLM prompt explicitly asks for plain English, and the response yoga validator remains active. The corpus comprises project-authored interpretations plus 108 cited passages from one verified 1885 Brihat Jataka translation. This is a small RAG library, not model training or a complete set of classical books. **Semantic retrieval is not active:** current corpus rows have no embeddings because embedding credentials are not configured. See [corpus ingestion](docs/corpus.md).
+
+Family-prepared matrimony biodata, consent-based photo publishing, private character profiles and moderation are described in [the community plan](docs/community-matrimony-plan.md).

@@ -3,30 +3,149 @@
   "system": "parashari",
   "language": "en",
   "entries": [
-    {"doc_type": "bhava", "key": "bhava_1", "title": "1st house (tanu bhava)", "body": "The self: body, vitality, temperament, appearance and the general direction of life. The lagna and its lord are the foundation of the whole chart, and their strength supports everything else. It is a kendra and a trikona at once."},
-    {"doc_type": "bhava", "key": "bhava_2", "title": "2nd house (dhana bhava)", "body": "Wealth, savings, speech, family, food and early education. It is a maraka (critical) house in classical longevity reckoning and a key house for accumulation."},
-    {"doc_type": "bhava", "key": "bhava_3", "title": "3rd house (sahaja bhava)", "body": "Courage, effort, younger siblings, communication, skills, short journeys and initiative. As an upachaya house, its results improve over time and malefics do well here."},
-    {"doc_type": "bhava", "key": "bhava_4", "title": "4th house (sukha bhava)", "body": "Home, mother, emotional peace, property, vehicles, basic education and the heart's contentment. It is a kendra and the foundation of inner happiness."},
-    {"doc_type": "bhava", "key": "bhava_5", "title": "5th house (putra bhava)", "body": "Intelligence, creativity, children, romance, mantra, speculation and purva punya (merit from past actions). It is a trikona, among the most auspicious houses."},
-    {"doc_type": "bhava", "key": "bhava_6", "title": "6th house (ripu bhava)", "body": "Enemies, competition, debts, disease, service and daily work. It is a dusthana, yet also an upachaya where malefics help a person overcome obstacles."},
-    {"doc_type": "bhava", "key": "bhava_7", "title": "7th house (kalatra bhava)", "body": "Marriage, partners, business partnerships, contracts, public dealings and travel. It is a kendra opposite the self, the mirror of relationship, and also a maraka house."},
-    {"doc_type": "bhava", "key": "bhava_8", "title": "8th house (ayur bhava)", "body": "Longevity, transformation, hidden matters, inheritance, joint resources, research, the occult and sudden events. It is a dusthana, but also the house of deep insight and regeneration."},
-    {"doc_type": "bhava", "key": "bhava_9", "title": "9th house (dharma bhava)", "body": "Fortune, dharma, the father, teachers, higher learning, long journeys and faith. It is the strongest trikona, the house of grace."},
-    {"doc_type": "bhava", "key": "bhava_10", "title": "10th house (karma bhava)", "body": "Career, action, status, reputation, authority and one's contribution to the world. It is the most powerful kendra, where the Sun and Mars gain directional strength."},
-    {"doc_type": "bhava", "key": "bhava_11", "title": "11th house (labha bhava)", "body": "Gains, income, fulfilment of desires, friends, networks and elder siblings. It is an upachaya where most planets give good results."},
-    {"doc_type": "bhava", "key": "bhava_12", "title": "12th house (vyaya bhava)", "body": "Expenditure, loss, foreign lands, solitude, sleep, hospitals, charity and moksha (liberation). It is a dusthana, and also the house of spiritual release."},
-
-    {"doc_type": "bhava", "key": "lagna_mesha", "title": "Mesha lagna", "body": "Aries rising, ruled by Mars. It gives an energetic, direct, pioneering and competitive nature with quick decisions and physical vitality. Mars rules both the 1st and 8th houses. The Sun and Jupiter, as lords of trikonas, are classical benefics for this ascendant."},
-    {"doc_type": "bhava", "key": "lagna_vrishabha", "title": "Vrishabha lagna", "body": "Taurus rising, ruled by Venus. It gives a steady, patient, sensual nature that loves comfort, beauty and security. Saturn, lord of the 9th and 10th, is the yogakaraka, one of the most beneficial planets for this lagna."},
-    {"doc_type": "bhava", "key": "lagna_mithuna", "title": "Mithuna lagna", "body": "Gemini rising, ruled by Mercury. It gives a curious, communicative, versatile and youthful nature. Venus, lord of the 5th and 12th, is generally supportive, and Mercury's condition is central."},
-    {"doc_type": "bhava", "key": "lagna_karka", "title": "Karka lagna", "body": "Cancer rising, ruled by the Moon. It gives a sensitive, nurturing, intuitive and home-loving nature. Mars, lord of the 5th and 10th, is the yogakaraka. The Moon's phase and strength shape the whole chart."},
-    {"doc_type": "bhava", "key": "lagna_simha", "title": "Simha lagna", "body": "Leo rising, ruled by the Sun. It gives a dignified, confident, generous nature with leadership presence. Mars, lord of the 4th and 9th, is the yogakaraka, and the Sun's dignity is key."},
-    {"doc_type": "bhava", "key": "lagna_kanya", "title": "Kanya lagna", "body": "Virgo rising, ruled by Mercury. It gives an analytical, modest, service-minded and detail-oriented nature. Venus, as lord of the 2nd and 9th, supports fortune and wealth."},
-    {"doc_type": "bhava", "key": "lagna_tula", "title": "Tula lagna", "body": "Libra rising, ruled by Venus. It gives a diplomatic, graceful, fair-minded and partnership-oriented nature. Saturn, lord of the 4th and 5th, is the yogakaraka."},
-    {"doc_type": "bhava", "key": "lagna_vrishchika", "title": "Vrishchika lagna", "body": "Scorpio rising, ruled by Mars. It gives an intense, private, resilient and investigative nature. The Moon, lord of the 9th, and Jupiter, lord of the 2nd and 5th, are supportive. The Sun, lord of the 10th, supports career."},
-    {"doc_type": "bhava", "key": "lagna_dhanu", "title": "Dhanu lagna", "body": "Sagittarius rising, ruled by Jupiter. It gives an optimistic, principled, adventurous and philosophical nature. The Sun, lord of the 9th, and Mars, lord of the 5th and 12th, are supportive."},
-    {"doc_type": "bhava", "key": "lagna_makara", "title": "Makara lagna", "body": "Capricorn rising, ruled by Saturn. It gives a disciplined, practical, ambitious and patient nature. Venus, lord of the 5th and 10th, is the yogakaraka."},
-    {"doc_type": "bhava", "key": "lagna_kumbha", "title": "Kumbha lagna", "body": "Aquarius rising, ruled by Saturn. It gives a humanitarian, independent, inventive and group-minded nature. Venus, lord of the 4th and 9th, is the yogakaraka."},
-    {"doc_type": "bhava", "key": "lagna_meena", "title": "Meena lagna", "body": "Pisces rising, ruled by Jupiter. It gives a compassionate, imaginative, spiritual and receptive nature. The Moon, lord of the 5th, and Mars, lord of the 2nd and 9th, are supportive."}
+    {
+      "doc_type": "bhava",
+      "key": "bhava_1",
+      "title": "1st house (tanu bhava)",
+      "body": "This area of the chart is used to reflect on identity and how you approach new situations. What approach feels authentic to you, and where would you like to experiment? A chart is not evidence that a particular event, difficulty or relationship exists in your life."
+    },
+    {
+      "doc_type": "bhava",
+      "key": "bhava_2",
+      "title": "2nd house (dhana bhava)",
+      "body": "This area of the chart is used to reflect on resources, values and the way you speak. Which priorities do your everyday choices reflect? A chart is not evidence that a particular event, difficulty or relationship exists in your life."
+    },
+    {
+      "doc_type": "bhava",
+      "key": "bhava_3",
+      "title": "3rd house (sahaja bhava)",
+      "body": "This area of the chart is used to reflect on communication, practical skills and initiative. What skill or conversation deserves a little regular practice? A chart is not evidence that a particular event, difficulty or relationship exists in your life."
+    },
+    {
+      "doc_type": "bhava",
+      "key": "bhava_4",
+      "title": "4th house (sukha bhava)",
+      "body": "This area of the chart is used to reflect on home, belonging and your private life. What would make your everyday surroundings feel more supportive? A chart is not evidence that a particular event, difficulty or relationship exists in your life."
+    },
+    {
+      "doc_type": "bhava",
+      "key": "bhava_5",
+      "title": "5th house (putra bhava)",
+      "body": "This area of the chart is used to reflect on creativity, play and sharing what you know. What could you make or learn simply because you enjoy it? A chart is not evidence that a particular event, difficulty or relationship exists in your life."
+    },
+    {
+      "doc_type": "bhava",
+      "key": "bhava_6",
+      "title": "6th house (ripu bhava)",
+      "body": "This area of the chart is used to reflect on daily work, service and routines. Which routine could be made more manageable, with help if needed? A chart is not evidence that a particular event, difficulty or relationship exists in your life."
+    },
+    {
+      "doc_type": "bhava",
+      "key": "bhava_7",
+      "title": "7th house (kalatra bhava)",
+      "body": "This area of the chart is used to reflect on partnerships and mutual agreements. What expectations need an honest conversation and agreement from both people? A chart is not evidence that a particular event, difficulty or relationship exists in your life."
+    },
+    {
+      "doc_type": "bhava",
+      "key": "bhava_8",
+      "title": "8th house (ayur bhava)",
+      "body": "This area of the chart is used to reflect on shared responsibilities, uncertainty and change. What would help you discuss a shared responsibility with clearer boundaries? A chart is not evidence that a particular event, difficulty or relationship exists in your life."
+    },
+    {
+      "doc_type": "bhava",
+      "key": "bhava_9",
+      "title": "9th house (dharma bhava)",
+      "body": "This area of the chart is used to reflect on learning, beliefs and broadening your outlook. Which belief would you like to explore through learning or another person's perspective? A chart is not evidence that a particular event, difficulty or relationship exists in your life."
+    },
+    {
+      "doc_type": "bhava",
+      "key": "bhava_10",
+      "title": "10th house (karma bhava)",
+      "body": "This area of the chart is used to reflect on work, responsibility and your contribution. What useful contribution would you like to practise making at work or in your community? A chart is not evidence that a particular event, difficulty or relationship exists in your life."
+    },
+    {
+      "doc_type": "bhava",
+      "key": "bhava_11",
+      "title": "11th house (labha bhava)",
+      "body": "This area of the chart is used to reflect on friendships, groups and shared goals. Which group or friendship aligns with goals you have chosen? A chart is not evidence that a particular event, difficulty or relationship exists in your life."
+    },
+    {
+      "doc_type": "bhava",
+      "key": "bhava_12",
+      "title": "12th house (vyaya bhava)",
+      "body": "This area of the chart is used to reflect on rest, privacy and making space to reflect. What could you set aside to leave more space for rest and reflection? A chart is not evidence that a particular event, difficulty or relationship exists in your life."
+    },
+    {
+      "doc_type": "bhava",
+      "key": "lagna_mesha",
+      "title": "Mesha lagna",
+      "body": "Your rising sign is traditionally associated with initiative and direct action. It is the sign rising on the eastern horizon at birth, used symbolically to discuss how you approach new situations. A useful prompt is to leave space to listen before acting. It does not define who you must be."
+    },
+    {
+      "doc_type": "bhava",
+      "key": "lagna_vrishabha",
+      "title": "Vrishabha lagna",
+      "body": "Your rising sign is traditionally associated with steadiness and comfort. It is the sign rising on the eastern horizon at birth, used symbolically to discuss how you approach new situations. A useful prompt is to balance familiar routines with useful change. It does not define who you must be."
+    },
+    {
+      "doc_type": "bhava",
+      "key": "lagna_mithuna",
+      "title": "Mithuna lagna",
+      "body": "Your rising sign is traditionally associated with curiosity and exchanging ideas. It is the sign rising on the eastern horizon at birth, used symbolically to discuss how you approach new situations. A useful prompt is to give one idea enough time to develop. It does not define who you must be."
+    },
+    {
+      "doc_type": "bhava",
+      "key": "lagna_karka",
+      "title": "Karka lagna",
+      "body": "Your rising sign is traditionally associated with care and belonging. It is the sign rising on the eastern horizon at birth, used symbolically to discuss how you approach new situations. A useful prompt is to communicate your own needs as well as noticing others'. It does not define who you must be."
+    },
+    {
+      "doc_type": "bhava",
+      "key": "lagna_simha",
+      "title": "Simha lagna",
+      "body": "Your rising sign is traditionally associated with creativity and self-expression. It is the sign rising on the eastern horizon at birth, used symbolically to discuss how you approach new situations. A useful prompt is to share attention and encouragement. It does not define who you must be."
+    },
+    {
+      "doc_type": "bhava",
+      "key": "lagna_kanya",
+      "title": "Kanya lagna",
+      "body": "Your rising sign is traditionally associated with careful observation and useful work. It is the sign rising on the eastern horizon at birth, used symbolically to discuss how you approach new situations. A useful prompt is to allow room for imperfection. It does not define who you must be."
+    },
+    {
+      "doc_type": "bhava",
+      "key": "lagna_tula",
+      "title": "Tula lagna",
+      "body": "Your rising sign is traditionally associated with cooperation and fairness. It is the sign rising on the eastern horizon at birth, used symbolically to discuss how you approach new situations. A useful prompt is to state your preferences as well as listening. It does not define who you must be."
+    },
+    {
+      "doc_type": "bhava",
+      "key": "lagna_vrishchika",
+      "title": "Vrishchika lagna",
+      "body": "Your rising sign is traditionally associated with depth and commitment. It is the sign rising on the eastern horizon at birth, used symbolically to discuss how you approach new situations. A useful prompt is to let trust grow through clear boundaries. It does not define who you must be."
+    },
+    {
+      "doc_type": "bhava",
+      "key": "lagna_dhanu",
+      "title": "Dhanu lagna",
+      "body": "Your rising sign is traditionally associated with exploration and a wider perspective. It is the sign rising on the eastern horizon at birth, used symbolically to discuss how you approach new situations. A useful prompt is to connect a big idea with a practical step. It does not define who you must be."
+    },
+    {
+      "doc_type": "bhava",
+      "key": "lagna_makara",
+      "title": "Makara lagna",
+      "body": "Your rising sign is traditionally associated with responsibility and long-term effort. It is the sign rising on the eastern horizon at birth, used symbolically to discuss how you approach new situations. A useful prompt is to make space for rest alongside commitments. It does not define who you must be."
+    },
+    {
+      "doc_type": "bhava",
+      "key": "lagna_kumbha",
+      "title": "Kumbha lagna",
+      "body": "Your rising sign is traditionally associated with independent ideas and community. It is the sign rising on the eastern horizon at birth, used symbolically to discuss how you approach new situations. A useful prompt is to consider how a plan affects other people. It does not define who you must be."
+    },
+    {
+      "doc_type": "bhava",
+      "key": "lagna_meena",
+      "title": "Meena lagna",
+      "body": "Your rising sign is traditionally associated with imagination and empathy. It is the sign rising on the eastern horizon at birth, used symbolically to discuss how you approach new situations. A useful prompt is to pair compassion with workable limits. It does not define who you must be."
+    }
   ]
 }

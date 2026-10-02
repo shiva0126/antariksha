@@ -101,8 +101,8 @@ func CheckDecision(s Source) error {
 	if strings.TrimSpace(s.RightsBasis) == "" {
 		return fmt.Errorf("source %s: rights_basis is required for an auditable decision", s.ID)
 	}
-	if s.System != "parashari" && s.System != "jaimini" {
-		return fmt.Errorf("source %s: system must be parashari or jaimini", s.ID)
+	if s.System != "parashari" && s.System != "jaimini" && s.System != "lalkitab" {
+		return fmt.Errorf("source %s: system must be parashari, jaimini or lalkitab", s.ID)
 	}
 	who := strings.ToLower(s.Translator + " " + s.Edition)
 	for _, b := range blockedTranslators {

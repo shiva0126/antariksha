@@ -7,13 +7,14 @@ import { PanchangPage } from './ui/panchang/PanchangPage';
 import { PrivacyPage } from './ui/privacy/PrivacyPage';
 import { AccountPage } from './ui/AccountPage';
 import { CommunityPage } from './ui/community/CommunityPage';
+import { MoreReadings } from './ui/MoreReadings';
 import { LoginPage } from './ui/LoginPage';
 import { EmailLinkGate } from './ui/EmailRecovery';
 import { initializeAccountCharts, setProfileOwner } from './ui/common/profiles';
 
-type Page = 'kundali' | 'match' | 'muhurta' | 'day' | 'month' | 'privacy' | 'account' | 'community';
-const pages: [Page, string][] = [['kundali', 'Kundali'], ['match', 'Matching'], ['muhurta', 'Muhurta'], ['day', 'Daily Panchang'], ['month', 'Hindu Calendar']];
-const valid = new Set<string>(['kundali', 'match', 'muhurta', 'day', 'month', 'privacy', 'account', 'community']);
+type Page = 'kundali' | 'match' | 'muhurta' | 'day' | 'month' | 'privacy' | 'account' | 'community' | 'readings';
+const pages: [Page, string][] = [['kundali', 'Kundali'], ['match', 'Matching'], ['muhurta', 'Muhurta'], ['day', 'Daily Panchang'], ['month', 'Hindu Calendar'], ['readings', 'More readings']];
+const valid = new Set<string>(['kundali', 'match', 'muhurta', 'day', 'month', 'privacy', 'account', 'community', 'readings']);
 const fromHash = (): Page => { const p = location.hash.slice(1); return (valid.has(p) ? p : 'kundali') as Page; };
 
 function Shell() {
@@ -53,6 +54,7 @@ function Shell() {
         {page === 'privacy' && <PrivacyPage />}
         {page === 'account' && <AccountPage />}
         {page === 'community' && <CommunityPage />}
+        {page === 'readings' && <MoreReadings />}
       </main>
       <footer className="site-footer">Astrisk is free: no payments, no remedies for sale. · <a href="#privacy">Privacy & your data</a> · Swiss Ephemeris · GeoNames (CC BY 4.0) · For reflection, not certainty.</footer>
     </div>

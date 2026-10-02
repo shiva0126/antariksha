@@ -1,8 +1,8 @@
 import {test,expect} from '@playwright/test';
 
-test('private inbox supports read, dismiss and invitation revocation',async({page,browser})=>{
- const origin='http://127.0.0.1:3000';const headers={Origin:origin};
- const other=await browser.newContext();const actor=other.request;
+test('private inbox supports read, dismiss and invitation revocation',async({page,browser,baseURL})=>{
+ const origin=baseURL!;const headers={Origin:origin};
+ const other=await browser.newContext({baseURL});const actor=other.request;
  const credentials=(suffix:string)=>({email:`notice_${Date.now()}_${suffix}@example.com`,password:'notification-test-password',birth_date:'1996-05-14',birth_time:'10:15',consent:true});
  expect((await page.request.post('/api/auth/register',{headers,data:credentials('reader')})).status()).toBe(201);
  expect((await actor.post(origin+'/api/auth/register',{headers,data:credentials('sender')})).status()).toBe(201);
@@ -32,8 +32,8 @@ test('private inbox supports read, dismiss and invitation revocation',async({pag
  }
 });
 
-test('community opt-in, private post, comment and family tree',async({page})=>{
- const origin='http://127.0.0.1:3000';
+test('community opt-in, private post, comment and family tree',async({page,baseURL})=>{
+ const origin=baseURL!;
  const response=await page.request.post('/api/auth/register',{headers:{Origin:origin},data:{email:`community_${Date.now()}@example.com`,password:'community-browser-password',birth_date:'1996-05-14',birth_time:'10:15',consent:true}});
  expect(response.status()).toBe(201);
  try{

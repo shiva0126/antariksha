@@ -1,7 +1,8 @@
 # Antariksha: profiles, community, family and matrimony
 
-Status: core community implementation available for validation, with the broader
-roadmap below still containing future work. Updated 2026-10-01.
+Status: core community implementation available for validation, including family-
+prepared matrimony profiles, reviewable private photos and a private character
+profile. The broader roadmap below still contains future work. Updated 2026-10-02.
 
 Implemented: login-first email/password accounts; registration collects DOB and
 birth time, while interests stay separate. Existing handle accounts still work.
@@ -27,6 +28,23 @@ supported; access is rechecked on every fetch and mutation. Repeated pending
 requests do not reset dismissed notices; a newly revoked/reissued invitation can
 produce a new notice. Notifications contain no message text.
 
+Matrimony now supports an adult family member preparing a private bride/groom/person
+biodata draft with up to six consent-attested JPEG/PNG photos. The family can send
+it to the member's registered handle; only that member can review, reject or
+explicitly accept it into their own account. Acceptance transfers the photos as
+private media, leaves the member's profile paused, and requires their own choice
+before discovery or photo publication. Other adults can upload photos to their own
+private gallery, select individual photos to publish and unpublish them by saving
+their profile. Reciprocal age/community/block eligibility applies to discovery and
+photo delivery. Members can report a profile; moderators can hide it. No photo
+recognition or social media search is performed.
+
+The **My character** tab provides a private editable creative avatar, goals, values,
+communication preferences and hobbies. Users may paste their own Instagram/LinkedIn
+text and link, preview mentioned topics, select which interests to import and save
+only after consent. Activity ideas use only selected hobbies and explain that basis.
+This is not a validated personality test, compatibility score or verified account.
+
 My account now offers explicit preview/select/consent import of legacy device-saved
 charts. Original device records are preserved, duplicates skipped, invalid entries
 excluded, and old conversations are never claimed. Imported charts remain local
@@ -37,13 +55,14 @@ Provider-dependent: encrypted phone linking uses Twilio Verify but requires real
 credentials and an encryption key; it is not phone-based login. Hosted AI and
 embeddings require funded credentials. SMTP email verification/recovery is implemented
 but delivery is unconfigured. No OAuth connection, ID verification, or automated
-external social-account discovery is claimed.
+external social-account discovery is claimed. Social URLs and pasted text are
+self-declared and are never checked by contacting those platforms.
 
-Remaining roadmap (not implemented): video/stories, push notifications, advanced
+Remaining roadmap (not implemented): provider OAuth/imports and automated public-profile discovery, video/stories, push notifications, advanced
 assessment validation, verified family profile claiming, delegated edit suggestions,
 the richer field-level visibility model below. Reflection
-prompts are not a validated personality assessment. This build must not be
-advertised as a completed or production-audited matrimony platform.
+prompts are not a validated personality assessment. This is not a fully
+production-audited matrimony platform.
 
 Public launch still requires HTTPS (`COOKIE_SECURE=true` behind a trusted TLS
 proxy), moderator staffing, retention/backups policy and an independent security
