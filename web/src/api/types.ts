@@ -54,9 +54,19 @@ export interface YoginiPeriod { yogini: string; lord: string; from: string; to: 
 
 export interface Koota { name: string; max: number; score: number; boy: string; girl: string; description: string }
 export interface MatchResponse {
+	explanation?: MatchExplanation;
   match: { kootas: Koota[]; total: number; max: number; verdict: string; doshas: string[]; exceptions: string[]; boy_mangal_dosha: boolean; girl_mangal_dosha: boolean; mangal_note: string; boy_moon: string; girl_moon: string };
   boy: { lagna: string; moon_sign: string; nakshatra: string; pada: number; mars_house: number };
   girl: { lagna: string; moon_sign: string; nakshatra: string; pada: number; mars_house: number };
+}
+
+export interface MatchExplanation {
+  summary: string;
+  factors: {id:string;title:string;evidence:string;explanation:string;question:string;source:string}[];
+  limitations: string[];
+  disclaimer: string;
+  model: string;
+  ai_status: 'not_requested'|'unavailable'|'rejected'|'generated';
 }
 
 export interface MuhurtaDay { date: string; vaara: string; tithi: string; paksha: string; nakshatra: string; yoga: string; good: boolean; score: number; reasons: string[]; cautions: string[]; windows: { start: string; end: string }[]; avoid: { start: string; end: string }[] }

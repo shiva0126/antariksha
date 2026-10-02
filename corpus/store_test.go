@@ -105,7 +105,9 @@ func TestPostgresSyncEmbedRetrieve(t *testing.T) {
 	if len(ps) != 1 || ps[0].Key != "gajakesari" {
 		t.Fatalf("retrieve returned %+v (jaimini must never answer)", ps)
 	}
-	hits, err := Search(ctx, pool, emb, "principal Mangala dosha placement partnership", engine.SystemParashari, 5)
+	// This fake provider only matches literal vocabulary, not synonyms. Keep
+	// the query aligned with the current plain-language entry title.
+	hits, err := Search(ctx, pool, emb, "Mars in the 7th house", engine.SystemParashari, 5)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -115,5 +117,9 @@ func TestPostgresSyncEmbedRetrieve(t *testing.T) {
 	}
 	if !found {
 		t.Fatalf("semantic search missed mars_in_7: %+v", hits)
+	}
+	filtered, err := SearchForKeys(ctx, pool, emb, "atmakaraka mars in seventh house", []engine.CorpusKey{{DocType: "yoga", Key: "gajakesari"}, {DocType: "karaka", Key: "atmakaraka"}})
+	if err != nil || len(filtered) != 1 || filtered[0].Key != "gajakesari" || filtered[0].System != "parashari" {
+		t.Fatalf("fact-filtered semantic search: %+v %v", filtered, err)
 	}
 }

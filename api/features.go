@@ -13,13 +13,14 @@ import (
 
 	"github.com/example/panchang/api/places"
 	"github.com/example/panchang/engine"
+	"github.com/example/panchang/reading"
 )
 
 func (s *Server) featureRoutes() {
 	s.mux.HandleFunc("GET /api/places", s.placeSearch)
 	s.mux.HandleFunc("GET /api/chart/varga", s.varga)
 	s.mux.HandleFunc("GET /api/chart/shadbala", s.shadbala)
-	s.mux.Handle("POST /api/match", s.limit(s.match, 30))
+	s.mux.Handle("POST /api/match", s.limit(s.accountGuard(s.match), 30))
 	s.mux.HandleFunc("GET /api/muhurta/events", s.muhurtaEvents)
 	s.mux.Handle("GET /api/muhurta", s.limit(s.muhurta, 30))
 	s.mux.HandleFunc("GET /api/today", s.today)
@@ -160,8 +161,9 @@ func (s *Server) shadbala(w http.ResponseWriter, r *http.Request) {
 // ---- kundli matching -------------------------------------------------------
 
 type matchRequest struct {
-	Boy  engine.ChartInput `json:"boy"`
-	Girl engine.ChartInput `json:"girl"`
+	Boy   engine.ChartInput `json:"boy"`
+	Girl  engine.ChartInput `json:"girl"`
+	UseAI bool              `json:"use_ai"`
 }
 
 func (s *Server) match(w http.ResponseWriter, r *http.Request) {
@@ -169,6 +171,17 @@ func (s *Server) match(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 8<<10)).Decode(&req); err != nil {
 		problem(w, 400, fmt.Errorf("invalid JSON body"))
 		return
+	}
+	if req.UseAI {
+		id, err := s.memberID(r)
+		if err != nil {
+			problem(w, 401, fmt.Errorf("please sign in"))
+			return
+		}
+		if !s.matchBudget.allow(id, time.Now()) {
+			problem(w, 429, fmt.Errorf("please wait before requesting another AI explanation"))
+			return
+		}
 	}
 	boy, err := s.engine.BirthChart(req.Boy)
 	if err != nil {
@@ -187,7 +200,8 @@ func (s *Server) match(w http.ResponseWriter, r *http.Request) {
 	}
 	_, bh := engine.MangalDosha(boy)
 	_, gh := engine.MangalDosha(girl)
-	writeJSON(w, 200, map[string]any{"match": m, "boy": summary(boy, bh), "girl": summary(girl, gh)})
+	explanation := s.reading.ExplainMatch(r.Context(), reading.ChartMatchExplanation(m), req.UseAI)
+	writeJSON(w, 200, map[string]any{"match": m, "boy": summary(boy, bh), "girl": summary(girl, gh), "explanation": explanation})
 }
 
 func summary(c engine.Chart, marsHouse int) map[string]any {

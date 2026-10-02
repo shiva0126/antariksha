@@ -6,6 +6,9 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
+
+	"github.com/example/panchang/reading"
 )
 
 type matrimonyDetails struct {
@@ -34,10 +37,68 @@ func (s *Server) matrimonyRoutes() {
 	s.memberRoute("GET /api/matrimony/me", s.matrimonyMe)
 	s.memberRoute("PUT /api/matrimony/me", s.saveMatrimony)
 	s.memberRoute("GET /api/matrimony/discover", s.discoverMatrimony)
+	s.memberRoute("POST /api/matrimony/explanation/{peer}", s.matrimonyExplanation)
 	s.memberRoute("GET /api/matrimony/interests", s.matrimonyInterests)
 	s.memberRoute("POST /api/matrimony/interests", s.matrimonyInterestAction)
 	s.memberRoute("GET /api/matrimony/messages/{peer}", s.memberMessages)
 	s.memberRoute("POST /api/matrimony/messages/{peer}", s.sendMemberMessage)
+}
+
+func (s *Server) matrimonyExplanation(w http.ResponseWriter, r *http.Request, id string) {
+	var req struct {
+		UseAI bool `json:"use_ai"`
+	}
+	if !memberInput(w, r, &req) {
+		return
+	}
+	peer := r.PathValue("peer")
+	if peer == id {
+		problem(w, 404, fmt.Errorf("profile unavailable"))
+		return
+	}
+	var mineRaw, theirsRaw []byte
+	var shared int
+	err := s.membersDB().QueryRow(r.Context(), `SELECT m.details,p.details,
+ cardinality(ARRAY(SELECT unnest(ms.interests) INTERSECT SELECT unnest(ps.interests)))
+ FROM matrimony_profiles m JOIN matrimony_profiles p ON p.account_id=$2
+ JOIN member_settings ms ON ms.account_id=m.account_id JOIN member_settings ps ON ps.account_id=p.account_id
+ WHERE m.account_id=$1 AND matrimony_visible($2,$1)`, id, peer).Scan(&mineRaw, &theirsRaw, &shared)
+	if err != nil {
+		problem(w, 404, fmt.Errorf("profile unavailable"))
+		return
+	}
+	var mine, theirs map[string]any
+	if json.Unmarshal(mineRaw, &mine) != nil || json.Unmarshal(theirsRaw, &theirs) != nil {
+		problem(w, 500, fmt.Errorf("comparison unavailable"))
+		return
+	}
+	comparisons := map[string]string{}
+	for _, key := range []string{"city", "timeline", "children", "relocation", "lifestyle", "values", "hobbies"} {
+		a, _ := mine[key].(string)
+		b, _ := theirs[key].(string)
+		a = strings.ToLower(strings.Join(strings.Fields(a), " "))
+		b = strings.ToLower(strings.Join(strings.Fields(b), " "))
+		comparisons[key] = "missing"
+		if a != "" && b != "" {
+			comparisons[key] = "different"
+			if a == b {
+				comparisons[key] = "same"
+			}
+		}
+	}
+	if req.UseAI && !s.matchBudget.allow(id, time.Now()) {
+		problem(w, 429, fmt.Errorf("please wait before requesting another AI explanation"))
+		return
+	}
+	out := s.reading.ExplainMatch(r.Context(), reading.ProfileMatchExplanation(comparisons, shared), req.UseAI)
+	// Recheck after a potentially slow provider call: a block, pause, age-filter
+	// change or moderation action must revoke access before a result is returned.
+	var visible bool
+	if s.membersDB().QueryRow(r.Context(), `SELECT matrimony_visible($1,$2)`, peer, id).Scan(&visible) != nil || !visible {
+		problem(w, 404, fmt.Errorf("profile unavailable"))
+		return
+	}
+	writeJSON(w, 200, out)
 }
 func (s *Server) matrimonyMe(w http.ResponseWriter, r *http.Request, id string) {
 	s.memberRows(w, r, `SELECT active,details,hidden FROM matrimony_profiles WHERE account_id=$1`, id)

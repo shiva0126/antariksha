@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math"
 	"net/http"
 	"strconv"
 	"strings"
@@ -65,8 +66,18 @@ func (o OpenAIEmbedder) Embed(ctx context.Context, texts []string) ([][]float32,
 	}
 	out := make([][]float32, len(texts))
 	for _, d := range v.Data {
-		if d.Index < 0 || d.Index >= len(out) || len(d.Embedding) != EmbeddingDims {
+		if d.Index < 0 || d.Index >= len(out) || len(d.Embedding) != EmbeddingDims || out[d.Index] != nil {
 			return nil, fmt.Errorf("embeddings: bad item index %d dims %d", d.Index, len(d.Embedding))
+		}
+		var norm float64
+		for _, x := range d.Embedding {
+			if math.IsNaN(float64(x)) || math.IsInf(float64(x), 0) {
+				return nil, fmt.Errorf("embeddings: non-finite vector")
+			}
+			norm += float64(x) * float64(x)
+		}
+		if norm == 0 {
+			return nil, fmt.Errorf("embeddings: zero vector")
 		}
 		out[d.Index] = d.Embedding
 	}
@@ -161,6 +172,9 @@ WHERE astro_corpus.content_hash IS DISTINCT FROM EXCLUDED.content_hash`,
 
 // EmbedPending embeds rows with no vector, or a vector from a different model.
 func EmbedPending(ctx context.Context, pool *pgxpool.Pool, emb Embedder, batch int) (int, error) {
+	if emb == nil || batch < 1 || batch > 256 {
+		return 0, fmt.Errorf("embedder and batch size 1–256 required")
+	}
 	done := 0
 	for {
 		rows, err := pool.Query(ctx, `SELECT id, COALESCE(title,''), body FROM astro_corpus WHERE embedding IS NULL OR embedding_model IS DISTINCT FROM $1 ORDER BY id LIMIT $2`, emb.Model(), batch)
@@ -190,6 +204,9 @@ func EmbedPending(ctx context.Context, pool *pgxpool.Pool, emb Embedder, batch i
 		if err != nil {
 			return done, err
 		}
+		if len(vecs) != len(ids) {
+			return done, fmt.Errorf("embedding batch size mismatch")
+		}
 		for i, id := range ids {
 			if _, err = pool.Exec(ctx, `UPDATE astro_corpus SET embedding=$1::vector, embedding_model=$2 WHERE id=$3`, vectorLiteral(vecs[i]), emb.Model(), id); err != nil {
 				return done, err
@@ -197,6 +214,42 @@ func EmbedPending(ctx context.Context, pool *pgxpool.Pool, emb Embedder, batch i
 		}
 		done += len(ids)
 	}
+}
+
+// SearchForKeys enriches only facts already known to be present. Filtering is
+// done before LIMIT, so unrelated yogas/schools/languages cannot displace them.
+func SearchForKeys(ctx context.Context, pool *pgxpool.Pool, emb Embedder, query string, keys []engine.CorpusKey) ([]Passage, error) {
+	if len(keys) == 0 || emb == nil {
+		return nil, nil
+	}
+	var ready bool
+	if err := pool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM astro_corpus WHERE embedding IS NOT NULL AND embedding_model=$1 AND system='parashari' AND language='en')`, emb.Model()).Scan(&ready); err != nil {
+		return nil, err
+	}
+	if !ready {
+		return nil, nil
+	} // Do not pay for a query when no index is ready.
+	v, err := emb.Embed(ctx, []string{query})
+	if err != nil {
+		return nil, err
+	}
+	if len(v) != 1 || len(v[0]) != EmbeddingDims {
+		return nil, fmt.Errorf("invalid query embedding")
+	}
+	docs, ks := []string{}, []string{}
+	for _, key := range keys {
+		docs = append(docs, key.DocType)
+		ks = append(ks, key.Key)
+	}
+	rows, err := pool.Query(ctx, `SELECT a.system,a.doc_type,a.key,COALESCE(a.title,''),a.body,a.source,a.source_id,a.ref,a.rights,a.embedding <=> $1::vector
+ FROM astro_corpus a WHERE a.embedding IS NOT NULL AND a.embedding_model=$2
+ AND a.system='parashari' AND a.language='en'
+ AND EXISTS(SELECT 1 FROM unnest($3::text[],$4::text[]) AS k(doc_type,key) WHERE k.doc_type=a.doc_type AND k.key=a.key)
+ ORDER BY a.embedding <=> $1::vector,a.id LIMIT 6`, vectorLiteral(v[0]), emb.Model(), docs, ks)
+	if err != nil {
+		return nil, err
+	}
+	return scanPassages(rows, true)
 }
 
 // Passage is a retrieved corpus row.

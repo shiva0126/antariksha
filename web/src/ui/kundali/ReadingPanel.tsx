@@ -9,7 +9,8 @@ export function ReadingPanel({ data }: { data: ReadingResponse }) {
       <div className="card reading-lead">
         <p className="kicker">Summary</p>
         <p className="lead">{r.summary}</p>
-        <p className="muted small">{data.model === 'grounded-corpus' ? 'Composed from the chart facts and the Astrisk corpus.' : `Written by ${data.model} from the chart facts and corpus.`} {(data.grounding ?? []).length} passages consulted{classical.length ? `, ${classical.length} from classical texts` : ''}.</p>
+        <p className="muted small">{data.model === 'grounded-corpus' ? 'Composed from chart facts and Astrisk’s original interpretation guides.' : `AI-assisted wording by ${data.model}, using chart facts and retrieved guides.`} {(data.grounding ?? []).length} entries retrieved{classical.length ? `, including ${classical.length} historical reference records` : ''}. Historical citations are provenance, not proof that a prediction is true.</p>
+        <details><summary>Sources and interpretation limits</summary><p>Original guides explain symbolic themes in everyday language. Historical wording is not quoted in this reading. Additional books, including Lal Kitab, are not automatically included. No model has been trained on these entries.</p><ul>{(data.grounding??[]).map((g,i)=><li key={g.key+'-'+i}><strong>{g.title||g.key}</strong> — {g.source}{g.ref?` · ${g.ref}`:''}<br/><span className="small muted">Matched fact: {g.doc_type}:{g.key}</span></li>)}</ul></details>
       </div>
       <article className="card"><h3>Your approach to life and emotions</h3><p>{r.lagna_and_moon}</p></article>
       <div className="grid-2">
@@ -19,8 +20,8 @@ export function ReadingPanel({ data }: { data: ReadingResponse }) {
         <h3>Patterns in your chart · {r.yogas.length}</h3>
         <p className="muted small">These combinations are traditionally called yogas. Their strength labels describe the engine's rule—not your worth or the certainty of an outcome.</p>
         {r.yogas.length === 0 && <p className="muted">No yoga from the engine's catalogue is present.</p>}
-        {r.yogas.map(y => (
-          <div className="row" key={y.name}>
+        {r.yogas.map((y,i) => (
+          <div className="row" key={y.name+'-'+i}>
             <h4>{y.name} <span className={'badge badge-' + y.strength}>{y.strength}</span></h4>
             <p>{y.meaning}</p>
             {y.effect && <details><summary>Chart details</summary><p className="muted small">{y.effect}</p></details>}

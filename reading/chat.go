@@ -123,6 +123,14 @@ func (s *Service) Answer(ctx context.Context, facts engine.ChartFacts, rules []R
 	if s.LLM == nil || contains(ts, "safety") {
 		return ans, nil
 	}
+	if sc, ok := s.Corpus.(SemanticCorpus); ok {
+		if rs, err := sc.Relevant(ctx, facts, question); err == nil {
+			for _, rule := range rs {
+				in.use(rule)
+			}
+			ans.Sources = in.used
+		}
+	}
 	prompt, err := chatPrompt(facts, in, question, history, grounded)
 	if err != nil {
 		return ans, nil

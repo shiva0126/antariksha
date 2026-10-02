@@ -69,7 +69,7 @@ func ChartHash(in engine.ChartInput, language string) string {
 	b, _ := json.Marshal(struct {
 		engine.ChartInput
 		Ayanamsa, Language, ReadingVersion string
-	}{in, "lahiri", language, "plain-language-v2"})
+	}{in, "lahiri", language, "fact-checked-v3"})
 	h := sha256.Sum256(b)
 	return hex.EncodeToString(h[:])
 }
@@ -137,6 +137,9 @@ func promptFor(f engine.ChartFacts, rules []Rule) (string, error) {
 		return "", e
 	}
 	var rb strings.Builder
+	canonical := fallback(newInsight(context.Background(), nil, f, nil))
+	placements, _ := json.Marshal(canonical.Grahas)
+	fmt.Fprintf(&rb, "\nCopy each grahas[].graha and grahas[].placement EXACTLY from these canonical fields; write your own meaning. Preserve each yoga strength exactly. Canonical graha fields: %s\n", placements)
 	for _, r := range rules {
 		if strings.Contains(r.Source, "[public_domain]") {
 			// Historical wording stays available in the grounding record, but old
@@ -149,29 +152,38 @@ func promptFor(f engine.ChartFacts, rules []Rule) (string, error) {
 	return fmt.Sprintf(`You are Astrisk, explaining Vedic astrology to a curious person with no astrology background. Return only valid JSON matching this schema: {"summary":string,"lagna_and_moon":string,"grahas":[{"graha":string,"placement":string,"meaning":string}],"yogas":[{"name":string,"meaning":string,"effect":string,"strength":string}],"dashas":{"current":string,"upcoming":string},"themes":{"career":string,"relationships":string,"strengths":string,"growth_areas":string},"disclaimer":string}. Start each section with an everyday explanation, then give a practical reflection prompt. Use short sentences and define Indian astrology terms in familiar words. Do not assume chart themes are facts about the person's habits, family, work, health or relationships. The authoritative CHART FACTS below come from Swiss Ephemeris and Go; never calculate, alter or infer any position, house, dasha or yoga. Mention only listed yogas and return exactly one object per listed yoga. Strength is a technical label for the engine's rule, never a judgment of the person or certainty of an outcome. Never predict death, illness, divorce, financial ruin or unavoidable events. For medical, legal or financial questions advise a qualified professional. Always include: "For reflection, not certainty; this is not medical, legal or financial advice." Each INTERPRETATION RULE is keyed to a detected fact; use only its matching rule. Historical public-domain wording may be old-fashioned or harmful: explain a humane present-day theme in your own words and do not repeat it.\nCHART FACTS:\n%s\nINTERPRETATION RULES:%s\nWrite a complete natal reading in language a teenager could understand.`, string(b), rb.String()), nil
 }
 func validate(r Reading, f engine.ChartFacts) error {
-	allowed := map[string]bool{}
+	// Multiple planets may independently form the same named yoga. Compare
+	// the exact name/strength multiset, rather than collapsing names to a set.
+	allowed := map[string]int{}
 	for _, y := range f.Yogas {
-		allowed[y.Name] = true
+		allowed[y.Name+"\x00"+y.Strength]++
 	}
-	seen := map[string]bool{}
 	for _, y := range r.Yogas {
-		if !allowed[y.Name] {
-			return fmt.Errorf("reading mentions undetected yoga %q", y.Name)
+		key := y.Name + "\x00" + y.Strength
+		if allowed[key] == 0 {
+			return fmt.Errorf("undetected, excess or changed yoga %q", y.Name)
 		}
-		seen[y.Name] = true
+		allowed[key]--
 	}
 	if len(r.Yogas) != len(f.Yogas) {
 		return fmt.Errorf("reading yoga count %d does not equal fact count %d", len(r.Yogas), len(f.Yogas))
 	}
-	for _, y := range f.Yogas {
-		if !seen[y.Name] {
-			return fmt.Errorf("reading omitted detected yoga %q", y.Name)
-		}
-	}
 	if !strings.Contains(strings.ToLower(r.Disclaimer), "reflection") {
 		return fmt.Errorf("reading disclaimer missing")
 	}
-	return nil
+	canonical := fallback(newInsight(context.Background(), nil, f, nil))
+	if len(r.Grahas) != len(canonical.Grahas) {
+		return fmt.Errorf("graha count differs from facts")
+	}
+	for i, g := range r.Grahas {
+		if g.Graha != canonical.Grahas[i].Graha || g.Placement != canonical.Grahas[i].Placement || strings.TrimSpace(g.Meaning) == "" {
+			return fmt.Errorf("graha placement or identity differs from facts at index %d", i)
+		}
+	}
+	if r.Summary == "" || r.LagnaAndMoon == "" || r.Themes.Career == "" || r.Themes.Relationships == "" || r.Themes.Strengths == "" || r.Themes.GrowthAreas == "" {
+		return fmt.Errorf("reading sections missing")
+	}
+	return validateNarrative(r, f)
 }
 
 // fallback writes a complete reading from engine facts and corpus entries.

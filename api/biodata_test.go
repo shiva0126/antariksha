@@ -71,6 +71,20 @@ func TestBiodataConsentAndPhotoAccess(t *testing.T) {
 		check(request(u, "PUT", "/api/matrimony/me", map[string]any{"active": true, "consent": true, "details": matrimonyDetails{MinAge: 18, MaxAge: 70}}), 200)
 	}
 	a, b, c := users[0], users[1], users[2]
+	explanationPath := "/api/matrimony/explanation/" + b.id
+	check(request(member{}, "POST", explanationPath, map[string]bool{"use_ai": false}), 401)
+	check(request(a, "POST", explanationPath, map[string]bool{"use_ai": false}), 200)
+	check(request(a, "POST", "/api/matrimony/explanation/"+a.id, map[string]bool{}), 404)
+	spy := &matchPrivacyLLM{after: func() {
+		pool.Exec(context.Background(), `UPDATE matrimony_profiles SET hidden=true WHERE account_id=$1`, b.id)
+	}}
+	s.reading.LLM = spy
+	check(request(a, "POST", explanationPath, map[string]bool{"use_ai": true}), 404)
+	if spy.calls != 1 || strings.Contains(spy.prompt, a.handle) || strings.Contains(spy.prompt, b.handle) || strings.Contains(spy.prompt, "1996-01-01") {
+		t.Fatal("model call privacy failure")
+	}
+	pool.Exec(context.Background(), `UPDATE matrimony_profiles SET hidden=false WHERE account_id=$1`, b.id)
+	s.reading.LLM = nil
 	t.Setenv("MODERATOR_HANDLES", c.handle)
 	details := matrimonyDetails{DisplayName: "Family prepared bride", ProfileKind: "bride", Education: "Engineering", MinAge: 18, MaxAge: 70, SocialLinks: []string{"https://www.linkedin.com/in/example"}}
 	check(request(a, "POST", "/api/matrimony/drafts", map[string]any{"details": details, "relationship": "parent", "consent": false}), 400)
@@ -127,6 +141,7 @@ func TestBiodataConsentAndPhotoAccess(t *testing.T) {
 	save(true, []string{photo})
 	save(false, []string{photo})
 	check(request(a, "GET", photoPath, nil), 404)
+	check(request(a, "POST", explanationPath, map[string]bool{}), 404)
 	save(true, []string{photo})
 	check(request(a, "GET", photoPath+"?for="+c.id, nil), 404)
 	check(request(a, "POST", "/api/matrimony/report/"+b.id, map[string]string{"reason": "Photo concern"}), 200)
@@ -134,6 +149,7 @@ func TestBiodataConsentAndPhotoAccess(t *testing.T) {
 	var report int64
 	pool.QueryRow(context.Background(), `SELECT id FROM matrimony_reports WHERE subject=$1`, b.id).Scan(&report)
 	check(request(c, "POST", "/api/matrimony/moderation", map[string]any{"report": report, "hide": true}), 200)
+	check(request(a, "POST", explanationPath, map[string]bool{}), 404)
 	check(request(a, "GET", photoPath, nil), 404)
 	save(true, []string{photo})
 	check(request(a, "GET", photoPath, nil), 404)

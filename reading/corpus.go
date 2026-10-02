@@ -40,7 +40,41 @@ func (m MemoryCorpus) RulesFor(_ context.Context, keys []engine.CorpusKey) ([]Ru
 
 // PostgresCorpus retrieves every astro_corpus row whose (doc_type, key) is a
 // token detected in the facts. It intentionally does not fuzzy-match core facts.
-type PostgresCorpus struct{ Pool *pgxpool.Pool }
+type PostgresCorpus struct {
+	Pool     *pgxpool.Pool
+	Embedder corpus.Embedder
+}
+
+func (p PostgresCorpus) Relevant(ctx context.Context, f engine.ChartFacts, query string) ([]Rule, error) {
+	if p.Pool == nil || p.Embedder == nil {
+		return nil, nil
+	}
+	ps, err := corpus.SearchForKeys(ctx, p.Pool, p.Embedder, query, engine.CorpusKeys(f))
+	if err != nil {
+		return nil, err
+	}
+	out := []Rule{}
+	for _, x := range ps {
+		out = append(out, Rule{DocType: x.DocType, Key: x.Key, Title: x.Title, Body: x.Body, Source: x.Source, Ref: x.Ref})
+	}
+	return out, nil
+}
+
+type SemanticCorpus interface {
+	Relevant(context.Context, engine.ChartFacts, string) ([]Rule, error)
+}
+
+func (c CompositeCorpus) Relevant(ctx context.Context, f engine.ChartFacts, query string) ([]Rule, error) {
+	for _, source := range c {
+		if sc, ok := source.(SemanticCorpus); ok {
+			rs, err := sc.Relevant(ctx, f, query)
+			if err == nil && len(rs) > 0 {
+				return rs, nil
+			}
+		}
+	}
+	return nil, nil
+}
 
 func (p PostgresCorpus) Rules(ctx context.Context, f engine.ChartFacts) ([]Rule, error) {
 	return p.RulesFor(ctx, engine.CorpusKeys(f))

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/example/panchang/api"
+	corpusdata "github.com/example/panchang/corpus"
 	"github.com/example/panchang/engine"
 	"github.com/example/panchang/reading"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -29,7 +30,11 @@ func main() {
 			log.Fatal(err)
 		}
 		cache = api.PostgresCache{Pool: p}
-		corpus = reading.CompositeCorpus{reading.PostgresCorpus{Pool: p}, reading.DefaultCorpus}
+		var embedder corpusdata.Embedder
+		if os.Getenv("RAG_SEMANTIC_ENABLED") == "true" && os.Getenv("OPENAI_API_KEY") != "" {
+			embedder = corpusdata.OpenAIEmbedder{BaseURL: env("OPENAI_BASE_URL", "https://api.openai.com/v1"), APIKey: os.Getenv("OPENAI_API_KEY"), ModelName: env("EMBEDDING_MODEL", "text-embedding-3-small"), HTTP: &http.Client{Timeout: 10 * time.Second}}
+		}
+		corpus = reading.CompositeCorpus{reading.PostgresCorpus{Pool: p, Embedder: embedder}, reading.DefaultCorpus}
 	}
 	var llm reading.LLM
 	if key := os.Getenv("OPENAI_API_KEY"); key != "" {

@@ -58,6 +58,8 @@ The English self-authored entries were revised to explain themes in ordinary lan
 
 ## Retrieval and model status
 
+The optional runtime semantic path and reading validation changes are documented in [Detailed matching explanations](match-explanations.md). `GET /api/reading/status` exposes current aggregate readiness to signed-in users. With `RAG_SEMANTIC_ENABLED=true`, chat enrichment searches only detected Parashari facts in English and only vectors from the configured model; exact-key retrieval remains the primary path. This flag alone does not create vectors or acquire books.
+
 The live schema supports `vector(1536)` and has an HNSW index, but the corpus currently has **447 rows and zero embeddings**. Reading requests retrieve on exact engine keys. Semantic search cannot return useful neighbors until vectors are generated with a configured, compatible model. No book has been used for fine-tuning. Embedding this library requires a configured provider and its API spend; check row status after loading before describing semantic search as available.
 
 ## Lal Kitab and editions awaiting review

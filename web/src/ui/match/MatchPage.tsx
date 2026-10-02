@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { postMatch } from '../../api/client';
+import { Explanation } from './Explanation';
 import type { MatchResponse } from '../../api/types';
 import { useNames, useT } from '../../i18n';
 import { loadProfiles } from '../common/profiles';
@@ -23,6 +24,7 @@ export function MatchPage() {
   const [boy, setBoy] = useState<BirthDraft>(() => ({ ...draftFrom(), date: '1994-11-02', time: '06:40' }));
   const [girl, setGirl] = useState<BirthDraft>(() => draftFrom());
   const [result, setResult] = useState<MatchResponse>();
+  const [useAI,setUseAI]=useState(false);
   const [error, setError] = useState(''), [busy, setBusy] = useState(false);
 
   async function submit(e: React.FormEvent) {
@@ -31,7 +33,8 @@ export function MatchPage() {
     if (typeof b === 'string') return setError(`${t('Groom')}: ${b}`);
     if (typeof g === 'string') return setError(`${t('Bride')}: ${g}`);
     setError(''); setBusy(true);
-    try { setResult(await postMatch(b, g)); } catch (err) { setError(err instanceof Error ? err.message : 'Matching failed'); } finally { setBusy(false); }
+    setResult(undefined);
+    try { setResult(await postMatch(b, g, useAI)); } catch (err) { setError(err instanceof Error ? err.message : 'Matching failed'); } finally { setBusy(false); }
   }
 
   const m = result?.match;
@@ -55,11 +58,14 @@ export function MatchPage() {
           <BirthFields draft={girl} onChange={setGirl} />
         </div>
         {error && <p role="alert" className="form-error field-wide">{error}</p>}
+        <label className="field-wide"><input type="checkbox" checked={useAI} onChange={e=>setUseAI(e.target.checked)}/> Use AI for a more detailed explanation</label>
+        <p className="small muted field-wide">AI receives only calculated factor scores and flags—not names or birth details. Use birth information shared with permission. Results are not saved. A complete fact-based guide is available without AI.</p>
         <button className="primary field-wide" disabled={busy}>{busy ? 'Matching…' : t('Match charts')}</button>
       </form>
 
       {m && result && (
         <section className="match-result" aria-label="Matching result">
+          {result.explanation&&<Explanation report={result.explanation}/>}
           <div className="card match-score">
             <div className="score-ring" style={{ '--pct': pct } as React.CSSProperties} role="img" aria-label={`${m.total} of ${m.max} gunas`}>
               <b>{m.total}</b><span>of {m.max}</span>

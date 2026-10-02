@@ -21,13 +21,14 @@ type Calculator interface {
 	BirthChart(engine.ChartInput) (engine.Chart, error)
 }
 type Server struct {
-	engine  Calculator
-	cache   Cache
-	mux     *http.ServeMux
-	logger  *slog.Logger
-	reading *reading.Service
-	chats   ChatStore
-	mailer  EmailSender
+	engine      Calculator
+	cache       Cache
+	mux         *http.ServeMux
+	logger      *slog.Logger
+	reading     *reading.Service
+	chats       ChatStore
+	mailer      EmailSender
+	matchBudget *rateLimiter
 }
 
 func NewServer(e Calculator, c Cache, l *slog.Logger) *Server {
@@ -43,7 +44,7 @@ func NewServerWithReading(e Calculator, c Cache, l *slog.Logger, rs *reading.Ser
 	if rs == nil {
 		rs = reading.NewService(reading.DefaultCorpus, nil)
 	}
-	s := &Server{engine: e, cache: c, mux: http.NewServeMux(), logger: l, reading: rs, chats: NewMemoryChatStore()}
+	s := &Server{engine: e, cache: c, mux: http.NewServeMux(), logger: l, reading: rs, chats: NewMemoryChatStore(), matchBudget: newRateLimiter(4)}
 	if pc, ok := c.(PostgresCache); ok {
 		s.chats = PostgresChatStore{Pool: pc.Pool}
 	}
@@ -60,6 +61,7 @@ func (s *Server) routes() {
 	s.mux.HandleFunc("GET /api/chart", s.chart)
 	s.mux.HandleFunc("GET /api/chart/facts", s.chartFacts)
 	s.mux.HandleFunc("GET /api/reading", s.readingHandler)
+	s.mux.HandleFunc("GET /api/reading/status", s.readingStatus)
 	s.mux.HandleFunc("GET /api/reading/stream", s.readingStream)
 	s.mux.Handle("POST /api/chat", s.limit(s.chat, 20))
 	s.mux.HandleFunc("GET /api/chat/history", s.chatHistory)

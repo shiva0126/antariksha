@@ -34,7 +34,12 @@ func TestPlacesVargaMatch(t *testing.T) {
 		t.Fatalf("D5 should be rejected, got %d", code)
 	}
 	b := `{"date":"1996-05-14","time":"10:15","lat":12.97,"lon":77.59,"tz":"Asia/Kolkata"}`
-	code, v, body := do(t, s, "POST", "/api/match", `{"boy":`+b+`,"girl":`+b+`}`)
+	// Unit-test calculation without a database. Route authentication and
+	// same-origin enforcement are covered by integration/browser tests.
+	w := httptest.NewRecorder()
+	s.match(w, httptest.NewRequest("POST", "/api/match", strings.NewReader(`{"boy":`+b+`,"girl":`+b+`}`)))
+	code, body := w.Code, w.Body.String()
+	json.Unmarshal(w.Body.Bytes(), &v)
 	if code != 200 || v["match"].(map[string]any)["total"].(float64) != 28 {
 		t.Fatalf("match %d %s", code, body)
 	}

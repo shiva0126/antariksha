@@ -37,8 +37,8 @@ export const searchPlaces = (q: string, signal?: AbortSignal) =>
 export const getVarga = (input: ChartInput, n: number, signal?: AbortSignal) =>
   request<VargaResponse>(`/api/chart/varga?${query(input, { n: String(n) })}`, { signal });
 
-export const postMatch = (boy: ChartInput, girl: ChartInput) =>
-  request<MatchResponse>('/api/match', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ boy, girl }) });
+export const postMatch = (boy: ChartInput, girl: ChartInput, useAI=false) =>
+  request<MatchResponse>('/api/match', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ boy, girl, use_ai:useAI }) });
 
 export const getMuhurtaEvents = () => request<MuhurtaEvent[]>('/api/muhurta/events');
 
