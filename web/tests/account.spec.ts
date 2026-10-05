@@ -9,6 +9,7 @@ test('private account registration, profile editing and deletion', async ({ page
   await expect(page.locator('.main-nav')).toHaveCount(0);
   const anonymous=await page.request.get('/api/chart');expect(anonymous.status()).toBe(401);
   await page.getByRole('button', { name: 'New here? Create an account', exact: true }).click();
+  await page.getByLabel('Your name', { exact: true }).fill('Browser Tester');
   await page.getByLabel('Email', { exact: true }).fill(email);
   await page.getByLabel('Password', { exact: true }).fill('browser-test-password');
   await page.getByLabel('Date of birth',{exact:true}).fill('1996-05-14');

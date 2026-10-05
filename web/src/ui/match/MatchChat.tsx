@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { postMatchChat } from '../../api/client';
-import type { ChartInput, Source } from '../../api/types';
+import type { ChatAnswer, Source } from '../../api/types';
+import { useSettings } from '../../i18n';
 
 const suggestions = [
   'Explain our guna score',
@@ -14,10 +14,13 @@ const suggestions = [
 ];
 
 type Turn = { id: number; role: 'user' | 'assistant'; content: string; sources?: Source[]; model?: string };
+export type History = { role: 'user' | 'assistant'; content: string }[];
+export type AskFn = (question: string, history: History, lang: string) => Promise<ChatAnswer>;
 
 /** Ask Astrisk about a compared pair. Like the match itself, the conversation
  *  lives only in this page: nothing is saved on the server. */
-export function MatchChat({ boy, girl }: { boy: ChartInput; girl: ChartInput }) {
+export function MatchChat({ ask: send, intro }: { ask: AskFn; intro?: string }) {
+  const { lang } = useSettings();
   const [turns, setTurns] = useState<Turn[]>([]);
   const [draft, setDraft] = useState('');
   const [pending, setPending] = useState(false);
@@ -33,7 +36,7 @@ export function MatchChat({ boy, girl }: { boy: ChartInput; girl: ChartInput }) 
     const history = turns.slice(-6).map(({ role, content }) => ({ role, content }));
     setTurns(t => [...t, { id: Date.now(), role: 'user', content: question }]);
     try {
-      const a = await postMatchChat(boy, girl, question, history);
+      const a = await send(question, history, lang);
       setTurns(t => [...t, { id: Date.now() + 1, role: 'assistant', content: a.answer, sources: a.sources, model: a.model }]);
     } catch (e) {
       setTurns(t => t.slice(0, -1));
@@ -51,7 +54,7 @@ export function MatchChat({ boy, girl }: { boy: ChartInput; girl: ChartInput }) 
           <div className="chat-welcome">
             <p className="kicker">Ask Astrisk</p>
             <h2>Questions about this match</h2>
-            <p className="muted">Answers use both computed charts, the eight koota tables and both people's numerology. This conversation is not saved; it disappears when you leave or change the details.</p>
+            <p className="muted">{intro ?? "Answers use both computed charts, the eight koota tables and both people's numerology. This conversation is not saved; it disappears when you leave or change the details."}{lang !== 'en' ? ' Answers are in English until an AI model is configured on the server.' : ''}</p>
             <div className="chips">{suggestions.map(s => <button key={s} type="button" className="chip" onClick={() => ask(s)}>{s}</button>)}</div>
           </div>
         )}

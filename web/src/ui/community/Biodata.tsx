@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Feedback, Field, memberAPI, useAction } from './shared';
+import { OPTIONS } from '../matrimony/options';
 
 export type Biodata = {
  display_name:string; profile_kind:string; introduction:string; city:string;
@@ -12,14 +13,16 @@ const fields = [
  ['display_name','Display name',100],['introduction','Introduction',1000],['city','City',100],
  ['occupation','Occupation',200],['education','Education',200],['languages','Languages',200],
  ['hobbies','Hobbies and interests',500],['family_about','About the family',1000],
- ['timeline','Marriage timeline',100],['children','Thoughts about children',100],
- ['relocation','Relocation preferences',100],['lifestyle','Lifestyle',200],['values','Values',500],
+ ['lifestyle','Lifestyle',200],['values','Values',500],
 ] as const;
+// Structured fields share the option lists of the member's own profile editor.
+const selects = [['religion','Religion'],['mother_tongue','Mother tongue'],['diet','Diet'],['marital_status','Marital status'],['timeline','Marriage timeline'],['children','Children'],['relocation','Relocation']] as const;
 
 export function BiodataFields({value,onChange}:{value:Biodata;onChange:(value:Biodata)=>void}) {
  return <div className="grid-2">
   <Field label="Profile type"><select value={value.profile_kind} onChange={e=>onChange({...value,profile_kind:e.target.value})}><option value="person">Person seeking a partner</option><option value="bride">Bride</option><option value="groom">Groom</option></select></Field>
   {fields.map(([key,label,max])=><Field key={key} label={label}><textarea maxLength={max} rows={max>200?3:1} value={value[key]} onChange={e=>onChange({...value,[key]:e.target.value})}/></Field>)}
+  {selects.map(([key,label])=><Field key={key} label={label}><select value={(value as unknown as Record<string,string>)[key]??''} onChange={e=>onChange({...value,[key]:e.target.value})}><option value="">Not shared</option>{OPTIONS[key].map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></Field>)}
   <Field label="Preferred minimum age"><input type="number" min={18} max={100} value={value.min_age} onChange={e=>onChange({...value,min_age:+e.target.value})}/></Field>
   <Field label="Preferred maximum age"><input type="number" min={18} max={100} value={value.max_age} onChange={e=>onChange({...value,max_age:+e.target.value})}/></Field>
   <Field label="Social profile links"><textarea rows={3} value={(value.social_links||[]).join('\n')} onChange={e=>onChange({...value,social_links:e.target.value.split('\n')})} placeholder="One HTTPS link per line"/></Field>

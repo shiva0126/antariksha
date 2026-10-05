@@ -33,10 +33,9 @@ test('matrimony explains missing preferences and stops after a block',async({pag
  }
  await setup(page.request,'Viewer');const peer=await setup(other.request,'Comparison profile');
  try {
-  await page.goto('/#community');await page.getByRole('button',{name:'Matrimony',exact:true}).click();
-  await page.getByRole('button',{name:'Discover compatible profiles'}).click();
-  await page.getByLabel('Profile to explain').selectOption(peer.id);
-  await page.getByRole('button',{name:'Explain this match',exact:true}).click();
+  await page.goto('/#matrimony');
+  await page.getByRole('article',{name:'Comparison profile'}).getByRole('button',{name:'Compare our answers'}).click();
+  await page.getByRole('dialog').getByRole('button',{name:'Explain this match',exact:true}).click();
   const report=page.getByRole('region',{name:'Detailed compatibility explanation'});
   await expect(report).toBeVisible();await expect(report.locator('details')).toHaveCount(8);
   await expect(report.locator('summary').filter({hasText:'Family plans'})).toContainText('Not shared by both');
@@ -46,7 +45,7 @@ test('matrimony explains missing preferences and stops after a block',async({pag
   await expect(report.getByText(/A city label does not tell you/)).toBeVisible();
   await expect(report.getByText(/same wording/).last()).toBeVisible();
   expect((await other.request.post('/api/community/blocks',{headers,data:{target:(await (await page.request.get('/api/me')).json()).id,block:true}})).status()).toBe(200);
-  await page.getByRole('button',{name:'Explain this match',exact:true}).click();
+  await page.getByRole('dialog').getByRole('button',{name:'Explain this match',exact:true}).click();
   await expect(report).toHaveCount(0);await expect(page.getByText('profile unavailable',{exact:true})).toBeVisible();
  }finally{await page.request.delete('/api/me',{headers});await other.request.delete('/api/me',{headers});await other.close();}
 });

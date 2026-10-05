@@ -3,8 +3,9 @@ import type { ChartInput } from '../../api/types';
 export interface Profile extends ChartInput { id: string; name: string; place: string }
 
 let owner = 'signed-out';
-let birth: { date: string; time: string } | undefined;
-export function setProfileOwner(id: string, details?: { date: string; time: string }) { owner = id; birth = details; }
+type AccountBirth = { date: string; time: string; place?: { name: string; lat: number; lon: number; tz: string } };
+let birth: AccountBirth | undefined;
+export function setProfileOwner(id: string, details?: AccountBirth) { owner = id; birth = details; }
 export function accountBirth() { return birth; }
 const prefix = () => `antariksha.member.${owner}.`;
 

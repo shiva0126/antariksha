@@ -73,7 +73,7 @@ func (s *Server) accountGuard(next http.HandlerFunc) http.HandlerFunc {
 				return
 			}
 			mediaType, _, _ := mime.ParseMediaType(r.Header.Get("Content-Type"))
-			photoUpload := r.URL.Path == "/api/community/media" || r.URL.Path == "/api/matrimony/photos"
+			photoUpload := r.URL.Path == "/api/community/media" || r.URL.Path == "/api/matrimony/photos" || r.URL.Path == "/api/matrimony/verification"
 			if r.Method != "DELETE" && mediaType != "application/json" && !(photoUpload && mediaType == "multipart/form-data") {
 				problem(w, 415, fmt.Errorf("JSON required"))
 				return
@@ -104,6 +104,10 @@ type memberCredentials struct {
 	BirthTime string `json:"birth_time"`
 	Password  string `json:"password"`
 	Consent   bool   `json:"consent"`
+	// Optional at registration: a display name and the birthplace that
+	// completes the kundali.
+	Name       string      `json:"name"`
+	BirthPlace *birthPlace `json:"birth_place"`
 }
 
 func (s *Server) issueSession(w http.ResponseWriter, r *http.Request, id string) error {
@@ -153,6 +157,16 @@ func (s *Server) registerMember(w http.ResponseWriter, r *http.Request) {
 		problem(w, 400, fmt.Errorf("enter a valid email, date of birth, birth time and a 12–72 byte password"))
 		return
 	}
+	in.Name = strings.TrimSpace(in.Name)
+	if len(in.Name) > 100 || (in.BirthPlace != nil && !in.BirthPlace.valid()) {
+		problem(w, 400, fmt.Errorf("check your name and choose a birthplace from the list"))
+		return
+	}
+	var placeRaw []byte
+	if in.BirthPlace != nil {
+		placeRaw, _ = json.Marshal(in.BirthPlace)
+	}
+	profileRaw, _ := json.Marshal(memberProfile{Name: in.Name})
 	in.Handle = strings.ToLower(strings.TrimSpace(in.Handle))
 	if in.Handle == "" {
 		in.Handle = "member_" + randomToken()[:12]
@@ -173,11 +187,15 @@ func (s *Server) registerMember(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer tx.Rollback(r.Context())
-	_, err = tx.Exec(r.Context(), `INSERT INTO member_accounts(id,handle,password_hash,consent_version,email,birth_date,birth_time) VALUES($1,$2,$3,'private-profile-v2',$4,$5,$6)`, id, in.Handle, string(hash), in.Email, dob, bt.Format("15:04"))
+	_, err = tx.Exec(r.Context(), `INSERT INTO member_accounts(id,handle,password_hash,consent_version,email,birth_date,birth_time,birth_place,profile) VALUES($1,$2,$3,'private-profile-v2',$4,$5,$6,$7,$8)`, id, in.Handle, string(hash), in.Email, dob, bt.Format("15:04"), placeRaw, profileRaw)
 	if err != nil {
 		var pe *pgconn.PgError
 		if errors.As(err, &pe) && pe.Code == "23505" {
-			problem(w, 409, fmt.Errorf("account already exists; sign in or recover your account"))
+			if pe.ConstraintName != "" && strings.Contains(pe.ConstraintName, "handle") {
+				problem(w, 409, fmt.Errorf("that handle is taken; choose another"))
+			} else {
+				problem(w, 409, fmt.Errorf("account already exists; sign in or recover your account"))
+			}
 		} else {
 			problem(w, 500, fmt.Errorf("registration unavailable"))
 		}
@@ -240,18 +258,18 @@ func (s *Server) getMember(w http.ResponseWriter, r *http.Request) {
 	}
 	var handle string
 	var email, date, birthTime string
-	var raw []byte
+	var raw, place []byte
 	var verified bool
 	err = s.cache.(PostgresCache).Pool.QueryRow(r.Context(), `SELECT handle,profile,COALESCE(email,''),COALESCE(to_char(birth_date,'YYYY-MM-DD'),''),COALESCE(to_char(birth_time,'HH24:MI'),'') FROM member_accounts WHERE id=$1`, id).Scan(&handle, &raw, &email, &date, &birthTime)
 	if err != nil {
 		problem(w, 500, fmt.Errorf("profile unavailable"))
 		return
 	}
-	if err = s.membersDB().QueryRow(r.Context(), `SELECT email_verified_at IS NOT NULL FROM member_accounts WHERE id=$1`, id).Scan(&verified); err != nil {
+	if err = s.membersDB().QueryRow(r.Context(), `SELECT email_verified_at IS NOT NULL,birth_place FROM member_accounts WHERE id=$1`, id).Scan(&verified, &place); err != nil {
 		problem(w, 500, fmt.Errorf("profile unavailable"))
 		return
 	}
-	writeJSON(w, 200, map[string]any{"id": id, "handle": handle, "email": email, "birth_date": date, "birth_time": birthTime, "profile": json.RawMessage(raw), "visibility": "private", "phone_verification_available": phoneReady(), "email_verified": verified, "email_delivery_available": s.mailer != nil, "role": s.accountRole(r, id)})
+	writeJSON(w, 200, map[string]any{"id": id, "handle": handle, "email": email, "birth_date": date, "birth_time": birthTime, "profile": json.RawMessage(raw), "visibility": "private", "phone_verification_available": phoneReady(), "email_verified": verified, "email_delivery_available": s.mailer != nil, "role": s.accountRole(r, id), "birth_place": json.RawMessage(nullJSON(place))})
 }
 func (s *Server) updateMember(w http.ResponseWriter, r *http.Request) {
 	id, err := s.memberID(r)
@@ -291,4 +309,11 @@ func (s *Server) deleteMember(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	s.logoutMember(w, r)
+}
+
+func nullJSON(b []byte) []byte {
+	if len(b) == 0 {
+		return []byte("null")
+	}
+	return b
 }

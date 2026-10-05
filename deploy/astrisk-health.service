@@ -1,0 +1,6 @@
+[Unit]
+Description=Check Astrisk and restart stopped parts
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash %h/panchang/scripts/healthcheck.sh

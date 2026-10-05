@@ -24,6 +24,7 @@ type MatchPerson struct {
 type MatchChatContext struct {
 	Match     engine.Match
 	Boy, Girl MatchPerson
+	Lang      string // reply language code; English without an LLM
 }
 
 var matchTopics = []topic{
@@ -96,7 +97,7 @@ MATCH FACTS: %s
 CONVERSATION SO FAR:
 %s
 QUESTION: %s
-DRAFT ANSWER: %s`, string(b), hb.String(), question, grounded)
+DRAFT ANSWER: %s%s`, string(b), hb.String(), question, grounded, languageRule(mc.Lang))
 	raw, err := s.LLM.Complete(ctx, prompt)
 	if err != nil {
 		return ans, nil

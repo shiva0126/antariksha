@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { postMatch } from '../../api/client';
+import { postMatch, postMatchChat } from '../../api/client';
 import { Explanation } from './Explanation';
 import { MatchChat } from './MatchChat';
 import type { MatchResponse } from '../../api/types';
@@ -112,7 +112,7 @@ export function MatchPage() {
               <p className="muted small">Guna Milan is one traditional input. Families usually also compare the full charts (7th house, Venus, Navamsha and dashas). This tool gives reflection, not a verdict.</p>
             </article>
           </div>
-          {pair && <MatchChat key={JSON.stringify(pair)} boy={pair.boy} girl={pair.girl} />}
+          {pair && <MatchChat key={JSON.stringify(pair)} ask={(q, h, lang) => postMatchChat(pair.boy, pair.girl, q, h, lang)} />}
         </section>
       )}
     </div>

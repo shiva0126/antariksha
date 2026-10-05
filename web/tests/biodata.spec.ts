@@ -5,7 +5,7 @@ test('family prepares photos and biodata, member reviews before publication',asy
  const register=async(request:typeof page.request,suffix:string)=>{const result=await request.post('/api/auth/register',{headers,data:{email:`biodata_browser_${Date.now()}_${suffix}@example.com`,password:'biodata-browser-password',birth_date:'1996-05-14',birth_time:'10:15',consent:true}});expect(result.status()).toBe(201);return (await request.get('/api/me')).json();};
  await register(page.request,'parent');const member=await register(other.request,'member');
  try {
-  await page.goto('/#community');await page.getByRole('button',{name:'Matrimony',exact:true}).click();
+  await page.goto('/#matrimony/family');
   await page.getByText('Prepare biodata for a family member',{exact:true}).click();
   const form=page.locator('form').filter({has:page.getByRole('button',{name:'Create private biodata draft'})});
   await form.getByLabel('Display name',{exact:true}).fill('Family prepared profile');
@@ -24,15 +24,15 @@ test('family prepares photos and biodata, member reviews before publication',asy
   await draft.getByLabel("Member's Astrisk handle").fill(member.handle);
   await draft.getByRole('button',{name:'Send for their review'}).click();
   await expect(draft.getByText(/Awaiting review/)).toBeVisible();
-  const memberPage=await other.newPage();await memberPage.goto('/#community');await memberPage.getByRole('button',{name:'Matrimony',exact:true}).click();
+  const memberPage=await other.newPage();await memberPage.goto('/#matrimony/family');
   await expect(memberPage.getByRole('heading',{name:'Family prepared profile'})).toBeVisible();
   memberPage.once('dialog',dialog=>dialog.accept());
   await memberPage.getByRole('button',{name:'Use this biodata privately'}).click();
   await expect(memberPage.getByText('No drafts or review requests yet.')).toBeVisible();
-  await memberPage.getByText('Create my matrimony profile',{exact:true}).click();
-  const own=memberPage.locator('form').filter({has:memberPage.getByRole('button',{name:'Save matrimony profile'})});
+  await memberPage.getByRole('tab',{name:'My matrimony profile'}).click();
+  const own=memberPage.locator('form.mat-editor');
   await expect(own.getByRole('textbox',{name:'Display name',exact:true})).toHaveValue('Family prepared profile');
-  await expect(own.getByLabel('Make this profile discoverable')).not.toBeChecked();
+  await expect(own.getByLabel('Make my profile discoverable to eligible members')).not.toBeChecked();
   await expect(own.getByLabel('Include when I publish')).not.toBeChecked();
   await expect(own.getByRole('img',{name:'Portrait supplied with permission'})).toBeVisible();
  } finally {await page.request.delete('/api/me',{headers});await other.request.delete('/api/me',{headers});await other.close();}

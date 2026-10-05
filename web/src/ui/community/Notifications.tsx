@@ -1,8 +1,8 @@
 import {useEffect,useState} from 'react';
 import {memberAPI,Feedback,useAction} from './shared';
-type Notice={id:number;kind:'follow'|'family'|'interest'|'message';handle:string;created_at:string;read:boolean};
-const labels={follow:'sent you a follow request',family:'invited you to a private family group',interest:'sent a matrimony interest',message:'sent you a message'};
-const destinations={follow:'People',family:'Family',interest:'Matrimony',message:'Matrimony'};
+type Notice={id:number;kind:'follow'|'family'|'interest'|'message'|'accepted';handle:string;created_at:string;read:boolean};
+const labels={follow:'sent you a follow request',family:'invited you to a private family group',interest:'sent a matrimony interest',message:'sent you a message',accepted:'accepted your matrimony interest'};
+const destinations={follow:'People',family:'Family',interest:'Matrimony',message:'Matrimony',accepted:'Matrimony'};
 export function Notifications({navigate}:{navigate:(tab:string)=>void}){
  const [items,setItems]=useState<Notice[]>([]),[more,setMore]=useState(false);const action=useAction();
  async function load(before?:number){const rows=await memberAPI<Notice[]>('/api/me/notifications'+(before?`?before=${before}`:''));setItems(old=>before?[...old,...rows]:rows);setMore(rows.length===50);}

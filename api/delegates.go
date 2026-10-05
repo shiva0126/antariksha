@@ -53,7 +53,7 @@ func (s *Server) delegatedDiscovery(w http.ResponseWriter, r *http.Request, id s
 		problem(w, 403, fmt.Errorf("an accepted, active family grant is required"))
 		return
 	}
-	s.matrimonyCandidates(w, r, owner, id)
+	s.discoverFor(w, r, owner, id)
 }
 func (s *Server) shortlist(w http.ResponseWriter, r *http.Request, id string) {
 	s.memberRows(w, r, `SELECT l.owner,l.delegate,l.candidate,l.note,l.created_at,a.handle candidate_handle,d.handle delegate_handle,l.owner=$1 mine FROM matrimony_shortlist l JOIN member_accounts a ON a.id=l.candidate JOIN member_accounts d ON d.id=l.delegate WHERE (l.owner=$1 OR l.delegate=$1) AND delegate_allowed(l.owner,l.delegate) AND NOT member_blocked(l.candidate,l.owner) AND NOT member_blocked(l.candidate,l.delegate) AND EXISTS(

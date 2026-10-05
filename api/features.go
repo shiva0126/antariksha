@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -47,16 +48,38 @@ type rateLimiter struct {
 }
 
 func newRateLimiter(perMinute int) *rateLimiter {
-	return &rateLimiter{perMinute: float64(perMinute), clients: map[string]*bucket{}}
+	return &rateLimiter{perMinute: float64(perMinute) * rateLimitScale, clients: map[string]*bucket{}}
 }
 
+// clientIP identifies a client for rate limiting. Behind a local reverse
+// proxy or tunnel (cloudflared connects from loopback), every visitor would
+// share the proxy's address, so TRUSTED_PROXY_HEADER (for Cloudflare:
+// CF-Connecting-IP) is honoured, but only on loopback connections.
 func clientIP(r *http.Request) string {
 	host, _, err := net.SplitHostPort(r.RemoteAddr)
 	if err != nil {
-		return r.RemoteAddr
+		host = r.RemoteAddr
+	}
+	if h := trustedProxyHeader; h != "" {
+		if ip := net.ParseIP(host); ip != nil && ip.IsLoopback() {
+			if fwd := net.ParseIP(strings.TrimSpace(r.Header.Get(h))); fwd != nil {
+				return fwd.String()
+			}
+		}
 	}
 	return host
 }
+
+var trustedProxyHeader = os.Getenv("TRUSTED_PROXY_HEADER")
+
+// rateLimitScale multiplies every allowance. It exists for the browser test
+// runner, where all requests share one address; production leaves it unset.
+var rateLimitScale = func() float64 {
+	if v, err := strconv.ParseFloat(os.Getenv("RATE_LIMIT_SCALE"), 64); err == nil && v >= 1 && v <= 1000 {
+		return v
+	}
+	return 1
+}()
 
 func (l *rateLimiter) allow(key string, now time.Time) bool {
 	l.mu.Lock()
@@ -167,6 +190,7 @@ type matchChatRequest struct {
 	Girl     engine.ChartInput  `json:"girl"`
 	Question string             `json:"question"`
 	History  []reading.ChatTurn `json:"history"`
+	Lang     string             `json:"lang"`
 }
 
 // matchChat answers a question about a compared pair (Ask Astrisk on the
@@ -219,7 +243,7 @@ func (s *Server) matchChat(w http.ResponseWriter, r *http.Request) {
 		problem(w, 500, err)
 		return
 	}
-	ans, err := s.reading.AnswerMatch(r.Context(), reading.MatchChatContext{Match: m, Boy: bp, Girl: gp}, req.Question, req.History)
+	ans, err := s.reading.AnswerMatch(r.Context(), reading.MatchChatContext{Match: m, Boy: bp, Girl: gp, Lang: req.Lang}, req.Question, req.History)
 	if err != nil {
 		problem(w, 400, err)
 		return

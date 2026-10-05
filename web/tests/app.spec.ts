@@ -9,6 +9,12 @@ test.beforeEach(async ({ page, baseURL }) => {
 });
 test.afterAll(async ({request,baseURL})=>{await request.delete('/api/me',{headers:{Origin:baseURL!,Cookie:suiteCookies.map(c=>`${c.name}=${c.value}`).join('; ')}});});
 
+// Language and month settings live in the "More" menu.
+async function setting(page: Page, label: 'Language' | 'Month system', value: string) {
+  if (!(await page.locator('.more-panel').isVisible())) await page.locator('.more-toggle').click();
+  await page.getByLabel(label).selectOption(value);
+}
+
 async function openChart(page: Page) {
   await page.goto('/');
   await page.evaluate(() => localStorage.clear());
@@ -160,14 +166,15 @@ test('place search finds towns by old names', async ({ page }) => {
 
 test('hindi interface and purnimanta months', async ({ page }) => {
   await page.goto('/#day');
-  await page.getByLabel('Language').selectOption('hi');
-  await page.getByLabel('Month system').selectOption('purnimanta');
+  await setting(page, 'Language', 'hi');
+  await setting(page, 'Month system', 'purnimanta');
   await page.getByLabel('Panchang date').fill('2026-09-05');
-  await expect(page.locator('.main-nav')).toContainText('दैनिक पंचांग');
+  await expect(page.locator('.page-switch')).toContainText('दैनिक पंचांग');
+  await expect(page.locator('.main-nav')).toContainText('विवाह');
   // Krishna paksha of Amanta Shravana is Purnimanta Bhadrapada.
   await expect(page.locator('.day-head')).toContainText('भाद्रपद');
-  await page.getByLabel('Language').selectOption('en');
-  await page.getByLabel('Month system').selectOption('amanta');
+  await setting(page, 'Language', 'en');
+  await setting(page, 'Month system', 'amanta');
 });
 
 test('delete all my data removes chats from the server', async ({ page, request }) => {
@@ -198,13 +205,13 @@ test('strength tab shows shadbala for seven grahas', async ({ page }) => {
 test('regional languages: Tamil, Kannada, Bengali', async ({ page }) => {
   await page.goto('/#day');
   await page.getByLabel('Panchang date').fill('2026-09-22');
-  await page.getByLabel('Language').selectOption('ta');
-  await expect(page.locator('.main-nav')).toContainText('தினசரி பஞ்சாங்கம்');
+  await setting(page, 'Language', 'ta');
+  await expect(page.locator('.page-switch')).toContainText('தினசரி பஞ்சாங்கம்');
   await expect(page.locator('.limb-grid')).toContainText('செவ்வாய்'); // Tuesday
   await expect(page.locator('.limb-grid')).toContainText('ஏகாதசி');
-  await page.getByLabel('Language').selectOption('kn');
+  await setting(page, 'Language', 'kn');
   await expect(page.locator('.limb-grid')).toContainText('ಮಂಗಳವಾರ');
-  await page.getByLabel('Language').selectOption('bn');
+  await setting(page, 'Language', 'bn');
   await expect(page.locator('.limb-grid')).toContainText('একাদশী');
-  await page.getByLabel('Language').selectOption('en');
+  await setting(page, 'Language', 'en');
 });

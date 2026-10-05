@@ -17,12 +17,12 @@ test('owner grants family assistance, helper suggests, owner revokes',async({pag
   const families=await(await page.request.get('/api/families')).json();const group=families[0].id;
   await page.request.post(`/api/families/${group}/members`,{headers,data:{action:'invite',handle:members[1].handle}});
   await helperContext.request.post(base+`/api/families/${group}/members`,{headers,data:{action:'accept'}});
-  await page.goto('/#community');await page.getByRole('button',{name:'Family assistance',exact:true}).click();
+  await page.goto('/#matrimony/family');
   await page.getByLabel("Helper's account handle").fill(members[1].handle);
   await page.getByLabel('Shared family group').selectOption(group);
   await page.getByRole('button',{name:'Grant shortlist permission'}).click();
   await expect(page.getByRole('button',{name:'Revoke helper'})).toBeVisible();
-  await helperPage.goto(base+'/#community');await helperPage.getByRole('button',{name:'Family assistance',exact:true}).click();
+  await helperPage.goto(base+'/#matrimony/family');
   await helperPage.getByRole('button',{name:'Accept helper invitation'}).click();
   await helperPage.getByRole('button',{name:'Find suggestions'}).click();
   const candidate=helperPage.getByRole('article').filter({has:helperPage.getByRole('heading',{name:`@${members[2].handle}`,exact:false})});

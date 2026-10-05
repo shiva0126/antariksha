@@ -74,6 +74,7 @@ func (s *Server) routes() {
 	s.divinationRoutes()
 	s.emailRoutes()
 	s.communityRoutes()
+	s.alertRoutes()
 }
 
 func (s *Server) chart(w http.ResponseWriter, r *http.Request) {

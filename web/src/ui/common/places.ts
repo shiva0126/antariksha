@@ -39,7 +39,7 @@ const world: Place[] = [
 ];
 
 export const places: Place[] = [...india.map(([name, region, lat, lon]) => ({ name, region, lat, lon, tz: IN })), ...world];
-export const placeLabel = (p: Place) => `${p.name}, ${p.region}`;
+export const placeLabel = (p: Place) => [p.name, p.region].filter(Boolean).join(', ');
 export const findPlace = (label: string) => places.find(p => placeLabel(p).toLowerCase() === label.trim().toLowerCase() || p.name.toLowerCase() === label.trim().toLowerCase());
 export const nearestPlace = (lat: number, lon: number) => places.find(p => Math.abs(p.lat - lat) < 1e-3 && Math.abs(p.lon - lon) < 1e-3);
 export const defaultPlace = places.find(p => p.name === 'Bengaluru')!;

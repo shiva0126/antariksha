@@ -34,6 +34,10 @@ func friendshipProxy(id string) string {
 	return id
 }
 
+// NumberGrahaRelation describes how two numerology ruling grahas relate in
+// the natural friendship table (Rahu read as Saturn, Ketu as Mars).
+func NumberGrahaRelation(a, b string) (string, int) { return grahaRelation(a, b) }
+
 // grahaRelation describes the natural friendship of two grahas both ways.
 func grahaRelation(a, b string) (string, int) {
 	if a == b {

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { getChatHistory, postChat } from '../../api/client';
 import type { ChartInput, ChatMessage } from '../../api/types';
 import { chatKey } from '../common/profiles';
+import { useSettings } from '../../i18n';
 
 const suggestions = [
   'What does my chart say about my career?',
@@ -36,6 +37,7 @@ function Answer({ m }: { m: ChatMessage }) {
 
 export function ChatPanel({ birth, name }: { birth: ChartInput; name?: string }) {
   const key = storageKey(birth);
+  const { lang } = useSettings();
   const [sessionId, setSessionId] = useState(() => load(key));
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [draft, setDraft] = useState('');
@@ -65,7 +67,7 @@ export function ChatPanel({ birth, name }: { birth: ChartInput; name?: string })
     const optimistic: ChatMessage = { id: -Date.now(), role: 'user', content: question, topics: [], sources: [], created_at: new Date().toISOString() };
     setMessages(m => [...m, optimistic]);
     try {
-      const r = await postChat(birth, question, sessionId);
+      const r = await postChat(birth, question, sessionId, lang);
       if (r.session_id !== sessionId) { setSessionId(r.session_id); save(key, r.session_id); }
       setMessages(m => [...m.filter(x => x.id !== optimistic.id), r.question, r.answer]);
     } catch (e) {
@@ -101,7 +103,7 @@ export function ChatPanel({ birth, name }: { birth: ChartInput; name?: string })
             <div className="chat-welcome">
               <p className="kicker">Ask Astrisk</p>
               <h2>Questions about {name ? `${name}'s` : 'your'} chart</h2>
-              <p className="muted">Answers come from your computed chart and the Astrisk corpus of classical and interpretive texts. They describe tendencies for reflection, not certainties.</p>
+              <p className="muted">Answers come from your computed chart and the Astrisk corpus of classical and interpretive texts. They describe tendencies for reflection, not certainties.{lang !== 'en' ? ' Answers are in English until an AI model is configured on the server.' : ''}</p>
               <div className="chips">{suggestions.map(s => <button key={s} className="chip" onClick={() => ask(s)}>{s}</button>)}</div>
             </div>
           )}

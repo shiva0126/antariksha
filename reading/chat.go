@@ -33,6 +33,18 @@ type ChatContext struct {
 	Shadbala   *engine.Shadbala       // six-fold planetary strength, when available
 	Numerology *divination.Numerology // birth-date numbers, correlated with the chart
 	Related    []Rule                 // library passages closest to the question (semantic search)
+	Lang       string                 // reply language code (en, hi, mr, kn, ta, te, ml, gu, bn)
+}
+
+// LanguageNames maps the app's language codes to names an LLM understands.
+var LanguageNames = map[string]string{"hi": "Hindi", "mr": "Marathi", "kn": "Kannada", "ta": "Tamil", "te": "Telugu", "ml": "Malayalam", "gu": "Gujarati", "bn": "Bengali"}
+
+// languageRule tells the LLM which language to answer in; empty for English.
+func languageRule(lang string) string {
+	if name, ok := LanguageNames[lang]; ok {
+		return " Write the answer in " + name + " in its native script, keeping Sanskrit astrology terms recognisable."
+	}
+	return ""
 }
 
 type topic struct {
@@ -58,6 +70,10 @@ var topics = []topic{
 	{"children", words(`child|children|kids|son|sons|daughter|daughters|progeny|baby`)},
 	{"mangal_dosha", words(`mangal dosha|mangal dosh|manglik|kuja dosha|mangal`)},
 	{"sade_sati", words(`sade ?sati|shani dasha|shani transit|saturn transit`)},
+	{"travel", words(`travel|travels|travelling|traveling|abroad|foreign|overseas|relocate|relocation|immigrate|immigration|visa|journey|journeys|pilgrimage`)},
+	{"siblings", words(`sibling|siblings|brother|brothers|sister|sisters`)},
+	{"property", words(`property|properties|land|plot|real estate|vehicle|vehicles|car|bike|buy a house|own a house|home loan`)},
+	{"spirituality", words(`spiritual|spirituality|moksha|meditation|god|devotion|liberation|retreat`)},
 	{"numerology", words(`numerology|numerological|numbers?|life path|mulank|moolank|bhagyank|bhagyaank|destiny number|root number|psychic number|lucky numbers?|personal year|ank jyotish`)},
 	{"dasha", words(`dasha|dashas|dasa|mahadasha|antardasha|period|periods|timing|when|this year|next year|future|now|current|currently`)},
 	{"yoga", words(`yoga|yogas|raja yoga|gajakesari|combination|combinations`)},
@@ -136,6 +152,9 @@ func (s *Service) Answer(ctx context.Context, facts engine.ChartFacts, rules []R
 	}
 	ans.Sources = in.used
 	prompt, err := chatPrompt(facts, in, question, history, grounded)
+	if err == nil {
+		prompt += languageRule(cc.Lang)
+	}
 	if err != nil {
 		return ans, nil
 	}
@@ -352,6 +371,20 @@ func compose(in *insight, q string, history []ChatTurn, cc ChatContext) (string,
 			add(strengthLine(cc))
 		case "numerology":
 			add(numerologyLine(in, cc))
+		case "travel":
+			add(in.houseSummary(9))
+			add(in.houseSummary(12))
+			add("Rahu is traditionally linked with foreign people and places: " + in.placement("rahu") + ". Astrology cannot tell you whether a visa or a move will happen; use these as prompts for what you want from a journey.")
+		case "siblings":
+			add(in.houseSummary(3))
+			add("Mars is the traditional significator (karaka) of siblings: " + in.placement("mars") + ".")
+		case "property":
+			add(in.houseSummary(4))
+			add("Mars is the traditional significator of land and Venus of vehicles and comforts. Mars: " + in.placement("mars") + "; Venus: " + in.placement("venus") + ". For a purchase, rely on your budget and qualified advice.")
+		case "spirituality":
+			add(in.houseSummary(12))
+			add(in.houseSummary(9))
+			add("Jupiter and Ketu are the traditional significators of wisdom and detachment. Jupiter: " + in.placement("jupiter") + "; Ketu: " + in.placement("ketu") + ".")
 		case "remedy":
 			add("Astrisk describes the chart rather than prescribing remedies. Traditionally, strengthening a graha begins with its significations: for the current dasha lord " + engine.GrahaEnglish(f.Vimshottari.Current.Maha) + ", that means living its qualities consciously. For specific remedies such as gemstones or rituals, consult a trusted astrologer who can see the whole chart.")
 		}
@@ -384,7 +417,7 @@ func compose(in *insight, q string, history []ChatTurn, cc ChatContext) (string,
 			add("Detected yogas: " + strings.Join(y, ", ") + ".")
 		}
 		add(in.dashaLine())
-		add("You can ask about career, marriage, wealth, education, children, health, your nakshatra, a planet (for example \"What does my Saturn mean?\"), a house, your yogas, Mangal dosha, Sade Sati, your current dasha, your planetary strength (Shadbala) or how your numerology connects with your chart.")
+		add("You can ask about career, marriage, wealth, education, children, health, travel abroad, siblings, property, spirituality, your nakshatra, a planet (for example \"What does my Saturn mean?\"), a house, your yogas, Mangal dosha, Sade Sati, your current dasha, your planetary strength (Shadbala) or how your numerology connects with your chart.")
 	}
 	parts = dedupe(parts)
 	return strings.Join(parts, "\n\n") + "\n\nFor reflection, not certainty.", ts

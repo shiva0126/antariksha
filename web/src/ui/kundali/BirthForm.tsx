@@ -10,7 +10,9 @@ export interface BirthDetails extends ChartInput { name: string; place: string }
 export interface BirthDraft { name: string; date: string; time: string; place?: Place; custom: boolean; lat: string; lon: string; tz: string }
 
 export const draftFrom = (b?: BirthDetails): BirthDraft => {
-  const near = b ? nearestPlace(b.lat, b.lon) : defaultPlace;
+  // A new chart starts at the birthplace saved with the account, if any.
+  const ap = accountBirth()?.place;
+  const near = b ? nearestPlace(b.lat, b.lon) : ap ? (nearestPlace(ap.lat, ap.lon) ?? { name: ap.name, region: '', lat: ap.lat, lon: ap.lon, tz: ap.tz }) : defaultPlace;
   const place = near ?? (b ? { name: b.place, region: '', lat: b.lat, lon: b.lon, tz: b.tz } : undefined);
   return { name: b?.name ?? '', date: b?.date ?? accountBirth()?.date ?? '', time: b?.time ?? accountBirth()?.time ?? '', place, custom: false, lat: String(b?.lat ?? ''), lon: String(b?.lon ?? ''), tz: b?.tz ?? 'Asia/Kolkata' };
 };

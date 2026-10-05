@@ -77,6 +77,8 @@ fi
 if ! psql -Atqc 'SELECT 1 FROM native_schema_migrations WHERE version=14' | grep -q '^1$'; then
   psql -v ON_ERROR_STOP=1 --single-transaction -f db/migrations/000014_admin.up.sql -c 'INSERT INTO native_schema_migrations(version) VALUES(14)'
 fi
+# Migrations 15 onward are applied generically, in order.
+PSQL=psql bash "$ROOT/scripts/migrate.sh" panchang
 if [[ "${CORPUS_DB:-}" == 1 ]]; then
   # Classical sources are fetched once and sha256-verified; offline starts
   # still load the full self-authored corpus.

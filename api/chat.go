@@ -166,6 +166,7 @@ type chatRequest struct {
 	SessionID string            `json:"session_id"`
 	Birth     engine.ChartInput `json:"birth"`
 	Question  string            `json:"question"`
+	Lang      string            `json:"lang"`
 }
 
 func (s *Server) chat(w http.ResponseWriter, r *http.Request) {
@@ -220,7 +221,7 @@ func (s *Server) chat(w http.ResponseWriter, r *http.Request) {
 	for i, m := range prior {
 		turns[i] = reading.ChatTurn{Role: m.Role, Content: m.Content}
 	}
-	cc := reading.ChatContext{}
+	cc := reading.ChatContext{Lang: req.Lang}
 	loc, _ := time.LoadLocation(req.Birth.TZ)
 	nowLocal := now.In(loc)
 	if t, err := s.engine.BirthChart(engine.ChartInput{Date: nowLocal.Format("2006-01-02"), Time: nowLocal.Format("15:04"), Lat: req.Birth.Lat, Lon: req.Birth.Lon, TZ: req.Birth.TZ}); err == nil {

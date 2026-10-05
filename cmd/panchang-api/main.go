@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"mime"
 	"net/http"
 	"os"
 	"time"
@@ -43,12 +44,22 @@ func main() {
 	if key := os.Getenv("OPENAI_API_KEY"); key != "" {
 		llm = reading.OpenAIClient{BaseURL: env("OPENAI_BASE_URL", "https://api.openai.com/v1"), APIKey: key, Model: env("OPENAI_MODEL", "gpt-4o-mini"), HTTP: &http.Client{Timeout: 90 * time.Second}}
 	}
-	handler := api.NewServerWithReading(e, cache, nil, reading.NewService(corpus, llm)).Handler()
+	server := api.NewServerWithReading(e, cache, nil, reading.NewService(corpus, llm))
+	go server.RunAlerts(context.Background())
+	handler := server.Handler()
 	if dir := os.Getenv("WEB_DIST"); dir != "" {
 		mux := http.NewServeMux()
 		mux.Handle("/api/", handler)
 		mux.Handle("/healthz", handler)
-		mux.Handle("/", http.FileServer(http.Dir(dir)))
+		_ = mime.AddExtensionType(".webmanifest", "application/manifest+json")
+		files := http.FileServer(http.Dir(dir))
+		mux.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// The service worker must update promptly; hashed assets may be cached.
+			if r.URL.Path == "/sw.js" || r.URL.Path == "/" || r.URL.Path == "/index.html" {
+				w.Header().Set("Cache-Control", "no-cache")
+			}
+			files.ServeHTTP(w, r)
+		}))
 		handler = mux
 	}
 	srv := &http.Server{Addr: addr, Handler: handler, ReadHeaderTimeout: 5 * time.Second}

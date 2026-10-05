@@ -29,14 +29,58 @@ type matrimonyDetails struct {
 	SocialLinks  []string `json:"social_links"`
 	MinAge       int      `json:"min_age"`
 	MaxAge       int      `json:"max_age"`
+	// Structured biodata (v2). Enumerated values are validated against
+	// matrimonyEnums; an empty string means "not shared".
+	Region             string `json:"region,omitempty"`
+	Religion           string `json:"religion,omitempty"`
+	Community          string `json:"community,omitempty"`
+	MotherTongue       string `json:"mother_tongue,omitempty"`
+	Diet               string `json:"diet,omitempty"`
+	HeightCm           int    `json:"height_cm,omitempty"`
+	MaritalStatus      string `json:"marital_status,omitempty"`
+	EducationLevel     string `json:"education_level,omitempty"`
+	OccupationCategory string `json:"occupation_category,omitempty"`
+	IncomeBand         string `json:"income_band,omitempty"`
+	FamilyType         string `json:"family_type,omitempty"`
+}
+
+// matrimonyEnums lists the allowed values of each structured field.
+var matrimonyEnums = map[string][]string{
+	"religion":            {"hindu", "muslim", "christian", "sikh", "jain", "buddhist", "parsi", "jewish", "spiritual", "none", "other", "prefer_not"},
+	"mother_tongue":       {"hindi", "marathi", "kannada", "tamil", "telugu", "malayalam", "gujarati", "bengali", "punjabi", "odia", "urdu", "konkani", "tulu", "assamese", "english", "other"},
+	"diet":                {"vegetarian", "eggetarian", "non_vegetarian", "vegan", "jain", "other"},
+	"marital_status":      {"never_married", "divorced", "widowed", "separated", "awaiting_divorce"},
+	"education_level":     {"high_school", "diploma", "bachelors", "masters", "doctorate", "other"},
+	"occupation_category": {"it_software", "engineering", "medicine", "business", "government", "education", "finance", "law", "arts_media", "defence", "other", "not_working"},
+	"income_band":         {"under_3l", "3_6l", "6_10l", "10_20l", "20_35l", "35_50l", "over_50l", "prefer_not"},
+	"family_type":         {"joint", "nuclear", "other"},
+	"timeline":            {"within_6_months", "within_year", "one_to_two_years", "not_sure"},
+	"relocation":          {"open", "within_country", "no", "discuss"},
+	"children":            {"want", "dont_want", "open", "have_children"},
+}
+
+func (d matrimonyDetails) enumValues() map[string]string {
+	return map[string]string{"religion": d.Religion, "mother_tongue": d.MotherTongue, "diet": d.Diet, "marital_status": d.MaritalStatus, "education_level": d.EducationLevel, "occupation_category": d.OccupationCategory, "income_band": d.IncomeBand, "family_type": d.FamilyType, "timeline": d.Timeline, "relocation": d.Relocation, "children": d.Children}
+}
+
+func validEnum(field, v string) bool {
+	if v == "" {
+		return true
+	}
+	for _, x := range matrimonyEnums[field] {
+		if x == v {
+			return true
+		}
+	}
+	return false
 }
 
 func (s *Server) matrimonyRoutes() {
 	s.delegateRoutes()
 	s.biodataRoutes()
+	s.matrimonyV2Routes()
 	s.memberRoute("GET /api/matrimony/me", s.matrimonyMe)
 	s.memberRoute("PUT /api/matrimony/me", s.saveMatrimony)
-	s.memberRoute("GET /api/matrimony/discover", s.discoverMatrimony)
 	s.memberRoute("POST /api/matrimony/explanation/{peer}", s.matrimonyExplanation)
 	s.memberRoute("GET /api/matrimony/interests", s.matrimonyInterests)
 	s.memberRoute("POST /api/matrimony/interests", s.matrimonyInterestAction)
@@ -101,7 +145,10 @@ func (s *Server) matrimonyExplanation(w http.ResponseWriter, r *http.Request, id
 	writeJSON(w, 200, out)
 }
 func (s *Server) matrimonyMe(w http.ResponseWriter, r *http.Request, id string) {
-	s.memberRows(w, r, `SELECT active,details,hidden FROM matrimony_profiles WHERE account_id=$1`, id)
+	s.memberRows(w, r, `SELECT p.active,p.details,p.hidden,p.horoscope_visible,p.verified_at IS NOT NULL verified,p.saved_search,
+ (SELECT status FROM matrimony_verifications v WHERE v.account_id=p.account_id) verification,
+ a.birth_place IS NOT NULL has_birth_place,a.email_alerts
+ FROM matrimony_profiles p JOIN member_accounts a ON a.id=p.account_id WHERE p.account_id=$1`, id)
 }
 func validMatrimonyDetails(d matrimonyDetails) bool {
 	if d.MinAge < 18 || d.MaxAge < d.MinAge || d.MaxAge > 100 || len(d.DisplayName) > 100 || len(d.Introduction) > 1000 || len(d.Values) > 500 || len(d.Hobbies) > 500 || len(d.FamilyAbout) > 1000 || len(d.City) > 100 || len(d.Occupation) > 200 || len(d.Education) > 200 || len(d.Languages) > 200 || len(d.Timeline) > 100 || len(d.Children) > 100 || len(d.Relocation) > 100 || len(d.Lifestyle) > 200 || len(d.SocialLinks) > 5 {
@@ -109,6 +156,14 @@ func validMatrimonyDetails(d matrimonyDetails) bool {
 	}
 	if d.ProfileKind != "" && d.ProfileKind != "bride" && d.ProfileKind != "groom" && d.ProfileKind != "person" {
 		return false
+	}
+	if len(d.Region) > 100 || len(d.Community) > 100 || (d.HeightCm != 0 && (d.HeightCm < 120 || d.HeightCm > 230)) {
+		return false
+	}
+	for field, v := range d.enumValues() {
+		if !validEnum(field, v) {
+			return false
+		}
 	}
 	for _, link := range d.SocialLinks {
 		u, err := url.Parse(link)
@@ -120,10 +175,11 @@ func validMatrimonyDetails(d matrimonyDetails) bool {
 }
 func (s *Server) saveMatrimony(w http.ResponseWriter, r *http.Request, id string) {
 	var in struct {
-		Active   bool             `json:"active"`
-		Consent  bool             `json:"consent"`
-		Details  matrimonyDetails `json:"details"`
-		PhotoIDs []string         `json:"photo_ids"`
+		Active    bool             `json:"active"`
+		Consent   bool             `json:"consent"`
+		Horoscope bool             `json:"horoscope"`
+		Details   matrimonyDetails `json:"details"`
+		PhotoIDs  []string         `json:"photo_ids"`
 	}
 	if !memberInput(w, r, &in) {
 		return
@@ -161,7 +217,7 @@ func (s *Server) saveMatrimony(w http.ResponseWriter, r *http.Request, id string
 		_, err = tx.Exec(r.Context(), `UPDATE matrimony_photos SET published=(id=ANY($2)) WHERE owner=$1 AND draft_id IS NULL`, id, in.PhotoIDs)
 	}
 	if err == nil {
-		_, err = tx.Exec(r.Context(), `INSERT INTO matrimony_profiles(account_id,active,details) VALUES($1,$2,$3) ON CONFLICT(account_id) DO UPDATE SET active=$2,details=$3,updated_at=now()`, id, in.Active, raw)
+		_, err = tx.Exec(r.Context(), `INSERT INTO matrimony_profiles(account_id,active,details,horoscope_visible) VALUES($1,$2,$3,$4) ON CONFLICT(account_id) DO UPDATE SET active=$2,details=$3,horoscope_visible=$4,updated_at=now()`, id, in.Active, raw, in.Horoscope)
 	}
 	if err != nil || tx.Commit(r.Context()) != nil {
 		problem(w, 500, fmt.Errorf("profile could not be saved"))
@@ -169,34 +225,21 @@ func (s *Server) saveMatrimony(w http.ResponseWriter, r *http.Request, id string
 	}
 	writeJSON(w, 200, map[string]bool{"ok": true})
 }
-func (s *Server) discoverMatrimony(w http.ResponseWriter, r *http.Request, id string) {
-	if !s.adultCommunity(w, r, id) {
-		return
-	}
-	s.matrimonyCandidates(w, r, id, id)
-}
-func (s *Server) matrimonyCandidates(w http.ResponseWriter, r *http.Request, id, viewer string) {
-	s.memberRows(w, r, `SELECT a.id,a.handle,p.details,c.avatar,c.accent,c.interests,date_part('year',age(c.birth_date))::int age,
- COALESCE((SELECT json_agg(json_build_object('id',ph.id,'alt',ph.alt) ORDER BY ph.created_at,ph.id) FROM matrimony_photos ph WHERE ph.owner=a.id AND ph.draft_id IS NULL AND ph.published),'[]') photos,
- ARRAY(SELECT unnest(c.interests) INTERSECT SELECT unnest(me.interests)) shared_interests,
- (p.details->>'city'=mine.details->>'city' AND p.details->>'city'<>'') same_city,
- (p.details->>'timeline'=mine.details->>'timeline' AND p.details->>'timeline'<>'') same_timeline,
- (p.details->>'relocation'<>mine.details->>'relocation' AND p.details->>'relocation'<>'' AND mine.details->>'relocation'<>'') discuss_relocation
- FROM matrimony_profiles p JOIN member_accounts a ON a.id=p.account_id JOIN member_settings c ON c.account_id=a.id
- JOIN member_settings me ON me.account_id=$1 JOIN matrimony_profiles mine ON mine.account_id=$1
- WHERE matrimony_visible(a.id,$1) AND a.id<>$2 AND NOT member_blocked(a.id,$2)
- AND ($1=$2 OR delegate_allowed($1,$2))
- AND date_part('year',age(c.birth_date)) BETWEEN (mine.details->>'min_age')::int AND (mine.details->>'max_age')::int
- AND date_part('year',age(me.birth_date)) BETWEEN (p.details->>'min_age')::int AND (p.details->>'max_age')::int
- ORDER BY p.updated_at DESC LIMIT 50`, id, viewer)
-}
+
+const dailyInterestLimit = 20
+
 func (s *Server) matrimonyInterests(w http.ResponseWriter, r *http.Request, id string) {
-	s.memberRows(w, r, `SELECT a.id,a.handle,i.sender=$1 outgoing,i.status FROM matrimony_interests i JOIN member_accounts a ON a.id=CASE WHEN i.sender=$1 THEN i.recipient ELSE i.sender END WHERE (i.sender=$1 OR i.recipient=$1) AND NOT member_blocked($1,a.id) ORDER BY i.created_at DESC`, id)
+	s.memberRows(w, r, `SELECT a.id,a.handle,COALESCE(p.details->>'display_name','') display_name,c.avatar,c.accent,i.sender=$1 outgoing,i.status,i.note,i.created_at,
+ (SELECT max(m.created_at) FROM member_messages m WHERE (m.sender=$1 AND m.recipient=a.id) OR (m.sender=a.id AND m.recipient=$1)) last_message
+ FROM matrimony_interests i JOIN member_accounts a ON a.id=CASE WHEN i.sender=$1 THEN i.recipient ELSE i.sender END
+ LEFT JOIN matrimony_profiles p ON p.account_id=a.id LEFT JOIN member_settings c ON c.account_id=a.id
+ WHERE (i.sender=$1 OR i.recipient=$1) AND NOT member_blocked($1,a.id) ORDER BY COALESCE((SELECT max(m.created_at) FROM member_messages m WHERE (m.sender=$1 AND m.recipient=a.id) OR (m.sender=a.id AND m.recipient=$1)),i.created_at) DESC`, id)
 }
 func (s *Server) matrimonyInterestAction(w http.ResponseWriter, r *http.Request, id string) {
 	var in struct {
 		Target string `json:"target"`
 		Action string `json:"action"`
+		Note   string `json:"note"`
 	}
 	if !memberInput(w, r, &in) {
 		return
@@ -206,7 +249,18 @@ func (s *Server) matrimonyInterestAction(w http.ResponseWriter, r *http.Request,
 		if !s.adultCommunity(w, r, id) {
 			return
 		}
-		s.memberExec(w, r, `INSERT INTO matrimony_interests(sender,recipient) SELECT $1,$2 WHERE matrimony_visible($2,$1) ON CONFLICT(sender,recipient) DO UPDATE SET status=CASE WHEN matrimony_interests.status='declined' THEN 'declined' ELSE matrimony_interests.status END`, id, in.Target)
+		in.Note = strings.TrimSpace(in.Note)
+		if len([]rune(in.Note)) > 300 {
+			problem(w, 400, fmt.Errorf("keep the note under 300 characters"))
+			return
+		}
+		// A daily budget limits mass messaging; real interest is individual.
+		var sent int
+		if s.membersDB().QueryRow(r.Context(), `SELECT count(*) FROM matrimony_interests WHERE sender=$1 AND created_at>now()-interval '1 day'`, id).Scan(&sent) != nil || sent >= dailyInterestLimit {
+			problem(w, 429, fmt.Errorf("you can send %d interests a day; please try again tomorrow", dailyInterestLimit))
+			return
+		}
+		s.memberExec(w, r, `INSERT INTO matrimony_interests(sender,recipient,note) SELECT $1,$2,$3 WHERE matrimony_visible($2,$1) ON CONFLICT(sender,recipient) DO UPDATE SET status=CASE WHEN matrimony_interests.status='declined' THEN 'declined' ELSE matrimony_interests.status END`, id, in.Target, in.Note)
 	case "accept":
 		s.memberExec(w, r, `UPDATE matrimony_interests SET status='accepted' WHERE recipient=$1 AND sender=$2 AND status='pending' AND matrimony_visible($2,$1)`, id, in.Target)
 	case "decline":

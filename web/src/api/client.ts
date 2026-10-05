@@ -2,7 +2,14 @@ import type { ChartInput, ChartResponse, ChatAnswer, ChatMessage, MatchResponse,
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const r = await fetch(path, init);
-  const body = await r.json().catch(() => ({ error: r.statusText }));
+  // A cancelled request (the user changed the date mid-load) must reject, not
+  // resolve with a placeholder: rendering that placeholder crashed the page.
+  let body: any;
+  try { body = await r.json(); } catch (e) {
+    if (e instanceof DOMException && e.name === 'AbortError') throw e;
+    if (r.ok) throw new Error('The server sent an unreadable response. Please try again.');
+    body = { error: r.statusText };
+  }
   if(r.status===401)window.dispatchEvent(new Event('antariksha-signed-out'));
   if (!r.ok) throw new Error(body.error || `Request failed (${r.status})`);
   return body as T;
@@ -19,10 +26,10 @@ export const getReading = (input: ChartInput, signal?: AbortSignal) =>
 
 export const fetchJSON = <T,>(path: string, signal?: AbortSignal) => request<T>(path, { signal });
 
-export const postChat = (birth: ChartInput, question: string, sessionId?: string) =>
+export const postChat = (birth: ChartInput, question: string, sessionId?: string, lang = 'en') =>
   request<{ session_id: string; question: ChatMessage; answer: ChatMessage }>('/api/chat', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ birth, question, session_id: sessionId ?? '' }),
+    body: JSON.stringify({ birth, question, session_id: sessionId ?? '', lang }),
   });
 
 export const getChatHistory = (sessionId: string) =>
@@ -40,8 +47,11 @@ export const getVarga = (input: ChartInput, n: number, signal?: AbortSignal) =>
 export const postMatch = (boy: ChartInput, girl: ChartInput, useAI=false) =>
   request<MatchResponse>('/api/match', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ boy, girl, use_ai:useAI }) });
 
-export const postMatchChat = (boy: ChartInput, girl: ChartInput, question: string, history: { role: 'user' | 'assistant'; content: string }[]) =>
-  request<ChatAnswer>('/api/match/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ boy, girl, question, history }) });
+export const postMatchChat = (boy: ChartInput, girl: ChartInput, question: string, history: { role: 'user' | 'assistant'; content: string }[], lang = 'en') =>
+  request<ChatAnswer>('/api/match/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ boy, girl, question, history, lang }) });
+
+export const postProfileChat = (peer: string, question: string, history: { role: 'user' | 'assistant'; content: string }[], lang = 'en') =>
+  request<ChatAnswer>(`/api/matrimony/compare/${encodeURIComponent(peer)}/chat`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ question, history, lang }) });
 
 export const getMuhurtaEvents = () => request<MuhurtaEvent[]>('/api/muhurta/events');
 

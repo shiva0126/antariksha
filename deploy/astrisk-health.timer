@@ -1,0 +1,10 @@
+[Unit]
+Description=Check Astrisk every 5 minutes
+
+[Timer]
+OnBootSec=3min
+OnUnitActiveSec=5min
+Unit=astrisk-health.service
+
+[Install]
+WantedBy=timers.target

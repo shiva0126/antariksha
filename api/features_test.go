@@ -170,3 +170,37 @@ func TestMatchChat(t *testing.T) {
 		t.Fatalf("empty question accepted: %d", code)
 	}
 }
+
+func TestClientIPTrustsProxyHeaderOnlyFromLoopback(t *testing.T) {
+	old := trustedProxyHeader
+	defer func() { trustedProxyHeader = old }()
+	r := httptest.NewRequest("GET", "/", nil)
+	r.RemoteAddr = "127.0.0.1:5000"
+	r.Header.Set("CF-Connecting-IP", "203.0.113.7")
+	trustedProxyHeader = ""
+	if clientIP(r) != "127.0.0.1" {
+		t.Fatal("header must be ignored unless configured")
+	}
+	trustedProxyHeader = "CF-Connecting-IP"
+	if clientIP(r) != "203.0.113.7" {
+		t.Fatalf("loopback proxy: %s", clientIP(r))
+	}
+	r.RemoteAddr = "198.51.100.9:5000"
+	if clientIP(r) != "198.51.100.9" {
+		t.Fatal("a direct client must not choose its own address")
+	}
+	r.RemoteAddr = "127.0.0.1:5000"
+	r.Header.Set("CF-Connecting-IP", "not-an-ip")
+	if clientIP(r) != "127.0.0.1" {
+		t.Fatal("invalid header must fall back")
+	}
+}
+
+func TestChatAnswersTravelFromNinthAndTwelfthHouses(t *testing.T) {
+	s := NewServer(realEngine(t), NoCache{}, nil)
+	_, v, _ := do(t, s, "POST", "/api/chat", `{"birth":{"date":"1996-05-14","time":"10:15","lat":12.97,"lon":77.59,"tz":"Asia/Kolkata"},"question":"Will I settle abroad?"}`)
+	a := v["answer"].(map[string]any)["content"].(string)
+	if !strings.Contains(a, "foreign lands") || !strings.Contains(a, "long-distance travel") || !strings.Contains(a, "Rahu is traditionally linked") {
+		t.Fatalf("travel answer: %s", a)
+	}
+}
