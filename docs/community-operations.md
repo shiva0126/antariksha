@@ -1,9 +1,9 @@
 # Community validation build
 
 The native application runs on port 3000 via `panchang.service`. No Docker is used.
-Start from a fresh checkout with `scripts/start-native.sh`; migrations 6–11 add
+Start from a fresh checkout with `scripts/start-native.sh`; migrations 6–14 add
 community tables, conversation ownership, email/birth onboarding, notifications
-family-assisted shortlisting, private account charts and email recovery. Back up the
+family-assisted shortlisting, private account charts, email recovery, biodata, character profiles and superadmin controls. See [Superadmin](superadmin.md) for access and account management. Back up the
 database before upgrading. New API requests require an authenticated session;
 `/healthz` remains public. Existing clients must register/login first.
 
@@ -44,7 +44,7 @@ are not yet emitted; pending grants appear in the Family assistance tab.
 Keep values in the protected service environment, never Git:
 
 - `COOKIE_SECURE=true` when served over HTTPS behind a trusted proxy.
-- `MODERATOR_HANDLES`: comma-separated existing account handles for the report queue.
+- Moderator access is now stored in `member_accounts.role` (migration 14) and managed from Superadmin. The older `MODERATOR_HANDLES` setting is no longer used; migrate any existing moderator assignments to database roles before upgrading.
 - `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_VERIFY_SERVICE_SID`:
   a configured Twilio Verify service for optional phone linking.
 - `CONTACT_ENCRYPTION_KEY`: 64 hexadecimal characters (32 random bytes); back up

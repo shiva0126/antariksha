@@ -1,0 +1,6 @@
+.admin-page { overflow-wrap: anywhere; }
+.admin-page > *, .admin-page .grid-3 > * { min-width: 0; }
+.admin-page .tabs button[aria-current="page"] { color: var(--gold); border-bottom-color: var(--gold); }
+.admin-page .field { margin-bottom: 1rem; }
+.admin-page fieldset > button { margin: .5rem .75rem .5rem 0; }
+.admin-page caption { text-align: left; padding: 1rem; color: var(--muted); }

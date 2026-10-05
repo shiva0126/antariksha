@@ -29,6 +29,7 @@ type Server struct {
 	chats       ChatStore
 	mailer      EmailSender
 	matchBudget *rateLimiter
+	adminBudget *rateLimiter
 }
 
 func NewServer(e Calculator, c Cache, l *slog.Logger) *Server {
@@ -44,7 +45,7 @@ func NewServerWithReading(e Calculator, c Cache, l *slog.Logger, rs *reading.Ser
 	if rs == nil {
 		rs = reading.NewService(reading.DefaultCorpus, nil)
 	}
-	s := &Server{engine: e, cache: c, mux: http.NewServeMux(), logger: l, reading: rs, chats: NewMemoryChatStore(), matchBudget: newRateLimiter(4)}
+	s := &Server{engine: e, cache: c, mux: http.NewServeMux(), logger: l, reading: rs, chats: NewMemoryChatStore(), matchBudget: newRateLimiter(4), adminBudget: newRateLimiter(20)}
 	if pc, ok := c.(PostgresCache); ok {
 		s.chats = PostgresChatStore{Pool: pc.Pool}
 	}
@@ -67,6 +68,7 @@ func (s *Server) routes() {
 	s.mux.HandleFunc("GET /api/chat/history", s.chatHistory)
 	s.featureRoutes()
 	s.accountRoutes()
+	s.adminRoutes()
 	s.chartStoreRoutes()
 	s.characterRoutes()
 	s.divinationRoutes()

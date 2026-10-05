@@ -74,6 +74,9 @@ fi
 if ! psql -Atqc 'SELECT 1 FROM native_schema_migrations WHERE version=13' | grep -q '^1$'; then
   psql -v ON_ERROR_STOP=1 --single-transaction -f db/migrations/000013_character.up.sql -c 'INSERT INTO native_schema_migrations(version) VALUES(13)'
 fi
+if ! psql -Atqc 'SELECT 1 FROM native_schema_migrations WHERE version=14' | grep -q '^1$'; then
+  psql -v ON_ERROR_STOP=1 --single-transaction -f db/migrations/000014_admin.up.sql -c 'INSERT INTO native_schema_migrations(version) VALUES(14)'
+fi
 if [[ "${CORPUS_DB:-}" == 1 ]]; then
   # Classical sources are fetched once and sha256-verified; offline starts
   # still load the full self-authored corpus.

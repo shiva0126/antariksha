@@ -109,8 +109,20 @@ type memberCredentials struct {
 func (s *Server) issueSession(w http.ResponseWriter, r *http.Request, id string) error {
 	token := randomToken()
 	expires := time.Now().Add(7 * 24 * time.Hour)
-	_, err := s.cache.(PostgresCache).Pool.Exec(r.Context(), `INSERT INTO member_sessions(token_hash,account_id,expires_at) VALUES($1,$2,$3)`, sessionHash(token), id, expires)
+	tx, err := s.membersDB().Begin(r.Context())
 	if err != nil {
+		return err
+	}
+	defer tx.Rollback(r.Context())
+	var activeID string
+	if err = tx.QueryRow(r.Context(), `SELECT id FROM member_accounts WHERE id=$1 AND NOT suspended FOR UPDATE`, id).Scan(&activeID); err != nil {
+		return err
+	}
+	_, err = tx.Exec(r.Context(), `INSERT INTO member_sessions(token_hash,account_id,expires_at) VALUES($1,$2,$3)`, sessionHash(token), id, expires)
+	if err != nil {
+		return err
+	}
+	if err = tx.Commit(r.Context()); err != nil {
 		return err
 	}
 	http.SetCookie(w, &http.Cookie{Name: "antariksha_session", Value: token, Path: "/api", HttpOnly: true, SameSite: http.SameSiteStrictMode, Secure: secureMemberCookie(r), Expires: expires})
@@ -125,7 +137,7 @@ func (s *Server) memberID(r *http.Request) (string, error) {
 		return "", fmt.Errorf("sign in required")
 	}
 	var id string
-	err = s.cache.(PostgresCache).Pool.QueryRow(r.Context(), `SELECT account_id FROM member_sessions WHERE token_hash=$1 AND expires_at>now()`, sessionHash(c.Value)).Scan(&id)
+	err = s.cache.(PostgresCache).Pool.QueryRow(r.Context(), `SELECT s.account_id FROM member_sessions s JOIN member_accounts a ON a.id=s.account_id WHERE s.token_hash=$1 AND s.expires_at>now() AND NOT a.suspended`, sessionHash(c.Value)).Scan(&id)
 	return id, err
 }
 func (s *Server) registerMember(w http.ResponseWriter, r *http.Request) {
@@ -195,7 +207,7 @@ func (s *Server) loginMember(w http.ResponseWriter, r *http.Request) {
 	if identifier == "" {
 		identifier = in.Handle
 	}
-	err := s.cache.(PostgresCache).Pool.QueryRow(r.Context(), `SELECT id,password_hash FROM member_accounts WHERE lower(email)=$1 OR (email IS NULL AND handle=$1)`, strings.ToLower(strings.TrimSpace(identifier))).Scan(&id, &hash)
+	err := s.cache.(PostgresCache).Pool.QueryRow(r.Context(), `SELECT id,password_hash FROM member_accounts WHERE NOT suspended AND (lower(email)=$1 OR (email IS NULL AND handle=$1))`, strings.ToLower(strings.TrimSpace(identifier))).Scan(&id, &hash)
 	if err != nil {
 		hash = string(dummyPassword)
 	}
@@ -239,7 +251,7 @@ func (s *Server) getMember(w http.ResponseWriter, r *http.Request) {
 		problem(w, 500, fmt.Errorf("profile unavailable"))
 		return
 	}
-	writeJSON(w, 200, map[string]any{"id": id, "handle": handle, "email": email, "birth_date": date, "birth_time": birthTime, "profile": json.RawMessage(raw), "visibility": "private", "phone_verification_available": phoneReady(), "email_verified": verified, "email_delivery_available": s.mailer != nil})
+	writeJSON(w, 200, map[string]any{"id": id, "handle": handle, "email": email, "birth_date": date, "birth_time": birthTime, "profile": json.RawMessage(raw), "visibility": "private", "phone_verification_available": phoneReady(), "email_verified": verified, "email_delivery_available": s.mailer != nil, "role": s.accountRole(r, id)})
 }
 func (s *Server) updateMember(w http.ResponseWriter, r *http.Request) {
 	id, err := s.memberID(r)
@@ -267,6 +279,10 @@ func (s *Server) deleteMember(w http.ResponseWriter, r *http.Request) {
 	id, err := s.memberID(r)
 	if err != nil {
 		problem(w, 401, fmt.Errorf("sign in required"))
+		return
+	}
+	if s.accountRole(r, id) == "superadmin" {
+		problem(w, 409, fmt.Errorf("superadmin accounts must be transferred by the server operator before deletion"))
 		return
 	}
 	tag, err := s.cache.(PostgresCache).Pool.Exec(r.Context(), `WITH removed_chats AS (DELETE FROM chat_sessions WHERE id IN (SELECT session_id FROM chat_owners WHERE account_id=$1)) DELETE FROM member_accounts WHERE id=$1`, id)

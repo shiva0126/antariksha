@@ -69,7 +69,9 @@ func TestCommunityAccessMatrix(t *testing.T) {
 	}
 	a, b, c := users[0], users[1], users[2]
 	expect(request(a, "PUT", "/api/community/settings", map[string]any{"birth_date": "1990-01-01", "community": true}), 400)
-	t.Setenv("MODERATOR_HANDLES", c.handle)
+	if _, err = pool.Exec(context.Background(), `UPDATE member_accounts SET role='moderator' WHERE id=$1`, c.id); err != nil {
+		t.Fatal(err)
+	}
 	post := func(audience string, media []string) int64 {
 		w := request(a, "POST", "/api/community/posts", map[string]any{"caption": "test " + audience, "audience": audience, "media": media})
 		expect(w, 201)

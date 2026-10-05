@@ -85,7 +85,9 @@ func TestBiodataConsentAndPhotoAccess(t *testing.T) {
 	}
 	pool.Exec(context.Background(), `UPDATE matrimony_profiles SET hidden=false WHERE account_id=$1`, b.id)
 	s.reading.LLM = nil
-	t.Setenv("MODERATOR_HANDLES", c.handle)
+	if _, err = pool.Exec(context.Background(), `UPDATE member_accounts SET role='moderator' WHERE id=$1`, c.id); err != nil {
+		t.Fatal(err)
+	}
 	details := matrimonyDetails{DisplayName: "Family prepared bride", ProfileKind: "bride", Education: "Engineering", MinAge: 18, MaxAge: 70, SocialLinks: []string{"https://www.linkedin.com/in/example"}}
 	check(request(a, "POST", "/api/matrimony/drafts", map[string]any{"details": details, "relationship": "parent", "consent": false}), 400)
 	w := request(a, "POST", "/api/matrimony/drafts", map[string]any{"details": details, "relationship": "parent", "consent": true})

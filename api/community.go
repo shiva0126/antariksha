@@ -10,7 +10,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -495,14 +494,8 @@ func (s *Server) reportPost(w http.ResponseWriter, r *http.Request, id string) {
 	s.memberExec(w, r, `INSERT INTO community_reports(reporter,post_id,reason) VALUES($1,$2,$3)`, id, r.PathValue("post"), in.Reason)
 }
 func (s *Server) isModerator(r *http.Request, id string) bool {
-	var handle string
-	_ = s.membersDB().QueryRow(r.Context(), `SELECT handle FROM member_accounts WHERE id=$1`, id).Scan(&handle)
-	for _, v := range strings.Split(os.Getenv("MODERATOR_HANDLES"), ",") {
-		if handle != "" && handle == strings.TrimSpace(v) {
-			return true
-		}
-	}
-	return false
+	role := s.accountRole(r, id)
+	return role == "superadmin" || role == "moderator"
 }
 func (s *Server) moderationQueue(w http.ResponseWriter, r *http.Request, id string) {
 	if !s.isModerator(r, id) {
