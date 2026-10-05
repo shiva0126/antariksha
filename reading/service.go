@@ -22,6 +22,8 @@ type Rule struct {
 	Body    string `json:"-"`
 	Source  string `json:"source"`
 	Ref     string `json:"ref,omitempty"`
+	// Distance is the cosine distance of a semantic search hit (0 otherwise).
+	Distance float64 `json:"-"`
 }
 type Corpus interface {
 	// Rules returns passages for every token detected in the facts.

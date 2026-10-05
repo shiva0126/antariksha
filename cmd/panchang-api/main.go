@@ -31,8 +31,11 @@ func main() {
 		}
 		cache = api.PostgresCache{Pool: p}
 		var embedder corpusdata.Embedder
-		if os.Getenv("RAG_SEMANTIC_ENABLED") == "true" && os.Getenv("OPENAI_API_KEY") != "" {
-			embedder = corpusdata.OpenAIEmbedder{BaseURL: env("OPENAI_BASE_URL", "https://api.openai.com/v1"), APIKey: os.Getenv("OPENAI_API_KEY"), ModelName: env("EMBEDDING_MODEL", "text-embedding-3-small"), HTTP: &http.Client{Timeout: 10 * time.Second}}
+		if os.Getenv("RAG_SEMANTIC_ENABLED") == "true" {
+			embedder, err = corpusdata.ConfiguredEmbedder(10 * time.Second)
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
 		corpus = reading.CompositeCorpus{reading.PostgresCorpus{Pool: p, Embedder: embedder}, reading.DefaultCorpus}
 	}

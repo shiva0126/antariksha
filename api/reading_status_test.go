@@ -80,3 +80,19 @@ func TestReadingStatusDatabaseCounts(t *testing.T) {
 		t.Fatalf("aggregate %d source counts %d database %d", out.Entries, total, actual)
 	}
 }
+
+func TestReadingStatusReportsLocalEmbeddingModel(t *testing.T) {
+	t.Setenv("EMBEDDING_PROVIDER", "local")
+	t.Setenv("EMBEDDING_BASE_URL", "")
+	t.Setenv("EMBEDDING_MODEL", "")
+	s := NewServer(nil, NoCache{}, nil)
+	w := httptest.NewRecorder()
+	s.readingStatus(w, httptest.NewRequest("GET", "/api/reading/status", nil))
+	var out struct {
+		Model string `json:"embedding_model"`
+		Ready bool   `json:"semantic_ready"`
+	}
+	if json.Unmarshal(w.Body.Bytes(), &out) != nil || out.Model != "bge-small-en-v1.5-onnx-q-chunk400-pad1536-v1" || out.Ready {
+		t.Fatal(w.Body.String()) // no database here, so never ready
+	}
+}

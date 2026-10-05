@@ -82,7 +82,7 @@ if [[ "${CORPUS_DB:-}" == 1 ]]; then
   # still load the full self-authored corpus.
   bin/corpus acquire || echo 'corpus acquire failed; loading without public-domain passages'
   EMBED_FLAG=()
-  [[ -n "${OPENAI_API_KEY:-}" ]] && EMBED_FLAG=(-embed)
+  if [[ "${EMBEDDING_PROVIDER:-}" == local ]] || [[ -n "${EMBEDDING_API_KEY:-}${OPENAI_API_KEY:-}" ]]; then EMBED_FLAG=(-embed); fi
   bin/corpus load -allow-missing-raw "${EMBED_FLAG[@]}"
 fi
 export EPHE_PATH="$ROOT/ephe" WEB_DIST="$ROOT/web/dist" HTTP_ADDR="0.0.0.0:3000"

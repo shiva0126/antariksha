@@ -55,7 +55,7 @@ func (p PostgresCorpus) Relevant(ctx context.Context, f engine.ChartFacts, query
 	}
 	out := []Rule{}
 	for _, x := range ps {
-		out = append(out, Rule{DocType: x.DocType, Key: x.Key, Title: x.Title, Body: x.Body, Source: x.Source, Ref: x.Ref})
+		out = append(out, Rule{DocType: x.DocType, Key: x.Key, Title: x.Title, Body: x.Body, Source: x.Source, Ref: x.Ref, Distance: x.Distance})
 	}
 	return out, nil
 }

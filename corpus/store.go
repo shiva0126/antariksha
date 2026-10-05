@@ -38,7 +38,9 @@ func (o OpenAIEmbedder) Embed(ctx context.Context, texts []string) ([][]float32,
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+o.APIKey)
+	if o.APIKey != "" {
+		req.Header.Set("Authorization", "Bearer "+o.APIKey)
+	}
 	hc := o.HTTP
 	if hc == nil {
 		hc = http.DefaultClient
@@ -177,20 +179,22 @@ func EmbedPending(ctx context.Context, pool *pgxpool.Pool, emb Embedder, batch i
 	}
 	done := 0
 	for {
-		rows, err := pool.Query(ctx, `SELECT id, COALESCE(title,''), body FROM astro_corpus WHERE embedding IS NULL OR embedding_model IS DISTINCT FROM $1 ORDER BY id LIMIT $2`, emb.Model(), batch)
+		rows, err := pool.Query(ctx, `SELECT id, COALESCE(title,''), body, content_hash FROM astro_corpus WHERE embedding IS NULL OR embedding_model IS DISTINCT FROM $1 ORDER BY id LIMIT $2`, emb.Model(), batch)
 		if err != nil {
 			return done, err
 		}
 		var ids []int64
 		var texts []string
+		var hashes []string
 		for rows.Next() {
 			var id int64
-			var title, body string
-			if err = rows.Scan(&id, &title, &body); err != nil {
+			var title, body, hash string
+			if err = rows.Scan(&id, &title, &body, &hash); err != nil {
 				rows.Close()
 				return done, err
 			}
 			ids = append(ids, id)
+			hashes = append(hashes, hash)
 			texts = append(texts, Entry{Title: title, Body: body}.EmbeddingText())
 		}
 		rows.Close()
@@ -208,8 +212,12 @@ func EmbedPending(ctx context.Context, pool *pgxpool.Pool, emb Embedder, batch i
 			return done, fmt.Errorf("embedding batch size mismatch")
 		}
 		for i, id := range ids {
-			if _, err = pool.Exec(ctx, `UPDATE astro_corpus SET embedding=$1::vector, embedding_model=$2 WHERE id=$3`, vectorLiteral(vecs[i]), emb.Model(), id); err != nil {
-				return done, err
+			tag, updateErr := pool.Exec(ctx, `UPDATE astro_corpus SET embedding=$1::vector, embedding_model=$2 WHERE id=$3 AND content_hash=$4`, vectorLiteral(vecs[i]), emb.Model(), id, hashes[i])
+			if updateErr != nil {
+				return done, updateErr
+			}
+			if tag.RowsAffected() != 1 {
+				return done, fmt.Errorf("corpus changed while embedding; rerun load -embed")
 			}
 		}
 		done += len(ids)

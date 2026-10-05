@@ -7,8 +7,9 @@ test('private numerology, tropical Western chart and tarot explain their methods
   await page.goto('/#readings');await expect(page.getByRole('heading',{name:'More readings'})).toBeVisible();
   await page.getByText('Reading library & AI availability',{exact:true}).click();
   const library=page.locator('details[aria-label="Reading library status"]');
-  await expect(library).toContainText('AI provider not configured');
-  await expect(library).toContainText('Semantic enrichment is not ready');
+  // Both depend on the server's configuration, so either state is valid.
+  await expect(library).toContainText(/AI provider (not )?configured/);
+  await expect(library).toContainText(/Semantic search is ready|Semantic enrichment is not ready/);
   await expect(library.getByRole('listitem').filter({hasText:'Lal Kitab (five original volumes)'})).toContainText('Not acquired');
   await page.getByText('Reading library & AI availability',{exact:true}).click();
   await page.getByLabel('Name for numerology (optional)').fill('John');

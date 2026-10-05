@@ -1,0 +1,20 @@
+[Unit]
+Description=Astrisk local embedding model (bge-small, loopback only)
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/panchang
+Environment=PYTHONPATH=%h/panchang/.runtime/embedding-deps
+Environment=HF_HUB_OFFLINE=1
+Environment=EMBEDDING_THREADS=2
+ExecStart=/usr/bin/python3 %h/panchang/scripts/embedding-server.py
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+UMask=0077
+MemoryMax=1G
+
+[Install]
+WantedBy=default.target

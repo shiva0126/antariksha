@@ -73,7 +73,7 @@ func main() {
 		if *embed {
 			emb = embedder()
 			if emb == nil {
-				check(fmt.Errorf("-embed requires OPENAI_API_KEY"))
+				check(fmt.Errorf("-embed requires EMBEDDING_PROVIDER=local or an embedding API key"))
 			}
 		}
 		rep, err := corpus.Sync(ctx, pool, must(corpus.LoadManifest()), entries, emb)
@@ -136,7 +136,7 @@ func main() {
 	case "search":
 		emb := embedder()
 		if emb == nil || *query == "" {
-			check(fmt.Errorf("search needs OPENAI_API_KEY and -q"))
+			check(fmt.Errorf("search needs an embedding provider and -q"))
 		}
 		pool := db(ctx)
 		defer pool.Close()
@@ -196,11 +196,7 @@ func sampleFacts(ephe string) []engine.ChartFacts {
 }
 
 func embedder() corpus.Embedder {
-	key := os.Getenv("OPENAI_API_KEY")
-	if key == "" {
-		return nil
-	}
-	return corpus.OpenAIEmbedder{BaseURL: env("OPENAI_BASE_URL", "https://api.openai.com/v1"), APIKey: key, ModelName: env("EMBEDDING_MODEL", "text-embedding-3-small"), HTTP: &http.Client{Timeout: 60 * time.Second}}
+	return must(corpus.ConfiguredEmbedder(60 * time.Second))
 }
 
 func db(ctx context.Context) *pgxpool.Pool {

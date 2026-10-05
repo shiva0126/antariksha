@@ -40,7 +40,7 @@ go run ./cmd/corpus validate     # the §6 checklist against the live database
 go run ./cmd/corpus search -q "Jupiter in a kendra from the Moon"
 ```
 
-`scripts/start-native.sh` runs `acquire` and `load` on every start, adding `-embed` when `OPENAI_API_KEY` is set. It applies the migrations first.
+`scripts/start-native.sh` runs `acquire` and `load` on every start, adding `-embed` when `EMBEDDING_PROVIDER=local` or an embedding API key is set. It applies the migrations first.
 
 **Rights gate.** Every entry must cite a manifest source whose decision is `public_domain`, `self_authored` or `licensed`, and must be a real engine token. A public-domain decision needs a year of 1929 or earlier, or a recorded life+60 basis. Known modern translations (for example Santhanam's BPHS) can only be recorded as `copyrighted_blocked`. Any gate failure aborts the build.
 
@@ -70,7 +70,18 @@ Readings now keep complete planet-guide paragraphs rather than clipping sentence
 
 The optional runtime semantic path and reading validation changes are documented in [Detailed matching explanations](match-explanations.md). `GET /api/reading/status` exposes current aggregate readiness to signed-in users. With `RAG_SEMANTIC_ENABLED=true`, chat enrichment searches only detected Parashari facts in English and only vectors from the configured model; exact-key retrieval remains the primary path. This flag alone does not create vectors or acquire books.
 
-The live schema supports `vector(1536)` and has an HNSW index, but the corpus currently has **447 rows and zero embeddings**. Reading requests retrieve on exact engine keys. Semantic search cannot return useful neighbors until vectors are generated with a configured, compatible model. No book has been used for fine-tuning. Embedding this library requires a configured provider and its API spend; check row status after loading before describing semantic search as available.
+The live schema supports `vector(1536)` and has an HNSW index. Since 5 October 2026 all **447 rows are embedded** with the local model below. Reading requests still retrieve on exact engine keys first; semantic search only adds passages for keys already present in the chart. No book has been used for fine-tuning.
+
+## Local embeddings
+
+Retrieval uses a free model that runs on this server, separate from any paid reading model:
+
+- `scripts/embedding-server.py` serves an OpenAI-compatible `POST /v1/embeddings` on `127.0.0.1:18091` (port 8091 is held by Docker Desktop through WSL mirrored networking). Model `bge-small-en-v1.5-onnx-q-chunk400-pad1536-v1`: BAAI bge-small-en-v1.5 (MIT), quantised ONNX via fastembed; texts over 400 tokens are averaged over 400-token windows; the 384 dimensions are zero-padded to 1536, which leaves cosine distance unchanged. Changing any of these steps must change the model name and re-embed.
+- `deploy/astrisk-embedding.service` runs it (offline, loopback only, 1 GB memory cap); `deploy/panchang-embedding.conf` is the API drop-in setting `RAG_SEMANTIC_ENABLED=true` and `EMBEDDING_PROVIDER=local`.
+- `scripts/install-local-embeddings.sh` installs the pinned dependencies into `.runtime/embedding-deps`, downloads the model (about 65 MB), installs both units and runs `bin/corpus load -allow-missing-raw -embed`.
+- `corpus.ConfiguredEmbedder` only accepts a loopback HTTP URL for the local provider, never sends an API key to it, and keeps `EMBEDDING_PROVIDER=openai` (or an `EMBEDDING_API_KEY`) as an alternative.
+
+Ask Astrisk asks for at most six neighbours with a 4-second budget and keeps only those within cosine distance 0.47; classical public-domain passages are cited, never quoted. If the model is down, answers fall back to exact retrieval. Coverage, not the model, limits results: the library has no passages on topics such as travel abroad, so those questions get the nearest placements instead.
 
 ## Lal Kitab and editions awaiting review
 

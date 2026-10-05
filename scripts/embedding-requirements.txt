@@ -1,0 +1,5 @@
+# Local embedding server dependencies (installed into .runtime/embedding-deps).
+fastembed==0.7.4
+onnxruntime==1.30.0
+numpy==2.5.3
+tokenizers==0.23.2
