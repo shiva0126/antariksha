@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react';
 import { postMatch } from '../../api/client';
 import { Explanation } from './Explanation';
+import { MatchChat } from './MatchChat';
 import type { MatchResponse } from '../../api/types';
 import { useNames, useT } from '../../i18n';
 import { loadProfiles } from '../common/profiles';
-import { BirthFields, draftFrom, resolveDraft, type BirthDraft } from '../kundali/BirthForm';
+import { BirthFields, draftFrom, resolveDraft, type BirthDetails, type BirthDraft } from '../kundali/BirthForm';
 
 function ProfilePicker({ onPick }: { onPick: (d: BirthDraft) => void }) {
   const { profiles } = useMemo(loadProfiles, []);
@@ -24,6 +25,7 @@ export function MatchPage() {
   const [boy, setBoy] = useState<BirthDraft>(() => ({ ...draftFrom(), date: '1994-11-02', time: '06:40' }));
   const [girl, setGirl] = useState<BirthDraft>(() => draftFrom());
   const [result, setResult] = useState<MatchResponse>();
+  const [pair, setPair] = useState<{ boy: BirthDetails; girl: BirthDetails }>();
   const [useAI,setUseAI]=useState(false);
   const [error, setError] = useState(''), [busy, setBusy] = useState(false);
 
@@ -37,7 +39,7 @@ export function MatchPage() {
     if (typeof g === 'string') return setError(`${t('Bride')}: ${g}`);
     setError(''); setBusy(true);
     setResult(undefined);
-    try { setResult(await postMatch(b, g, useAI)); } catch (err) { setError(err instanceof Error ? err.message : 'Matching failed'); } finally { setBusy(false); }
+    try { setResult(await postMatch(b, g, useAI)); setPair({ boy: b, girl: g }); } catch (err) { setError(err instanceof Error ? err.message : 'Matching failed'); } finally { setBusy(false); }
   }
 
   const m = result?.match;
@@ -110,6 +112,7 @@ export function MatchPage() {
               <p className="muted small">Guna Milan is one traditional input. Families usually also compare the full charts (7th house, Venus, Navamsha and dashas). This tool gives reflection, not a verdict.</p>
             </article>
           </div>
+          {pair && <MatchChat key={JSON.stringify(pair)} boy={pair.boy} girl={pair.girl} />}
         </section>
       )}
     </div>

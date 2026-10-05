@@ -119,6 +119,10 @@ var nadiNames = []string{"Adi (Vata)", "Madhya (Pitta)", "Antya (Kapha)"}
 
 func nadiOf(nak int) int { return []int{0, 1, 2, 2, 1, 0}[nak%6] }
 
+// NaturalRelation returns 2 friend, 1 neutral, 0 enemy (naisargika, BPHS) of
+// a towards b, for the seven visible grahas.
+func NaturalRelation(a, b string) int { return relation(a, b) }
+
 // relation returns 2 friend, 1 neutral, 0 enemy (naisargika) of a towards b.
 func relation(a, b string) int {
 	if a == b || friends[a][b] {

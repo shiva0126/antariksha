@@ -50,6 +50,8 @@ export interface ChatMessage {
   sources: Source[]; model?: string; created_at: string;
 }
 
+export interface ChatAnswer { answer: string; topics: string[]; sources: Source[]; model: string }
+
 export interface YoginiPeriod { yogini: string; lord: string; from: string; to: string }
 
 export interface Koota { name: string; max: number; score: number; boy: string; girl: string; description: string }

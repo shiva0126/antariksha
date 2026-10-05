@@ -12,6 +12,8 @@ const suggestions = [
   'What is my nakshatra like?',
   'Explain my yogas',
   'What does my Saturn mean?',
+  'How does my numerology connect with my chart?',
+  'Which is my strongest planet?',
 ];
 
 const storageKey = chatKey;

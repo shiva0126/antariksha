@@ -1,4 +1,4 @@
-import type { ChartInput, ChartResponse, ChatMessage, MatchResponse, MuhurtaEvent, MuhurtaResponse, PlaceHit, ReadingResponse, ShadbalaResponse, TodayResponse, VargaResponse } from './types';
+import type { ChartInput, ChartResponse, ChatAnswer, ChatMessage, MatchResponse, MuhurtaEvent, MuhurtaResponse, PlaceHit, ReadingResponse, ShadbalaResponse, TodayResponse, VargaResponse } from './types';
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const r = await fetch(path, init);
@@ -39,6 +39,9 @@ export const getVarga = (input: ChartInput, n: number, signal?: AbortSignal) =>
 
 export const postMatch = (boy: ChartInput, girl: ChartInput, useAI=false) =>
   request<MatchResponse>('/api/match', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ boy, girl, use_ai:useAI }) });
+
+export const postMatchChat = (boy: ChartInput, girl: ChartInput, question: string, history: { role: 'user' | 'assistant'; content: string }[]) =>
+  request<ChatAnswer>('/api/match/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ boy, girl, question, history }) });
 
 export const getMuhurtaEvents = () => request<MuhurtaEvent[]>('/api/muhurta/events');
 

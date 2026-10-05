@@ -7,7 +7,9 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"time"
 
+	"github.com/example/panchang/divination"
 	"github.com/example/panchang/engine"
 )
 
@@ -27,8 +29,10 @@ type ChatAnswer struct {
 
 // ChatContext carries facts that depend on "now" rather than on birth.
 type ChatContext struct {
-	Transit  *engine.Chart    // sky at the time of asking, for Sade Sati and transits
-	Shadbala *engine.Shadbala // six-fold planetary strength, when available
+	Transit    *engine.Chart          // sky at the time of asking, for Sade Sati and transits
+	Shadbala   *engine.Shadbala       // six-fold planetary strength, when available
+	Numerology *divination.Numerology // birth-date numbers, correlated with the chart
+	Related    []Rule                 // library passages closest to the question (semantic search)
 }
 
 type topic struct {
@@ -54,6 +58,7 @@ var topics = []topic{
 	{"children", words(`child|children|kids|son|sons|daughter|daughters|progeny|baby`)},
 	{"mangal_dosha", words(`mangal dosha|mangal dosh|manglik|kuja dosha|mangal`)},
 	{"sade_sati", words(`sade ?sati|shani dasha|shani transit|saturn transit`)},
+	{"numerology", words(`numerology|numerological|numbers?|life path|mulank|moolank|bhagyank|bhagyaank|destiny number|root number|psychic number|lucky numbers?|personal year|ank jyotish`)},
 	{"dasha", words(`dasha|dashas|dasa|mahadasha|antardasha|period|periods|timing|when|this year|next year|future|now|current|currently`)},
 	{"yoga", words(`yoga|yogas|raja yoga|gajakesari|combination|combinations`)},
 	{"nakshatra", words(`nakshatra|nakshatras|star|birth star|janma nakshatra|pada`)},
@@ -111,6 +116,9 @@ func (s *Service) Answer(ctx context.Context, facts engine.ChartFacts, rules []R
 		return ChatAnswer{}, fmt.Errorf("question is too long (600 characters max)")
 	}
 	in := newInsight(ctx, s.Corpus, facts, rules)
+	if cc.Related == nil {
+		cc.Related = s.related(ctx, facts, question)
+	}
 	grounded, ts := compose(in, question, history, cc)
 	sources := in.used
 	if sources == nil {
@@ -123,14 +131,10 @@ func (s *Service) Answer(ctx context.Context, facts engine.ChartFacts, rules []R
 	if s.LLM == nil || contains(ts, "safety") {
 		return ans, nil
 	}
-	if sc, ok := s.Corpus.(SemanticCorpus); ok {
-		if rs, err := sc.Relevant(ctx, facts, question); err == nil {
-			for _, rule := range rs {
-				in.use(rule)
-			}
-			ans.Sources = in.used
-		}
+	for _, rule := range cc.Related {
+		in.use(rule)
 	}
+	ans.Sources = in.used
 	prompt, err := chatPrompt(facts, in, question, history, grounded)
 	if err != nil {
 		return ans, nil
@@ -147,6 +151,51 @@ func (s *Service) Answer(ctx context.Context, facts engine.ChartFacts, rules []R
 	}
 	ans.Answer, ans.Model = strings.TrimSpace(v.Answer), s.modelName()
 	return ans, nil
+}
+
+// relatedDistance is the largest cosine distance at which a library passage
+// is offered as related to the question (bge-small: on-topic passages measure
+// about 0.35–0.45, unrelated ones above 0.5).
+const relatedDistance = 0.47
+
+// related returns library passages for this chart's own placements that are
+// semantically closest to the question. It never blocks an answer: without a
+// semantic index, or if the local model is slow or down, it returns nothing.
+func (s *Service) related(ctx context.Context, facts engine.ChartFacts, question string) []Rule {
+	sc, ok := s.Corpus.(SemanticCorpus)
+	if !ok {
+		return nil
+	}
+	ctx, cancel := context.WithTimeout(ctx, 4*time.Second)
+	defer cancel()
+	rs, err := sc.Relevant(ctx, facts, question)
+	if err != nil {
+		return nil
+	}
+	var out []Rule
+	for _, r := range rs {
+		if r.Distance > 0 && r.Distance <= relatedDistance {
+			out = append(out, r)
+		}
+	}
+	return out
+}
+
+// relatedLines turns semantic hits into plain-language lines. Classical
+// passages are cited, never quoted, so only self-authored text is shown.
+func relatedLines(in *insight, rs []Rule, max int) []string {
+	var out []string
+	for _, r := range rs {
+		if len(out) == max {
+			break
+		}
+		if classical(r) || in.usedID[r.DocType+":"+r.Key+"|"+r.Source] {
+			continue
+		}
+		in.use(r)
+		out = append(out, fmt.Sprintf("%s: %s", r.Title, firstSentence(stripNote(r.Body), 320)))
+	}
+	return out
 }
 
 func contains(xs []string, x string) bool {
@@ -301,6 +350,8 @@ func compose(in *insight, q string, history []ChatTurn, cc ChatContext) (string,
 			add(in.entry(engine.DocGrahaInSign, "moon_in_"+engine.Slug(in.signs[in.signIdx("moon")])))
 		case "strength":
 			add(strengthLine(cc))
+		case "numerology":
+			add(numerologyLine(in, cc))
 		case "remedy":
 			add("Astrisk describes the chart rather than prescribing remedies. Traditionally, strengthening a graha begins with its significations: for the current dasha lord " + engine.GrahaEnglish(f.Vimshottari.Current.Maha) + ", that means living its qualities consciously. For specific remedies such as gemstones or rituals, consult a trusted astrologer who can see the whole chart.")
 		}
@@ -316,13 +367,24 @@ func compose(in *insight, q string, history []ChatTurn, cc ChatContext) (string,
 		add(in.houseSummary(house))
 	}
 	if len(parts) == 0 {
+		if rel := relatedLines(in, cc.Related, 2); len(rel) > 0 {
+			ts = append(ts, "library")
+			add("These are the passages from the Astrisk library that are closest to your question, chosen only from placements in your own chart.")
+			for _, l := range rel {
+				add(l)
+			}
+		}
+	} else if rel := relatedLines(in, cc.Related, 1); len(rel) > 0 {
+		add("Also related to your question in your chart — " + rel[0])
+	}
+	if len(parts) == 0 {
 		ts = append(ts, "overview")
 		add(fmt.Sprintf("Here is the core of your chart. Ascendant %s; Moon in %s, %s nakshatra; Sun in %s.", in.signs[in.lagnaSign()], in.grahas["moon"].Rashi, in.grahas["moon"].Nakshatra, in.grahas["sun"].Rashi))
 		if y := in.yogaNames(); len(y) > 0 {
 			add("Detected yogas: " + strings.Join(y, ", ") + ".")
 		}
 		add(in.dashaLine())
-		add("You can ask about career, marriage, wealth, education, children, health, your nakshatra, a planet (for example \"What does my Saturn mean?\"), a house, your yogas, Mangal dosha, Sade Sati or your current dasha.")
+		add("You can ask about career, marriage, wealth, education, children, health, your nakshatra, a planet (for example \"What does my Saturn mean?\"), a house, your yogas, Mangal dosha, Sade Sati, your current dasha, your planetary strength (Shadbala) or how your numerology connects with your chart.")
 	}
 	parts = dedupe(parts)
 	return strings.Join(parts, "\n\n") + "\n\nFor reflection, not certainty.", ts

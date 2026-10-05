@@ -12,6 +12,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/example/panchang/divination"
 	"github.com/example/panchang/engine"
 	"github.com/example/panchang/reading"
 	"github.com/jackc/pgx/v5"
@@ -229,6 +230,9 @@ func (s *Server) chat(w http.ResponseWriter, r *http.Request) {
 		if sb, err := sc.Shadbala(c); err == nil {
 			cc.Shadbala = &sb
 		}
+	}
+	if n, err := divination.ReadNumerology(req.Birth.Date, "", nowLocal.Year()); err == nil {
+		cc.Numerology = &n
 	}
 	ans, err := s.reading.Answer(r.Context(), facts, rules, req.Question, turns, cc)
 	if err != nil {

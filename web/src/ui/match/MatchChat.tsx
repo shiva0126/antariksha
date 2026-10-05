@@ -1,0 +1,86 @@
+import { useEffect, useRef, useState } from 'react';
+import { postMatchChat } from '../../api/client';
+import type { ChartInput, Source } from '../../api/types';
+
+const suggestions = [
+  'Explain our guna score',
+  'Do we have any doshas, and are they cancelled?',
+  'What does numerology say about us?',
+  'Explain Nadi and Bhakoot',
+  'Do either of us have Mangal dosha?',
+  'Compare our Moon signs and nakshatras',
+  'How are our 7th houses and Venus?',
+  'Which dashas are we each running?',
+];
+
+type Turn = { id: number; role: 'user' | 'assistant'; content: string; sources?: Source[]; model?: string };
+
+/** Ask Astrisk about a compared pair. Like the match itself, the conversation
+ *  lives only in this page: nothing is saved on the server. */
+export function MatchChat({ boy, girl }: { boy: ChartInput; girl: ChartInput }) {
+  const [turns, setTurns] = useState<Turn[]>([]);
+  const [draft, setDraft] = useState('');
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState('');
+  const logRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => { const el = logRef.current; if (el) el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' }); }, [turns, pending]);
+
+  async function ask(q: string) {
+    const question = q.trim();
+    if (!question || pending) return;
+    setDraft(''); setError(''); setPending(true);
+    const history = turns.slice(-6).map(({ role, content }) => ({ role, content }));
+    setTurns(t => [...t, { id: Date.now(), role: 'user', content: question }]);
+    try {
+      const a = await postMatchChat(boy, girl, question, history);
+      setTurns(t => [...t, { id: Date.now() + 1, role: 'assistant', content: a.answer, sources: a.sources, model: a.model }]);
+    } catch (e) {
+      setTurns(t => t.slice(0, -1));
+      setDraft(question);
+      setError(e instanceof Error ? e.message : 'Could not reach Astrisk');
+    } finally {
+      setPending(false);
+    }
+  }
+
+  return (
+    <section className="card chat-main match-chat" aria-label="Ask Astrisk about this match">
+      <div className="chat-log" ref={logRef} aria-live="polite">
+        {turns.length === 0 && (
+          <div className="chat-welcome">
+            <p className="kicker">Ask Astrisk</p>
+            <h2>Questions about this match</h2>
+            <p className="muted">Answers use both computed charts, the eight koota tables and both people's numerology. This conversation is not saved; it disappears when you leave or change the details.</p>
+            <div className="chips">{suggestions.map(s => <button key={s} type="button" className="chip" onClick={() => ask(s)}>{s}</button>)}</div>
+          </div>
+        )}
+        {turns.map(m => (
+          <div key={m.id} className={'msg msg-' + m.role}>
+            <div className="msg-bubble">
+              {m.content.split(/\n\n+/).map((p, i) => <p key={i}>{p}</p>)}
+              {m.sources && m.sources.length > 0 && (
+                <details className="sources">
+                  <summary>{m.sources.length} source{m.sources.length > 1 ? 's' : ''} · {m.model === 'grounded-corpus' ? 'grounded answer' : m.model}</summary>
+                  <ul>{m.sources.map(s => <li key={s.doc_type + s.key + s.source}><b>{s.title}</b><span>{s.source.replace(/ \[.*?\]$/, '')}</span></li>)}</ul>
+                </details>
+              )}
+            </div>
+          </div>
+        ))}
+        {pending && <div className="msg msg-assistant"><div className="msg-bubble typing" aria-label="Astrisk is answering"><i /><i /><i /></div></div>}
+      </div>
+      {turns.length > 0 && !pending && (
+        <div className="chips chips-inline">{suggestions.filter(s => !turns.some(m => m.content === s)).slice(0, 3).map(s => <button key={s} type="button" className="chip" onClick={() => ask(s)}>{s}</button>)}</div>
+      )}
+      {error && <p role="alert" className="form-error">{error}</p>}
+      <form className="composer" onSubmit={e => { e.preventDefault(); ask(draft); }}>
+        <label className="sr-only" htmlFor="match-chat-input">Your question about this match</label>
+        <textarea id="match-chat-input" rows={1} value={draft} maxLength={600} placeholder="Ask about the score, a koota, doshas, numerology…"
+          onChange={e => setDraft(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); ask(draft); } }} />
+        <button className="primary" disabled={pending || !draft.trim()}>Ask</button>
+      </form>
+    </section>
+  );
+}

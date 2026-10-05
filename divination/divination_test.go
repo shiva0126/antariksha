@@ -62,3 +62,23 @@ func TestTarotDrawUniqueAndBounded(t *testing.T) {
 		t.Fatal("accepted unsupported spread")
 	}
 }
+
+func TestIndianRootNumbersAndRulingGrahas(t *testing.T) {
+	// 29 → 11 → 2 (Moon); 2+0+0+0+0+2+2+9 = 15 → 6 (Venus).
+	r, err := ReadNumerology("2000-02-29", "", 2026)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if r.Mulank != 2 || r.MulankGraha != "moon" || r.Bhagyank != 6 || r.BhagyankGraha != "venus" {
+		t.Fatalf("2000-02-29: %+v", r)
+	}
+	// 14 → 5 (Mercury); 1+9+9+6+0+5+1+4 = 35 → 8 (Saturn).
+	if r, _ = ReadNumerology("1996-05-14", "", 2026); r.Mulank != 5 || r.MulankGraha != "mercury" || r.Bhagyank != 8 || r.BhagyankGraha != "saturn" {
+		t.Fatalf("1996-05-14: %+v", r)
+	}
+	for n, g := range map[int]string{1: "sun", 4: "rahu", 7: "ketu", 9: "mars", 22: "rahu", 33: "venus", 0: ""} {
+		if RulingGraha(n) != g {
+			t.Errorf("RulingGraha(%d) = %q, want %q", n, RulingGraha(n), g)
+		}
+	}
+}

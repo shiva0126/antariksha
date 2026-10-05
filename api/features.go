@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/example/panchang/api/places"
+	"github.com/example/panchang/divination"
 	"github.com/example/panchang/engine"
 	"github.com/example/panchang/reading"
 )
@@ -21,6 +22,7 @@ func (s *Server) featureRoutes() {
 	s.mux.HandleFunc("GET /api/chart/varga", s.varga)
 	s.mux.HandleFunc("GET /api/chart/shadbala", s.shadbala)
 	s.mux.Handle("POST /api/match", s.limit(s.accountGuard(s.match), 30))
+	s.mux.Handle("POST /api/match/chat", s.limit(s.accountGuard(s.matchChat), 30))
 	s.mux.HandleFunc("GET /api/muhurta/events", s.muhurtaEvents)
 	s.mux.Handle("GET /api/muhurta", s.limit(s.muhurta, 30))
 	s.mux.HandleFunc("GET /api/today", s.today)
@@ -159,6 +161,71 @@ func (s *Server) shadbala(w http.ResponseWriter, r *http.Request) {
 }
 
 // ---- kundli matching -------------------------------------------------------
+
+type matchChatRequest struct {
+	Boy      engine.ChartInput  `json:"boy"`
+	Girl     engine.ChartInput  `json:"girl"`
+	Question string             `json:"question"`
+	History  []reading.ChatTurn `json:"history"`
+}
+
+// matchChat answers a question about a compared pair (Ask Astrisk on the
+// Matching page). Like the match itself, nothing is stored: the client keeps
+// the conversation and sends recent turns, which only steer follow-ups.
+func (s *Server) matchChat(w http.ResponseWriter, r *http.Request) {
+	var req matchChatRequest
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 24<<10)).Decode(&req); err != nil {
+		problem(w, 400, fmt.Errorf("invalid JSON body"))
+		return
+	}
+	if len(req.History) > 6 {
+		req.History = req.History[len(req.History)-6:]
+	}
+	for i, t := range req.History {
+		if (t.Role != "user" && t.Role != "assistant") || len(t.Content) > 4000 {
+			problem(w, 400, fmt.Errorf("invalid conversation history"))
+			return
+		}
+		req.History[i].Content = strings.TrimSpace(t.Content)
+	}
+	now := time.Now()
+	person := func(in engine.ChartInput, who string) (engine.Chart, reading.MatchPerson, error) {
+		c, err := s.engine.BirthChart(in)
+		if err != nil {
+			return c, reading.MatchPerson{}, fmt.Errorf("%s's details: %w", who, err)
+		}
+		facts, rules, err := s.reading.BuildFacts(r.Context(), c, now)
+		if err != nil {
+			return c, reading.MatchPerson{}, err
+		}
+		p := reading.MatchPerson{Facts: facts, Rules: rules}
+		if n, err := divination.ReadNumerology(in.Date, "", now.Year()); err == nil {
+			p.Numerology = &n
+		}
+		return c, p, nil
+	}
+	boy, bp, err := person(req.Boy, "groom")
+	if err != nil {
+		problem(w, 400, err)
+		return
+	}
+	girl, gp, err := person(req.Girl, "bride")
+	if err != nil {
+		problem(w, 400, err)
+		return
+	}
+	m, err := engine.MatchCharts(boy, girl)
+	if err != nil {
+		problem(w, 500, err)
+		return
+	}
+	ans, err := s.reading.AnswerMatch(r.Context(), reading.MatchChatContext{Match: m, Boy: bp, Girl: gp}, req.Question, req.History)
+	if err != nil {
+		problem(w, 400, err)
+		return
+	}
+	writeJSON(w, 200, ans)
+}
 
 type matchRequest struct {
 	Boy   engine.ChartInput `json:"boy"`
