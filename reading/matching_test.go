@@ -54,7 +54,7 @@ func TestMatchExplanationsAndFallback(t *testing.T) {
 		t.Fatal(r)
 	}
 	for _, v := range r.Factors {
-		if len(v.Explanation) < 80 || v.Source == "" || v.Question == "" {
+		if len(v.Explanation) < 80 || v.Source == "" || v.Question == "" || v.Result == "" {
 			t.Fatal(v)
 		}
 	}
@@ -85,6 +85,7 @@ func TestMatchAIValidAndInvalidSections(t *testing.T) {
 	for _, f := range base.Factors {
 		sections = append(sections, map[string]string{"id": f.ID, "explanation": "Treat this topic as an invitation to understand each other. Ask what the information means in daily life, and leave room for either person to clarify or decline.", "question": "What would you like the other person to understand about this topic?"})
 	}
+	original := append([]MatchFactor(nil), base.Factors...)
 	for _, test := range []string{"valid", "duplicate", "invented", "unsafe", "score"} {
 		t.Run(test, func(t *testing.T) {
 			b, _ := json.Marshal(map[string]any{"sections": sections})
@@ -106,11 +107,66 @@ func TestMatchAIValidAndInvalidSections(t *testing.T) {
 				t.Fatal(out.AIStatus)
 			}
 			for i, f := range out.Factors {
-				if f.Evidence != base.Factors[i].Evidence || f.Source != base.Factors[i].Source {
+				if f.Evidence != base.Factors[i].Evidence || f.Source != base.Factors[i].Source || f.Result != base.Factors[i].Result {
 					t.Fatal("model changed evidence")
+				}
+				if base.Factors[i] != original[i] {
+					t.Fatal("AI call mutated reusable deterministic guide")
 				}
 			}
 		})
+	}
+}
+
+func TestPairSpecificMatchResults(t *testing.T) {
+	for _, tc := range []struct {
+		score float64
+		want  string
+	}{{0, "no points"}, {1.5, "part of"}, {3, "all available"}} {
+		got := kootaResult(engine.Koota{Name: "Tara", Score: tc.score, Max: 3}, nil)
+		if !strings.Contains(got, tc.want) {
+			t.Fatal(got)
+		}
+	}
+	nadi := engine.Koota{Name: "Nadi", Max: 8}
+	if got := kootaResult(nadi, nil); !strings.Contains(got, "No exception is recorded") {
+		t.Fatal(got)
+	}
+	note := "Some traditions cancel Nadi dosha when the nakshatra is shared but the padas differ."
+	got := kootaResult(nadi, []string{note, "Bhakoot dosha is traditionally cancelled because the Moon-sign lords are the same or mutual friends."})
+	if !strings.Contains(got, note) || !strings.Contains(got, "total are unchanged") || strings.Contains(got, "Bhakoot") {
+		t.Fatal(got)
+	}
+	nadi.Score = 8
+	if strings.Contains(kootaResult(nadi, []string{note}), "cancel") {
+		t.Fatal("exception displayed without flag")
+	}
+	for _, tc := range []struct {
+		boy, girl bool
+		want      string
+	}{{false, false, "Neither chart"}, {true, false, "Only one chart"}, {false, true, "Only one chart"}, {true, true, "Both charts"}} {
+		r := ChartMatchExplanation(engine.Match{BoyMangal: tc.boy, GirlMangal: tc.girl})
+		if !strings.Contains(r.Factors[0].Result, tc.want) {
+			t.Fatal(r)
+		}
+	}
+	for _, topic := range []string{"city", "timeline", "children", "relocation", "lifestyle", "values", "hobbies"} {
+		for _, status := range []string{"same", "different", "", "unrecognized"} {
+			got := profileResult(topic, status)
+			if len(got) < 60 {
+				t.Fatalf("%s/%s: %s", topic, status, got)
+			}
+			if (status == "" || status == "unrecognized") && !strings.Contains(got, "unknown") {
+				t.Fatal(got)
+			}
+		}
+	}
+	for _, count := range []int{0, 2} {
+		r := ProfileMatchExplanation(nil, count)
+		got := r.Factors[len(r.Factors)-1].Result
+		if (count == 0) != strings.Contains(got, "no shared") {
+			t.Fatal(got)
+		}
 	}
 }
 

@@ -27,6 +27,9 @@ export function MatchPage() {
   const [useAI,setUseAI]=useState(false);
   const [error, setError] = useState(''), [busy, setBusy] = useState(false);
 
+  function changeBoy(draft: BirthDraft) { setBoy(draft); setResult(undefined); setError(''); }
+  function changeGirl(draft: BirthDraft) { setGirl(draft); setResult(undefined); setError(''); }
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     const b = resolveDraft(boy), g = resolveDraft(girl);
@@ -45,22 +48,24 @@ export function MatchPage() {
         <div>
           <p className="kicker">Ashtakoota Guna Milan</p>
           <h1>{t('Matching')}</h1>
-          <p className="muted">The traditional 36-point compatibility check from both Moons, with Nadi, Bhakoot and Gana doshas, their classical cancellations, and Mangal dosha in both charts. Free.</p>
+          <p className="muted">Compare the traditional 36-point Moon-based tables and the app's Mars rule. Get plain-language explanations and conversation prompts. Scores are not a prediction of relationship success.</p>
         </div>
       </header>
       <form className="match-form" onSubmit={submit} noValidate>
+        <fieldset disabled={busy} style={{display:'contents'}}>
         <div className="card">
-          <div className="match-side-head"><h3>{t('Groom')}</h3><ProfilePicker onPick={setBoy} /></div>
-          <BirthFields draft={boy} onChange={setBoy} />
+          <div className="match-side-head"><h3>{t('Groom')}</h3><ProfilePicker onPick={changeBoy} /></div>
+          <BirthFields draft={boy} onChange={changeBoy} />
         </div>
         <div className="card">
-          <div className="match-side-head"><h3>{t('Bride')}</h3><ProfilePicker onPick={setGirl} /></div>
-          <BirthFields draft={girl} onChange={setGirl} />
+          <div className="match-side-head"><h3>{t('Bride')}</h3><ProfilePicker onPick={changeGirl} /></div>
+          <BirthFields draft={girl} onChange={changeGirl} />
         </div>
         {error && <p role="alert" className="form-error field-wide">{error}</p>}
-        <label className="field-wide"><input type="checkbox" checked={useAI} onChange={e=>setUseAI(e.target.checked)}/> Use AI for a more detailed explanation</label>
+        <label className="field-wide"><input type="checkbox" checked={useAI} onChange={e=>{setUseAI(e.target.checked);setResult(undefined);}}/> Use AI for a more detailed explanation</label>
         <p className="small muted field-wide">AI receives only calculated factor scores and flags—not names or birth details. Use birth information shared with permission. Results are not saved. A complete fact-based guide is available without AI.</p>
         <button className="primary field-wide" disabled={busy}>{busy ? 'Matching…' : t('Match charts')}</button>
+        </fieldset>
       </form>
 
       {m && result && (
@@ -80,7 +85,7 @@ export function MatchPage() {
           <div className="card table-card">
             <div className="table-scroll">
               <table className="planet-table koota-table">
-                <thead><tr><th>Koota</th><th>{t('Groom')}</th><th>{t('Bride')}</th><th>Score</th><th>What it measures</th></tr></thead>
+                <thead><tr><th>Koota</th><th>{t('Groom')}</th><th>{t('Bride')}</th><th>Score</th><th>Traditional rule and limits</th></tr></thead>
                 <tbody>{m.kootas.map(k => (
                   <tr key={k.name}><td><b>{k.name}</b></td><td>{n(k.boy)}</td><td>{n(k.girl)}</td>
                     <td className="num"><span className={'koota-score ' + (k.score === k.max ? 'full' : k.score === 0 ? 'zero' : '')}>{k.score} / {k.max}</span></td>

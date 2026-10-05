@@ -62,7 +62,7 @@ export interface MatchResponse {
 
 export interface MatchExplanation {
   summary: string;
-  factors: {id:string;title:string;evidence:string;explanation:string;question:string;source:string}[];
+  factors: {id:string;title:string;evidence:string;result:string;explanation:string;question:string;source:string}[];
   limitations: string[];
   disclaimer: string;
   model: string;

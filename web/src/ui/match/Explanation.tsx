@@ -7,7 +7,7 @@ export function Explanation({report}:{report:MatchExplanation}) {
   <p className="kicker">Understand the comparison</p><h2>Detailed compatibility explanation</h2>
   <p>{report.summary}</p>
   <p role="status" className="small muted">{report.ai_status==='generated'?'AI-assisted explanation · '+report.model:report.ai_status==='not_requested'?'Fact-based guide · no AI call':report.ai_status==='rejected'?'AI output did not pass checks. Showing the fact-based guide.':'AI is unavailable. Showing the complete fact-based guide.'}</p>
-  {report.factors.map(f=><details key={f.id}><summary>{f.title} — {f.evidence}</summary><p>{f.explanation}</p><p><strong>Talk about it:</strong> {f.question}</p><p className="small muted">Basis: {f.source}</p></details>)}
+  {report.factors.map(f=><details key={f.id}><summary>{f.title} — {f.evidence}</summary>{f.result&&<p><strong>For this comparison:</strong> {f.result}</p>}<p>{f.explanation}</p><p><strong>Talk about it:</strong> {f.question}</p><p className="small muted">Basis: {f.source}</p></details>)}
   <h3>What this cannot tell you</h3><ul>{report.limitations.map(l=><li key={l}>{l}</li>)}</ul><p className="disclaimer">{report.disclaimer}</p>
  </section>;
 }

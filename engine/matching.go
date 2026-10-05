@@ -176,10 +176,10 @@ func MatchCharts(boy, girl Chart) (Match, error) {
 	add := func(k Koota) { m.Kootas = append(m.Kootas, k); m.Total += k.Score }
 
 	vb, vg := rashiVarna[bs], rashiVarna[gs]
-	add(Koota{"Varna", 1, b2f(vb >= vg), varnaNames[vb], varnaNames[vg], "Spiritual and temperamental compatibility; 1 point when the groom's varna is equal to or higher than the bride's."})
+	add(Koota{"Varna", 1, b2f(vb >= vg), varnaNames[vb], varnaNames[vg], "Historical Moon-sign grouping and gendered scoring rule; not a person's caste, ability or worth. The selected table awards 1 point when the groom's group index is at least the bride's."})
 
 	wb, wg := vashyaOf(bm.Longitude), vashyaOf(gm.Longitude)
-	add(Koota{"Vashya", 2, vashyaScore[wb][wg], vashyaNames[wb], vashyaNames[wg], "Mutual attraction and influence, by rashi group (common 5-group table; schools differ in details)."})
+	add(Koota{"Vashya", 2, vashyaScore[wb][wg], vashyaNames[wb], vashyaNames[wg], "Symbolic Moon-sign groups compared in a five-group table; schools differ. This does not measure attraction or authority over a partner."})
 
 	taraGood := func(from, to int) bool { r := ((to-from+27)%27 + 1) % 9; return r != 3 && r != 5 && r != 7 }
 	tara := 0.0
@@ -189,30 +189,30 @@ func MatchCharts(boy, girl Chart) (Match, error) {
 	if taraGood(bn, gn) {
 		tara += 1.5
 	}
-	add(Koota{"Tara", 3, tara, nakshatraNames[bn], nakshatraNames[gn], "Birth-star harmony counted both ways; the 3rd, 5th and 7th taras (Vipat, Pratyak, Vadha) are inauspicious."})
+	add(Koota{"Tara", 3, tara, nakshatraNames[bn], nakshatraNames[gn], "Birth stars counted in both directions; the selected rule withholds points for the 3rd, 5th and 7th remainders. This is not a forecast of luck or events."})
 
 	yb, yg := nakYoni[bn], nakYoni[gn]
-	add(Koota{"Yoni", 4, yoniScore[yb][yg], yoniNames[yb], yoniNames[yg], "Physical and instinctive compatibility by nakshatra animal; sworn-enemy pairs score 0."})
+	add(Koota{"Yoni", 4, yoniScore[yb][yg], yoniNames[yb], yoniNames[yg], "Symbolic birth-star animal groups compared by table. These do not establish sexual preferences, physical compatibility or consent."})
 
 	lb, lg := rashiLord[bs], rashiLord[gs]
-	add(Koota{"Graha Maitri", 5, maitriScore(lb, lg), GrahaEnglish(lb), GrahaEnglish(lg), "Mental compatibility and friendship between the lords of the two Moon signs."})
+	add(Koota{"Graha Maitri", 5, maitriScore(lb, lg), GrahaEnglish(lb), GrahaEnglish(lg), "Traditional relationship table for the two Moon-sign rulers; not a test of the people's communication or friendship."})
 
 	gb, gg := nakGana[bn], nakGana[gn]
-	add(Koota{"Gana", 6, ganaScore[gb][gg], ganaNames[gb], ganaNames[gg], "Temperament: Deva, Manushya or Rakshasa nature of the birth stars."})
+	add(Koota{"Gana", 6, ganaScore[gb][gg], ganaNames[gb], ganaNames[gg], "Traditional birth-star groups called Deva, Manushya and Rakshasa. These labels do not describe moral character or observed temperament."})
 
 	d := (bs-gs+12)%12 + 1
 	bhakoot := 7.0
 	if inSet(d, 2, 12, 5, 9, 6, 8) {
 		bhakoot = 0
 	}
-	add(Koota{"Bhakoot", 7, bhakoot, rashiNames[bs], rashiNames[gs], "Emotional and family well-being from the distance between Moon signs; 2/12, 5/9 and 6/8 placements form Bhakoot dosha."})
+	add(Koota{"Bhakoot", 7, bhakoot, rashiNames[bs], rashiNames[gs], "Moon-sign distance: 2/12, 5/9 and 6/8 placements trigger the selected Bhakoot rule. This does not predict family well-being, finances or relationship outcomes."})
 
 	nb, ng := nadiOf(bn), nadiOf(gn)
 	nadi := 8.0
 	if nb == ng {
 		nadi = 0
 	}
-	add(Koota{"Nadi", 8, nadi, nadiNames[nb], nadiNames[ng], "Physiological constitution; the same nadi for both forms Nadi dosha, the most weighted koota."})
+	add(Koota{"Nadi", 8, nadi, nadiNames[nb], nadiNames[ng], "Birth-star grouping: identical groups trigger the selected Nadi rule. Its eight-point weight is a convention, not a health, genetics or fertility assessment."})
 
 	if bhakoot == 0 {
 		m.Doshas = append(m.Doshas, "Bhakoot dosha")
@@ -246,16 +246,9 @@ func MatchCharts(boy, girl Chart) (Match, error) {
 		m.MangalNote = "Neither chart has lagna-based Mangal dosha."
 	}
 
-	switch {
-	case m.Total < 18:
-		m.Verdict = "Below 18 points: traditionally not recommended without a detailed chart comparison."
-	case m.Total <= 24:
-		m.Verdict = "18–24 points: an average, acceptable match."
-	case m.Total <= 32:
-		m.Verdict = "25–32 points: a good match."
-	default:
-		m.Verdict = "33–36 points: an excellent match."
-	}
+	// Keep the legacy JSON field, but do not turn a table score into a verdict
+	// about people or a recommendation to marry or reject someone.
+	m.Verdict = fmt.Sprintf("%g of %g traditional points — not a relationship verdict", m.Total, m.Max)
 	if m.Doshas == nil {
 		m.Doshas = []string{}
 	}

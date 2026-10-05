@@ -16,6 +16,7 @@ type MatchFactor struct {
 	ID          string `json:"id"`
 	Title       string `json:"title"`
 	Evidence    string `json:"evidence"`
+	Result      string `json:"result"`
 	Explanation string `json:"explanation"`
 	Question    string `json:"question"`
 	Source      string `json:"source"`
@@ -44,10 +45,45 @@ func ChartMatchExplanation(m engine.Match) MatchExplanation {
 	r := MatchExplanation{Summary: fmt.Sprintf("The charts receive %g out of %g points under the app's selected Ashtakoota tables. This is a traditional score, not a percentage chance of a successful marriage. Read each factor separately and use conversations and lived experience to understand the relationship.", m.Total, m.Max), Factors: []MatchFactor{}, Limitations: []string{"Schools use different scoring tables and exceptions. Independent reference validation remains incomplete.", "This report does not assess consent, safety, shared values, behaviour or relationship success.", "Accurate birth details matter. This is not a full comparison of every house, divisional chart or timing period."}}
 	for _, k := range m.Kootas {
 		g := matchGuides[k.Name]
-		r.Factors = append(r.Factors, MatchFactor{ID: engine.Slug(k.Name), Title: k.Name, Evidence: fmt.Sprintf("%g / %g points", k.Score, k.Max), Explanation: g[0], Question: g[1], Source: "Astrisk Ashtakoota engine; original plain-language guide v1 (not a classical quotation)"})
+		r.Factors = append(r.Factors, MatchFactor{ID: engine.Slug(k.Name), Title: k.Name, Evidence: fmt.Sprintf("%g / %g points", k.Score, k.Max), Result: kootaResult(k, m.Exceptions), Explanation: g[0], Question: g[1], Source: "Astrisk Ashtakoota engine; original plain-language guide v2 (not a classical quotation)"})
 	}
-	r.Factors = append(r.Factors, MatchFactor{ID: "mangal", Title: "Mars placement", Evidence: fmt.Sprintf("Groom flagged: %t; bride flagged: %t", m.BoyMangal, m.GirlMangal), Explanation: "The engine flags selected Mars houses under its stated rule. A flag is not evidence that someone is dangerous, angry or unsuitable. It does not predict harm to a partner.", Question: "How do you each manage frustration, repair disagreements and respect boundaries?", Source: "Astrisk MangalDosha engine; original plain-language guide v1"})
+	marsResult := "Neither chart triggers the app's Lagna-based Mars rule. This is not a complete assessment of Mars from other reference points or a statement about either person's temperament."
+	if m.BoyMangal && m.GirlMangal {
+		marsResult = "Both charts trigger the app's Lagna-based Mars rule. The selected tradition treats this as a mutual cancellation; that does not establish relationship safety or success."
+	} else if m.BoyMangal || m.GirlMangal {
+		marsResult = "Only one chart triggers the app's Lagna-based Mars rule. The comparison does not evaluate every other reference point or cancellation, and it is not a reason to reject either person."
+	}
+	r.Factors = append(r.Factors, MatchFactor{ID: "mangal", Title: "Mars placement", Evidence: fmt.Sprintf("Groom flagged: %t; bride flagged: %t", m.BoyMangal, m.GirlMangal), Result: marsResult, Explanation: "The engine flags selected Mars houses under its stated rule. A flag is not evidence that someone is dangerous, angry or unsuitable. It does not predict harm to a partner.", Question: "How do you each manage frustration, repair disagreements and respect boundaries?", Source: "Astrisk MangalDosha engine; original plain-language guide v2"})
 	return finishMatch(r)
+}
+
+// kootaResult explains only the returned score and recorded exceptions. It
+// never recomputes astronomy, adjusts points, or infers a personal trait.
+func kootaResult(k engine.Koota, exceptions []string) string {
+	result := "This pair receives part of the available points in the selected table. This describes the table result, not partial agreement between the people."
+	if k.Score == 0 {
+		result = "This pair receives no points for this factor in the selected table. That is not evidence that the relationship will fail or that either person has a fault."
+	} else if k.Score == k.Max {
+		result = "This pair receives all available points for this factor in the selected table. That is not proof of real-world compatibility or a reason to skip important conversations."
+	}
+	if k.Name == "Bhakoot" || k.Name == "Nadi" {
+		if k.Score == 0 {
+			result += " The engine records a " + k.Name + " flag."
+			found := false
+			for _, note := range exceptions {
+				if strings.HasPrefix(note, k.Name+" dosha ") || (k.Name == "Nadi" && strings.HasPrefix(note, "Some traditions cancel Nadi dosha ")) {
+					result += " " + note
+					found = true
+				}
+			}
+			if found {
+				result += " The exception is shown separately: the raw points and total are unchanged."
+			} else {
+				result += " No exception is recorded by the app's implemented rules; this does not mean every tradition would reach the same conclusion."
+			}
+		}
+	}
+	return result
 }
 
 // ProfileMatchExplanation takes comparisons only, not names, birth details,
@@ -74,10 +110,30 @@ func ProfileMatchExplanation(comparisons map[string]string, shared int) MatchExp
 			evidence = "Different wording in the published profiles"
 			explanation = "The answers are worded differently. This may reflect different preferences or simply different descriptions. Clarify the practical expectations without labeling either person as wrong."
 		}
-		r.Factors = append(r.Factors, MatchFactor{ID: item[0], Title: item[1], Evidence: evidence, Explanation: explanation, Question: item[2], Source: "Consent-published profile fields; normalized text comparison, not an AI inference"})
+		r.Factors = append(r.Factors, MatchFactor{ID: item[0], Title: item[1], Evidence: evidence, Result: profileResult(item[0], status), Explanation: explanation, Question: item[2], Source: "Consent-published profile fields; normalized text comparison, not an AI inference"})
 	}
-	r.Factors = append(r.Factors, MatchFactor{ID: "shared_interests", Title: "Shared selected interests", Evidence: fmt.Sprintf("%d shared selected interests", shared), Explanation: "Shared interest tags can help you choose a first conversation or activity. They do not show how often you participate, how important the activity is, or whether you will get along. No overlap is not a negative judgment.", Question: "Which interest matters most to you, and what would you enjoy introducing each other to?", Source: "Intersection of voluntarily published community interest tags"})
+	interestResult := "There are no shared selected tags in the published profiles. Private, unlisted or differently named interests are not compared."
+	if shared > 0 {
+		interestResult = "Both profiles selected at least one of the same interest tags. You can use that as an optional conversation opener, without assuming equal enthusiasm or experience."
+	}
+	r.Factors = append(r.Factors, MatchFactor{ID: "shared_interests", Title: "Shared selected interests", Evidence: fmt.Sprintf("%d shared selected interests", shared), Result: interestResult, Explanation: "Shared interest tags can help you choose a first conversation or activity. They do not show how often you participate, how important the activity is, or whether you will get along. No overlap is not a negative judgment.", Question: "Which interest matters most to you, and what would you enjoy introducing each other to?", Source: "Intersection of voluntarily published community interest tags"})
 	return finishMatch(r)
+}
+
+func profileResult(topic, status string) string {
+	if status != "same" && status != "different" {
+		return "This topic remains unknown because it was not shared by both people. It is not counted as disagreement, and neither person needs to disclose more than they want."
+	}
+	context := map[string]string{
+		"city":       "A city label does not tell you where someone wants to settle, their commute, or their willingness to move.",
+		"timeline":   "A timeline can depend on work, study, family responsibilities and personal readiness. It is not a commitment or deadline.",
+		"children":   "Family plans deserve a voluntary conversation, including uncertainty and the possibility of changing preferences. This field says nothing about fertility.",
+		"relocation": "A willingness to move may depend on destination, work, caregiving and support. Clarify those conditions rather than assuming a promise.",
+		"lifestyle":  "A short lifestyle description cannot capture daily routines. Discuss schedules, personal space and which habits are flexible.",
+		"values":     "The same value can lead to different practical choices. Discuss a real example of how each person applies it, without judging their character.",
+		"hobbies":    "A hobby label does not measure time, skill or enthusiasm. Separate activities can be as important as shared ones.",
+	}
+	return context[topic]
 }
 
 func finishMatch(r MatchExplanation) MatchExplanation {
@@ -125,6 +181,8 @@ func (s *Service) ExplainMatch(ctx context.Context, base MatchExplanation, useAI
 			return base
 		}
 	}
+	// The caller may reuse the deterministic report after an AI attempt.
+	base.Factors = append([]MatchFactor(nil), base.Factors...)
 	for i, v := range out.Sections {
 		base.Factors[i].Explanation = v.Explanation
 		base.Factors[i].Question = v.Question

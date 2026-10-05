@@ -7,6 +7,14 @@ Implemented 2026-10-02. Two separate reports are available:
 
 Both reports include conversation questions, limitations, sources/method labels and a deterministic guide when no model is configured. These are original project-authored guides, not translations or claims to have consulted additional books.
 
+## Pair-specific explanations (5 October 2026)
+
+Each factor now includes a server-owned `result` alongside its general explanation. Chart results distinguish full, partial and zero points, attach the engine's recorded Nadi/Bhakoot exceptions to the relevant factor, and explain the neither/one/both Mars-flag cases. Exceptions do not change the raw points. Profile results explain the context for location, timelines, family plans, relocation, lifestyle, values and hobbies; missing answers remain unknown. The legacy `match.verdict` field now displays the numeric total without recommending acceptance or rejection of a person. Scoring tables and calculations are unchanged.
+
+Optional AI can expand the explanatory prose and question, but cannot replace the result or evidence. Successful generation copies the factor slice before editing so it cannot overwrite a reusable deterministic report. Birth-detail edits clear the previous comparison, and form fields are disabled while a comparison is running to avoid displaying a result under changed inputs.
+
+Validation: all Go packages and targeted vet checks passed, as did seven frontend unit tests, TypeScript/Vite build and both matchmaking browser journeys against an isolated migrated database. Browser assertions cover the new result text, missing information, removal of stale results after editing and blocked-profile denial. No live hosted-model call was made.
+
 ## Optional AI
 
 The checkbox requests a hosted-model explanation using the existing configured LLM. Chart explanations send scores and flags, not names, raw birth details or caste classifications. Profile explanations send only comparison statuses and shared-interest counts, never raw free text, private character data, social URLs, photos, messages or contacts. No scraping or personal-trait inference is performed.
