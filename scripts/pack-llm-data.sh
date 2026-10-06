@@ -10,7 +10,8 @@ $GO run ./cmd/corpus build >/dev/null
 $GO run ./cmd/llmdata books
 $GO run ./cmd/llmdata bookqa
 $GO run ./cmd/llmdata gen -n 4000 -out .runtime/llm-data/train.jsonl
+$GO run ./cmd/llmdata compact -n 3000
 $GO run ./cmd/bookbench -n 2000 >/dev/null
 cd .runtime/llm-data
-python3 -c "import zipfile; z = zipfile.ZipFile('astrisk-train.zip', 'w', zipfile.ZIP_DEFLATED); [z.write(f) for f in ['books.jsonl', 'book-qa.jsonl', 'train.jsonl', 'book-bench.jsonl']]"
+python3 -c "import zipfile; z = zipfile.ZipFile('astrisk-train.zip', 'w', zipfile.ZIP_DEFLATED); [z.write(f) for f in ['books.jsonl', 'book-qa.jsonl', 'train.jsonl', 'compact.jsonl', 'book-bench.jsonl']]"
 ls -la astrisk-train.zip

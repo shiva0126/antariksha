@@ -225,3 +225,13 @@ test('regional languages: Tamil, Kannada, Bengali', async ({ page }) => {
   await expect(page.locator('.limb-grid')).toContainText('একাদশী');
   await setting(page, 'Language', 'en');
 });
+
+test('planet alerts are opt-in and need birth details', async ({ page }) => {
+  await page.goto('/#me/notifications');
+  const box = page.getByRole('checkbox', { name: /Jupiter, Saturn, Rahu or Ketu change sign/ });
+  await expect(box).toBeVisible();
+  await expect(box).not.toBeChecked();
+  // The browser test account has no birthplace yet.
+  await expect(box).toBeDisabled();
+  await expect(page.getByText('Add your birth time and birthplace in Profile')).toBeVisible();
+});

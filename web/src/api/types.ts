@@ -121,7 +121,7 @@ export interface AreaForecast {
   confidence: 'strong' | 'moderate' | 'light';
   score: number; reasons: ForecastReason[];
 }
-export interface ForecastPeriod { from: string; to: string; maha: string; antara: string; summary: string; areas: AreaForecast[] }
+export interface ForecastPeriod { from: string; to: string; maha: string; antara: string; summary: string; areas: AreaForecast[]; book?: BookView }
 
 export interface TransitsResponse {
   now: string; months: number;

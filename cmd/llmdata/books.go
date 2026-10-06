@@ -138,7 +138,10 @@ func bookQA(entries, out string) error {
 			continue
 		}
 		plain = strings.TrimSuffix(strings.TrimSpace(plain), "]")
-		book := "Brihat Jataka"
+		book, edition := "Brihat Jataka", "tr. Chidambaram Iyer, 1885"
+		if e.SourceID == "brihat-samhita-iyer-1884" {
+			book, edition = "Brihat Samhita", "tr. Chidambaram Iyer, 1884"
+		}
 		var qs []string
 		switch e.DocType {
 		case engine.DocGrahaInHouse:
@@ -160,14 +163,30 @@ func bookQA(entries, out string) error {
 		case engine.DocYoga:
 			y := strings.ReplaceAll(e.Key, "_", " ")
 			qs = []string{fmt.Sprintf("What does %s say about %s yoga?", book, y), fmt.Sprintf("Explain %s yoga according to the classics.", y)}
+		case engine.DocTransit:
+			parts := strings.SplitN(e.Key, "_transit_", 2)
+			var h int
+			fmt.Sscan(parts[1], &h)
+			g, ord := engine.GrahaEnglish(parts[0]), ordinalWord(h)
+			qs = []string{
+				fmt.Sprintf("What does %s say about %s transiting the %s house from my Moon?", book, g, ord),
+				fmt.Sprintf("%s is passing through my %s house from the Moon. What does that mean?", g, ord),
+				fmt.Sprintf("What is the gochara result of %s in the %s from the Moon?", g, ord),
+			}
+		case engine.DocDasha:
+			g := engine.GrahaEnglish(strings.TrimPrefix(e.Key, "dasha_"))
+			qs = []string{fmt.Sprintf("What does %s say about the %s dasha?", book, g), fmt.Sprintf("I am running %s mahadasha. What do the classics say?", g)}
 		case engine.DocDignity:
 			st := strings.TrimPrefix(e.Key, "dignity_")
 			qs = []string{fmt.Sprintf("What does %s say about a planet in its %s sign?", book, st)}
 		default:
 			continue
 		}
+		if i := strings.Index(body, "\n[Editor's note"); i >= 0 {
+			body = body[:i]
+		}
 		quote := firstWords(body, 70)
-		answer := "In short\n" + plain + "\n\nWhat this means for you\n• " + book + " " + e.Ref + " (tr. Chidambaram Iyer, 1885) says: \"" + quote + "\"\n• Old texts state results as certain; read them as traditional tendencies, not facts about you.\n\nFor reflection, not certainty."
+		answer := "In short\n" + plain + "\n\nWhat this means for you\n• " + book + " " + e.Ref + " (" + edition + ") says: \"" + quote + "\"\n• Old texts state results as certain; read them as traditional tendencies, not facts about you.\n\nFor reflection, not certainty."
 		a, _ := json.Marshal(map[string]string{"answer": answer})
 		for _, q := range qs {
 			if err := enc.Encode(example{[]message{{"system", "You are Astrisk. Answer in plain language and cite the classical source. Return JSON only: {\"answer\": string}."}, {"user", q}, {"assistant", string(a)}}, map[string]any{"task": "book", "token": e.DocType + ":" + e.Key, "ref": e.Ref}}); err != nil {

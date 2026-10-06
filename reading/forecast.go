@@ -63,6 +63,8 @@ type Period struct {
 	Antara  string         `json:"antara"`
 	Summary string         `json:"summary"`
 	Areas   []AreaForecast `json:"areas"`
+	// Book is the classical result of the main period (Brihat Jataka 8).
+	Book *BookView `json:"book,omitempty"`
 }
 
 // PeriodInput is one period's sky (taken at its middle) and running dasha.
@@ -88,6 +90,7 @@ func (s *Service) Forecast(ctx context.Context, natal engine.Chart, periods []Pe
 	// The book's view for each slow planet's house from the Moon, per period.
 	var keys []engine.CorpusKey
 	for _, p := range periods {
+		keys = append(keys, engine.CorpusKey{DocType: engine.DocDasha, Key: "dasha_" + p.Dasha.Maha})
 		for _, g := range p.Sky.Grahas {
 			if g.ID == "jupiter" || g.ID == "saturn" {
 				keys = append(keys, engine.CorpusKey{DocType: engine.DocTransit, Key: engine.TransitKey(g.ID, (int(g.Longitude/30)-moonSign+24)%12+1)})
@@ -105,6 +108,9 @@ func (s *Service) Forecast(ctx context.Context, natal engine.Chart, periods []Pe
 		skyDig := engine.Dignities(p.Sky)
 		skyComb := engine.CombustionFlags(p.Sky)
 		per := Period{From: p.From, To: p.To, Maha: p.Dasha.Maha, Antara: p.Dasha.Antara}
+		if v, ok := views[engine.DocDasha+":dasha_"+p.Dasha.Maha]; ok {
+			per.Book = &v
+		}
 		for _, a := range Areas {
 			af := AreaForecast{Area: a}
 			dashaTouches := false

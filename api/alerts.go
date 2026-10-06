@@ -34,7 +34,20 @@ func (s *Server) RunAlerts(ctx context.Context) {
 	}
 	t := time.NewTicker(time.Minute)
 	defer t.Stop()
+	var lastTransit time.Time
 	for {
+		// Slow sign changes for opted-in members, checked every six hours a
+		// week ahead; each member gets each event once.
+		if time.Since(lastTransit) > 6*time.Hour {
+			if n, err := s.queueTransitAlerts(ctx, time.Now()); err != nil {
+				s.logger.Error("transit alerts", "error", err)
+			} else {
+				lastTransit = time.Now()
+				if n > 0 {
+					s.logger.Info("transit alerts queued", "count", n)
+				}
+			}
+		}
 		if n, err := s.deliverAlerts(ctx); err != nil {
 			s.logger.Error("alerts", "error", err)
 		} else if n > 0 {
@@ -49,14 +62,16 @@ func (s *Server) RunAlerts(ctx context.Context) {
 }
 
 type pendingAlert struct {
-	id                    int64
-	recipient, kind, from string
-	email                 string
-	emailOK               bool
+	id                             int64
+	recipient, kind, from, subject string
+	email                          string
+	emailOK                        bool
 }
 
-func alertText(kind, from string) string {
+func alertText(kind, from, subject string) string {
 	switch kind {
+	case "transit":
+		return transitAlertText(subject)
 	case "interest":
 		return from + " is interested in your matrimony profile"
 	case "accepted":
@@ -75,12 +90,15 @@ func alertPage(kind string) string {
 	if kind == "family" || kind == "follow" {
 		return "#community"
 	}
+	if kind == "transit" {
+		return "#kundali/dasha"
+	}
 	return "#matrimony"
 }
 
 func (s *Server) deliverAlerts(ctx context.Context) (int, error) {
-	rows, err := s.membersDB().Query(ctx, `SELECT n.id,n.recipient,n.kind,COALESCE(NULLIF(a.profile->>'name',''),'@'||a.handle),
- COALESCE(r.email,''),(r.email_verified_at IS NOT NULL AND r.email_alerts)
+	rows, err := s.membersDB().Query(ctx, `SELECT n.id,n.recipient,n.kind,COALESCE(NULLIF(a.profile->>'name',''),'@'||a.handle),n.subject,
+ COALESCE(r.email,''),(r.email_verified_at IS NOT NULL AND CASE WHEN n.kind='transit' THEN r.transit_alerts ELSE r.email_alerts END)
  FROM member_notifications n JOIN member_accounts a ON a.id=n.actor JOIN member_accounts r ON r.id=n.recipient
  WHERE n.delivered_at IS NULL AND n.read_at IS NULL AND NOT n.dismissed
  AND n.created_at < now()-$1::interval AND n.created_at > now()-interval '2 days'
@@ -91,7 +109,7 @@ func (s *Server) deliverAlerts(ctx context.Context) (int, error) {
 	var alerts []pendingAlert
 	for rows.Next() {
 		var a pendingAlert
-		if err = rows.Scan(&a.id, &a.recipient, &a.kind, &a.from, &a.email, &a.emailOK); err != nil {
+		if err = rows.Scan(&a.id, &a.recipient, &a.kind, &a.from, &a.subject, &a.email, &a.emailOK); err != nil {
 			rows.Close()
 			return 0, err
 		}
@@ -119,7 +137,7 @@ func (s *Server) deliverAlerts(ctx context.Context) (int, error) {
 		lines, seen := []string{}, map[string]bool{}
 		for _, a := range list {
 			ids = append(ids, a.id)
-			if t := alertText(a.kind, a.from); !seen[t] {
+			if t := alertText(a.kind, a.from, a.subject); !seen[t] {
 				seen[t] = true
 				lines = append(lines, t)
 			}
@@ -129,7 +147,7 @@ func (s *Server) deliverAlerts(ctx context.Context) (int, error) {
 		if s.mailer != nil && first.emailOK && first.email != "" && origin != "" {
 			body := "Hello,\n\nYou have new activity on Astrisk:\n\n- " + strings.Join(lines, "\n- ") +
 				"\n\nOpen Astrisk: " + origin + "/" + alertPage(first.kind) +
-				"\n\nYou receive these emails because alerts are on in your matrimony profile. Turn them off there at any time.\n"
+				"\n\nYou receive these emails because you turned alerts on in Astrisk (matrimony alerts in your matrimony profile, planet alerts in Me, Notifications). Turn them off there at any time.\n"
 			mctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 			if err := s.mailer.Send(mctx, first.email, "Astrisk: "+lines[0], body); err != nil {
 				s.logger.Warn("alert email failed", "error", err)

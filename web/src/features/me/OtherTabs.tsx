@@ -33,9 +33,41 @@ export function ChartsTab() {
   );
 }
 
-type Notice_ = { id: number; kind: 'follow' | 'family' | 'interest' | 'message' | 'accepted'; handle: string; created_at: string; read: boolean };
-const LABEL: Record<Notice_['kind'], string> = { follow: 'sent you a follow request', family: 'invited you to a private family group', interest: 'sent you a matrimony interest', message: 'sent you a message', accepted: 'accepted your matrimony interest' };
-const DEST: Record<Notice_['kind'], string> = { follow: href('community', 'people'), family: href('community', 'family'), interest: href('matrimony', 'interests'), message: href('matrimony', 'interests'), accepted: href('matrimony', 'interests') };
+type Notice_ = { id: number; kind: 'follow' | 'family' | 'interest' | 'message' | 'accepted' | 'transit'; handle: string; subject: string; created_at: string; read: boolean };
+const LABEL: Record<Exclude<Notice_['kind'], 'transit'>, string> = { follow: 'sent you a follow request', family: 'invited you to a private family group', interest: 'sent you a matrimony interest', message: 'sent you a message', accepted: 'accepted your matrimony interest' };
+const DEST: Record<Notice_['kind'], string> = { follow: href('community', 'people'), family: href('community', 'family'), interest: href('matrimony', 'interests'), message: href('matrimony', 'interests'), accepted: href('matrimony', 'interests'), transit: href('kundali', 'dasha') };
+
+const ordinal = (n: number) => n + (n % 100 >= 11 && n % 100 <= 13 ? 'th' : ['th', 'st', 'nd', 'rd'][n % 10] ?? 'th');
+const planet: Record<string, string> = { jupiter: 'Jupiter', saturn: 'Saturn', rahu: 'Rahu' };
+
+/** A planet alert's subject (graha|sign|date|house|favourable[|Ketu sign|Ketu house]) in plain words. */
+function transitText(subject: string): string {
+  const [g, sign, date, house, fav, ketuSign, ketuHouse] = subject.split('|');
+  const when = new Date(date + 'T00:00:00').toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' });
+  if (g === 'rahu' && ketuSign) return `On ${when} Rahu moves into ${sign} and Ketu into ${ketuSign}: your ${ordinal(+house)} and ${ordinal(+ketuHouse)} houses from the Moon.`;
+  const verdict = fav === '1' ? ', a good house for it in the classical books' : fav === '0' ? ', a harder house for it in the classical books' : '';
+  return `On ${when} ${planet[g] ?? g} moves into ${sign}: your ${ordinal(+house)} house from the Moon${verdict}.`;
+}
+
+/** Opt-in alerts when Jupiter, Saturn or Rahu and Ketu change sign for the member's chart. */
+function TransitAlerts() {
+  const [s, setS] = useState<{ enabled: boolean; birth_details: boolean }>();
+  const fb = useFeedback();
+  useEffect(() => { api<{ enabled: boolean; birth_details: boolean }>('/api/me/transit-alerts').then(setS).catch(() => undefined); }, []);
+  if (!s) return null;
+  async function set(enabled: boolean) {
+    await api('/api/me/transit-alerts', 'PUT', { enabled });
+    setS(old => old && { ...old, enabled });
+    fb.toast(enabled ? 'Planet alerts on.' : 'Planet alerts off.');
+  }
+  return (
+    <div className="ds-stack">
+      <Checkbox label="Tell me a week ahead when Jupiter, Saturn, Rahu or Ketu change sign, read for my chart (here, by push and, if my email is verified, by email)"
+        checked={s.enabled} disabled={!s.birth_details} onChange={e => void set(e.target.checked)} />
+      {!s.birth_details && <p className="ds-muted ds-small">Add your birth time and birthplace in Profile to turn these on.</p>}
+    </div>
+  );
+}
 
 export function NotificationsTab() {
   const [items, setItems] = useState<Notice_[]>(), [more, setMore] = useState(false), [error, setError] = useState('');
@@ -52,12 +84,13 @@ export function NotificationsTab() {
   if (error) return <Notice tone="danger">{error}</Notice>;
   if (!items) return <Card><Skeleton /></Card>;
   return (
-    <Card title="Notifications" sub="Invitations, interests and messages. Message text is never shown here." actions={<Button size="sm" variant="ghost" onClick={() => void load()}>Refresh notifications</Button>}>
+    <Card title="Notifications" sub="Invitations, interests, messages and planet alerts. Message text is never shown here." actions={<Button size="sm" variant="ghost" onClick={() => void load()}>Refresh notifications</Button>}>
+      <TransitAlerts />
       {items.length === 0 ? <EmptyState title="No notifications yet.">When someone sends you an interest, a message or an invitation, it appears here and on the bell.</EmptyState> : (
         <ul className="me-list">
           {items.map(n => (
             <li key={n.id} className={n.read ? '' : 'unread'}>
-              <div><b>@{n.handle}</b> {LABEL[n.kind]} {!n.read && <Chip tone="accent">New</Chip>}<span className="ds-muted ds-small">{new Date(n.created_at).toLocaleString(undefined, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span></div>
+              <div>{n.kind === 'transit' ? transitText(n.subject) : <><b>@{n.handle}</b> {LABEL[n.kind]}</>} {!n.read && <Chip tone="accent">New</Chip>}<span className="ds-muted ds-small">{new Date(n.created_at).toLocaleString(undefined, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span></div>
               <div className="ds-row">
                 <a className="ds-btn ds-btn--secondary ds-btn--sm" href={DEST[n.kind]} onClick={() => void update(n.id, 'read')}>Open</a>
                 {!n.read && <Button size="sm" variant="ghost" onClick={() => void update(n.id, 'read')}>Mark read</Button>}

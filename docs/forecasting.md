@@ -1,7 +1,7 @@
 # Transits and forecasts
 
-Phases 1-3 are in place: the engine, the book rules, the forecast scoring, the Timing tab, the
-planets-now card on Today, and timing answers in Ask Astrisk. Alerts follow in phase 4.
+All four phases are in place: the engine, the book rules, the forecast scoring, the Timing tab, the
+planets-now card on Today, timing answers in Ask Astrisk, the classical dasha results and planet alerts.
 
 ## Method
 
@@ -57,6 +57,25 @@ cannot say whether or when a particular event will happen…". Health questions 
 questions get the safety reply. General questions get the current period, the next two, and Jupiter's
 and Saturn's coming sign changes. The local model never answers timing questions (its chart lines carry
 no forecast). `reading/forecast_test.go` covers these, including "Will my business fail next year?".
+
+## Dasha results
+
+Brihat Jataka 8.12-8.18 (tr. Iyer 1885) give a benefic and a malefic result for each planet's dasha, the
+Sun to Saturn; which applies depends on the planet's strength (8.5-7, 8.19). They are mapped as `dasha`
+passages with a plain summary of both, shown in dasha answers and under each forecast period's main
+dasha in Timing. The scan lost the verse numbers after 8.5, so these cite their true verses with
+`"in": "8.5"`.
+
+## Planet alerts
+
+Opt-in (Me → Notifications; needs birth date, time and place): a week ahead of each sign change of
+Jupiter, Saturn and Rahu/Ketu, each member gets one notification read for their chart, e.g. "On 29 March
+Saturn moves into Meena: your 1st house from the Moon, a harder house for it in the classical books".
+The alert worker queues them every six hours (`api/transit_alerts.go`) and delivers them like other
+notifications, by push and, if the email is verified, email. The subject encodes the event, and
+member_notifications is unique per recipient and subject, so each event is sent once. Migration 20 adds
+`member_accounts.transit_alerts` and the `transit` notification kind. `api/transit_alerts_test.go` checks
+opt-in, once-only queueing, the text, the listing and that turning alerts off hides them.
 
 ## Exactness
 

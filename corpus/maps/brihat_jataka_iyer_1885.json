@@ -1191,6 +1191,70 @@
    "key": "dignity_neutral",
    "text": "if the houses be neutral signs, neither more nor less of the effects described will come to pass. All this is according to Garga.",
    "plain": "In a neutral sign, the effects come true just as described, neither more nor less."
+  },
+  {
+   "ref": "8.12",
+   "in": "8.5",
+   "doc_type": "dasha",
+   "key": "dasha_sun",
+   "text": "the benefic dasa period of the Sun, a person will acquire wealth by dealing in perfumes … He will become cruel, courageous, persevering, renowned and valorous. In the malefic dasa period of the Sun, he will get into trouble through his wife, son, money, enemy, weapons, fire or the king",
+   "plain": "In a strong Sun period: money through trade, authorities and effort; bold, persistent and well known. In a weak one: friction over family, money, rivals or authorities, a troubled mind and strain on the chest.",
+   "note": "Brihat Jataka gives a benefic and a malefic result for each dasha; which applies depends on the planet's strength (8.5-7, 8.19)."
+  },
+  {
+   "ref": "8.13",
+   "in": "8.5",
+   "doc_type": "dasha",
+   "key": "dasha_moon",
+   "text": "In the benefic dasa period of the Moon, the person will derive benefits by dealing in or by means of the mantras … he will get daughters and will acquire an increase of wisdom, wealth and renown. In the malefic dasa period of the Moon, the person will indulge in sleep and idleness, will lose his wisdom, wealth and renown and will quarrel with powerful men and with kinsmen.",
+   "plain": "In a strong Moon period: gains through learning, food and trade, devotion, more wisdom, money and recognition. In a weak one: lethargy, slipping money and standing, and quarrels with the powerful and with relatives.",
+   "note": "Brihat Jataka gives a benefic and a malefic result for each dasha; which applies depends on the planet's strength (8.5-7, 8.19)."
+  },
+  {
+   "ref": "8.14",
+   "in": "8.5",
+   "doc_type": "dasha",
+   "key": "dasha_mars",
+   "text": "In the benefic dasa period of Mars the person will fight with his enemies, will acquire wealth through his brother, the king, lands, woollen goods and goats. … In the malefic dasa period of Mars, the person will hate his sons, friends, wife, brothers, learned men and preceptors",
+   "plain": "In a strong Mars period: you win against rivals and gain through siblings, authorities and land. In a weak one: friction with family and teachers, harsh speech, bad company and strain on health.",
+   "note": "Brihat Jataka gives a benefic and a malefic result for each dasha; which applies depends on the planet's strength (8.5-7, 8.19).",
+   "ocr": "In the benefic da^a period of Mars the person will fight with his enemies, will f^cquire wealth through bis brother! the king, lands, woollen goods and goats. … Iq the molefio dasa period of Mars, the person will hate his sons, friends, wife, brothers, learned men and pre- ceptors"
+  },
+  {
+   "ref": "8.15",
+   "in": "8.5",
+   "doc_type": "dasha",
+   "key": "dasha_mercury",
+   "text": "In the benefic dasa period of Mercury the person will acquire wealth by doing acts of message and through friends, preceptors and Brahmins. He will attain renown among learned men … In the malefic dasa period of Mercury the person will become harsh in his speech and will suffer from grief, imprisonment, pain of mind",
+   "plain": "In a strong Mercury period: money through communication and friends, respect among the learned, comfort and growing wisdom. In a weak one: harsh speech, worry, restrictions and strain on health.",
+   "note": "Brihat Jataka gives a benefic and a malefic result for each dasha; which applies depends on the planet's strength (8.5-7, 8.19)."
+  },
+  {
+   "ref": "8.16",
+   "in": "8.5",
+   "doc_type": "dasha",
+   "key": "dasha_jupiter",
+   "text": "In the benefic dasa period of Jupiter, the person will acquire wealth by acts of worship, by his learning, valor, ingenuity … In the malefic dasa period of Jupiter, the person will learn things requiring much ingenuity, will suffer from foot journey and pain in the ear and will quarrel with wicked men.",
+   "plain": "In a strong Jupiter period: money through learning, skill and devotion, fine possessions and friendship with the powerful. In a weak one: hard learning, tiring travel, ear trouble and quarrels with bad people.",
+   "note": "Brihat Jataka gives a benefic and a malefic result for each dasha; which applies depends on the planet's strength (8.5-7, 8.19)."
+  },
+  {
+   "ref": "8.17",
+   "in": "8.5",
+   "doc_type": "dasha",
+   "key": "dasha_venus",
+   "text": "In the benefic dasa period of Venus, the person will enjoy sweet music, various pleasures, perfumes, sumptuous meals … In the malefic dasa period of Venus, the person will quarrel with crowds of people, with the king, hunters and wicked men and he will suffer much from his own friends.",
+   "plain": "In a strong Venus period: music, pleasures, fine food and clothes, learning, friends, success in trade and hidden wealth. In a weak one: quarrels with many people and with authorities, and trouble from friends.",
+   "note": "Brihat Jataka gives a benefic and a malefic result for each dasha; which applies depends on the planet's strength (8.5-7, 8.19)."
+  },
+  {
+   "ref": "8.18",
+   "in": "8.5",
+   "doc_type": "dasha",
+   "key": "dasha_saturn",
+   "text": "In the benefic dasa period of Saturn the person will get asses, camels, birds, buffaloes and old women, will rule over hamlets, villages or towns, and will thereby become renowned … In the malefic dasa period of Saturn the person will suffer from phlegmatic and windy complaints; will be jealous, angry, distracted in mind, dirty, exposed to danger, idle, suffer from grief, and be much troubled.",
+   "plain": "In a strong Saturn period: livestock and land, authority over a village or town, and recognition. In a weak one: aches and colds, jealousy, anger, a scattered mind, idleness and grief.",
+   "note": "Brihat Jataka gives a benefic and a malefic result for each dasha; which applies depends on the planet's strength (8.5-7, 8.19)."
   }
  ]
 }

@@ -325,6 +325,7 @@ func plainFor(in *insight, ts, gs []string, house int, cc ChatContext) plain {
 				p.point(fmt.Sprintf("Inside it, a shorter %s phase runs until %s, adding %s.", gname(a), day(f.Vimshottari.Current.To), grahaGist[a]))
 			}
 			p.point(in.where(f.Vimshottari.Current.Maha))
+			p.bookPoint(in.book(engine.DocDasha, "dasha_"+f.Vimshottari.Current.Maha))
 			if u := f.Vimshottari.Upcoming; u.Lord != "" {
 				p.point(fmt.Sprintf("Next comes %s's main period, from %s.", theName(u.Lord), day(u.From)))
 			}

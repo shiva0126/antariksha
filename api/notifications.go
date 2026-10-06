@@ -20,7 +20,7 @@ func (s *Server) notifications(w http.ResponseWriter, r *http.Request, id string
 			return
 		}
 	}
-	s.memberRows(w, r, `SELECT n.id,n.kind,a.handle,n.created_at,n.read_at IS NOT NULL AS read FROM member_notifications n JOIN member_accounts a ON a.id=n.actor WHERE n.id<$2 AND notification_visible(n,$1) ORDER BY n.id DESC LIMIT 50`, id, before)
+	s.memberRows(w, r, `SELECT n.id,n.kind,a.handle,CASE WHEN n.kind='transit' THEN n.subject ELSE '' END AS subject,n.created_at,n.read_at IS NOT NULL AS read FROM member_notifications n JOIN member_accounts a ON a.id=n.actor WHERE n.id<$2 AND notification_visible(n,$1) ORDER BY n.id DESC LIMIT 50`, id, before)
 }
 func (s *Server) updateNotification(w http.ResponseWriter, r *http.Request, id string) {
 	var in struct {
