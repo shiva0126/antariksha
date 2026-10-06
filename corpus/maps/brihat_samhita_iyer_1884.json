@@ -1,0 +1,606 @@
+{
+ "source_id": "brihat-samhita-iyer-1884",
+ "language": "en",
+ "threshold": 0.8,
+ "entries": [
+  {
+   "ref": "104.5",
+   "doc_type": "transit",
+   "key": "sun_transit_1",
+   "text": "When the Sun passes through the sign occupied by the Moon at the time of birth of a person such person will suffer from fatigue, from loss of wealth, chest-pain and foot journey.",
+   "plain": "A tiring stretch: money goes out, there is strain and much travel on foot. Pace yourself."
+  },
+  {
+   "ref": "104.5",
+   "doc_type": "transit",
+   "key": "sun_transit_2",
+   "text": "When the Sun passes through the 2nd house from the Moon, the person will suffer from loss of wealth, discomfort, eye-diseases and deceit.",
+   "plain": "Money may slip away, with discomfort and people who mislead; look after your eyes and check what you are told."
+  },
+  {
+   "ref": "104.5",
+   "doc_type": "transit",
+   "key": "sun_transit_3",
+   "text": "When the Sun passes through the 3rd house from the Moon, the person will return to his place, will become rich, happy and free from diseases and will destroy his enemies.",
+   "plain": "A good month: you come home, gain money, feel well and get the better of rivals."
+  },
+  {
+   "ref": "104.5",
+   "doc_type": "transit",
+   "key": "sun_transit_4",
+   "text": "When the Sun passes through the 4th house from the Moon, the person will suffer from diseases and will be hindered from enjoying the company of an excellent wife.",
+   "plain": "Health needs care and home life can feel strained."
+  },
+  {
+   "ref": "104.6",
+   "doc_type": "transit",
+   "key": "sun_transit_5",
+   "text": "When the Sun passes through the 5th house from the Moon, the person will suffer from diseases and from enemies.",
+   "plain": "A month to look after your health and keep clear of rivals."
+  },
+  {
+   "ref": "104.6",
+   "doc_type": "transit",
+   "key": "sun_transit_6",
+   "text": "When the Sun passes through the 6th house … the person will be freed from diseases, from enemies and from grief",
+   "plain": "A good month: you recover, rivals back off and worries lift."
+  },
+  {
+   "ref": "104.6",
+   "doc_type": "transit",
+   "key": "sun_transit_7",
+   "text": "When the Sun passes through the 7th house the person will suffer from the fatigues of foot-journey, from chest-pain, from humility and consumption.",
+   "plain": "Tiring travel and a dip in standing; the book warns about chest and stamina, so rest well."
+  },
+  {
+   "ref": "104.6",
+   "doc_type": "transit",
+   "key": "sun_transit_8",
+   "text": "When the Sun passes through the 8th house from the Moon, the person's own beautiful wife will not be of use to him.",
+   "plain": "Closeness with your partner may be hard to find this month."
+  },
+  {
+   "ref": "104.7",
+   "doc_type": "transit",
+   "key": "sun_transit_9",
+   "text": "When the Sun passes through the 9th house from the Moon, the person will suffer from accidents, humility, diseases, mental pains and opposition.",
+   "plain": "The book warns of mishaps, low spirits and opposition: a month to be careful and patient."
+  },
+  {
+   "ref": "104.7",
+   "doc_type": "transit",
+   "key": "sun_transit_10",
+   "text": "When the Sun passes through the 10th house from the Moon, the person will achieve great success and will gain his object.",
+   "plain": "A strong month for work: great success and you reach what you aim for."
+  },
+  {
+   "ref": "104.7",
+   "doc_type": "transit",
+   "key": "sun_transit_11",
+   "text": "When the Sun passes through the 11th house, the person will achieve success, will return to his place, will be respected, will become prosperous and will be freed from diseases.",
+   "plain": "Success, respect, better finances and better health."
+  },
+  {
+   "ref": "104.7",
+   "doc_type": "transit",
+   "key": "sun_transit_12",
+   "text": "When the Sun passes through the 12th house, the person will gain his object only by the adoption of just and proper means and not otherwise,",
+   "plain": "You get what you want only by fair and proper means this month; shortcuts fail."
+  },
+  {
+   "ref": "104.8",
+   "doc_type": "transit",
+   "key": "moon_transit_1",
+   "text": "When the Moon passes through the sign occupied by herself at the time of birth of a person, such person will get meals, excellent bed and clothes",
+   "plain": "A comfortable day: good food, rest and clothes."
+  },
+  {
+   "ref": "104.8",
+   "doc_type": "transit",
+   "key": "moon_transit_2",
+   "text": "When the Moon passes through the 2nd house, the person will suffer loss of respectability and of wealth and will also suffer from obstacles.",
+   "plain": "A day of small setbacks to money and standing.",
+   "ocr": "When the Moon passes through the 2ud house, the ptrsou will suffer loss of respectability aLd of Teilth and will also suffer from obstacles."
+  },
+  {
+   "ref": "104.8",
+   "doc_type": "transit",
+   "key": "moon_transit_3",
+   "text": "When the Moon passes through the 3rd house, the person will get clothes, women, and wealth in abundance.",
+   "plain": "A good day for gains and good company."
+  },
+  {
+   "ref": "104.8",
+   "doc_type": "transit",
+   "key": "moon_transit_4",
+   "text": "When the Moon passes through the 4th house, the person will have no liking for mountains and will be as cruel as a serpent.",
+   "plain": "An irritable day; watch your temper."
+  },
+  {
+   "ref": "104.9",
+   "doc_type": "transit",
+   "key": "moon_transit_5",
+   "text": "When the Moon passes through the 5th house from the sign occupied by herself at the time of birth of a person, such person will suffer from humility, diseases, pain of mind and obstacles in his path",
+   "plain": "A low day: worries and obstacles; keep plans light."
+  },
+  {
+   "ref": "104.9",
+   "doc_type": "transit",
+   "key": "moon_transit_6",
+   "text": "When the Moon passes through the 6th house, the person will enjoy wealth, comfort and the ruin of his enemies and will be freed from diseases.",
+   "plain": "A good day: comfort, money and the upper hand over rivals."
+  },
+  {
+   "ref": "104.9",
+   "doc_type": "transit",
+   "key": "moon_transit_7",
+   "text": "When the Moon passes through the 7th house, the person … will enjoy a carriage, respectability, a good bed, good meals and wealth.",
+   "plain": "A pleasant day: comfort, respect and good food."
+  },
+  {
+   "ref": "104.9",
+   "doc_type": "transit",
+   "key": "moon_transit_8",
+   "text": "When the Moon passes through the 8th house the person will live in fear of evils.",
+   "plain": "An anxious day; avoid big decisions."
+  },
+  {
+   "ref": "104.10",
+   "doc_type": "transit",
+   "key": "moon_transit_9",
+   "text": "When the Moon passes through the 9th house from the sign occupied by herself at the time of birth of a person, such person will suffer from imprisonment, pain of mind, fatigue of body and chest-pain.",
+   "plain": "A tiring, restricted day with worry; rest where you can."
+  },
+  {
+   "ref": "104.10",
+   "doc_type": "transit",
+   "key": "moon_transit_10",
+   "text": "When the Moon passes through the 10th house, the person's orders will be carried out and he will succeed in his work.",
+   "plain": "A good day for work: people follow your lead and tasks succeed."
+  },
+  {
+   "ref": "104.10",
+   "doc_type": "transit",
+   "key": "moon_transit_11",
+   "text": "When the Moon passes through the 11th house, the person will enjoy prosperity, will get new friends and wealth.",
+   "plain": "A good day: gains and new friends."
+  },
+  {
+   "ref": "104.10",
+   "doc_type": "transit",
+   "key": "moon_transit_12",
+   "text": "When the Moon passes through the 12th house, he will suffer from injuries received from a bullock",
+   "plain": "A day to be careful of small injuries."
+  },
+  {
+   "ref": "104.11",
+   "doc_type": "transit",
+   "key": "mars_transit_1",
+   "text": "When Mars passes through the sign occupied by the Moon at the time of birth of a person, such person will suffer from troubles.",
+   "plain": "A troubled stretch; keep calm and avoid conflict."
+  },
+  {
+   "ref": "104.11",
+   "doc_type": "transit",
+   "key": "mars_transit_2",
+   "text": "When Mars passes through the 2nd house from the Moon, the person will suffer from the king, from quarrels, from enemies and from disgrace. He will also suffer from bilious and windy complaints and from thieves.",
+   "plain": "Trouble with authorities, quarrels and theft; guard your belongings and your digestion."
+  },
+  {
+   "ref": "104.12",
+   "doc_type": "transit",
+   "key": "mars_transit_3",
+   "text": "When Mars passes through the 3rd house from the Moon there will be gain of objects from robbers and from children the person will become of bright appearance, his orders will be carried into effect, he will get wealth, blankets, metals, gems and the like",
+   "plain": "A strong stretch: your word carries weight and gains come in."
+  },
+  {
+   "ref": "104.13",
+   "doc_type": "transit",
+   "key": "mars_transit_4",
+   "text": "When Mars passes through the 4th house from the Moon the person will suffer from fever, belly-ache and blood discharges and he will also suffer miseries through association with wicked men.",
+   "plain": "The book warns of fevers and stomach trouble and of bad company; take care of yourself."
+  },
+  {
+   "ref": "104.14",
+   "doc_type": "transit",
+   "key": "mars_transit_5",
+   "text": "When Mars passes through the 5th house from the Moon, the person will suffer from enemies, diseases, fears and troublesome children and his appearance will become less bright.",
+   "plain": "Rivals, worries and trouble with children; energy runs low.",
+   "in": "104.13"
+  },
+  {
+   "ref": "104.15",
+   "doc_type": "transit",
+   "key": "mars_transit_6",
+   "text": "When Mars passes through the 6th house from the Moon, the person will be freed from enemies and quarrels; he will obtain gold, corals and copper and will lead an independent life",
+   "plain": "A good stretch: rivals and quarrels fade, gains come and you stand on your own feet."
+  },
+  {
+   "ref": "104.16",
+   "doc_type": "transit",
+   "key": "mars_transit_7",
+   "text": "When Mars passes through the 7th house from the Moon, the person will suffer from a quarrelsome wife, from diseases of the eye and from belly-ache.",
+   "plain": "Arguments with your partner, with eye and stomach trouble; keep the peace at home."
+  },
+  {
+   "ref": "104.16",
+   "doc_type": "transit",
+   "key": "mars_transit_8",
+   "text": "When he passes through the 8th house, there will be bloodshed, loss of wealth and of respectability",
+   "plain": "The book warns of injury and of losses to money and standing: a time for caution."
+  },
+  {
+   "ref": "104.16",
+   "doc_type": "transit",
+   "key": "mars_transit_9",
+   "text": "when he passes through the 9th house, the person will suffer disgrace and loss of wealth and the like; his gait will be slow and he will become weak.",
+   "plain": "Setbacks to reputation and money, and low energy."
+  },
+  {
+   "ref": "104.17",
+   "doc_type": "transit",
+   "key": "mars_transit_10",
+   "text": "When Mars passes through the 10th house from the Moon, the person will obtain much wealth",
+   "plain": "Good for earnings: much wealth comes in."
+  },
+  {
+   "ref": "104.17",
+   "doc_type": "transit",
+   "key": "mars_transit_11",
+   "text": "when he passes through the 11th house, he will obtain success and renown and will rule over a province,",
+   "plain": "Success, recognition and real authority."
+  },
+  {
+   "ref": "104.18",
+   "doc_type": "transit",
+   "key": "mars_transit_12",
+   "text": "When Mars passes through the 12th house from the Moon, the person will suffer from various expenses, troubles, diseases of the eye, from an angry wife and from bilious complaints",
+   "plain": "Many expenses and troubles, eye and digestive strain, and tension at home."
+  },
+  {
+   "ref": "104.19",
+   "doc_type": "transit",
+   "key": "mercury_transit_1",
+   "text": "When Mercury passes through the sign occupied by the Moon at the time of birth of a person, such person will suffer loss of wealth caused by the advice of wicked men, by tale bearers, by imprisonment and quarrels. He will besides receive disagreeable intelligence when in his journey.",
+   "plain": "Bad advice and gossip can cost money; check what you hear and avoid quarrels."
+  },
+  {
+   "ref": "104.20",
+   "doc_type": "transit",
+   "key": "mercury_transit_2",
+   "text": "When Mercury passes through the 2nd house from the Moon, the person will suffer disgrace and gain success and wealth.",
+   "plain": "Mixed: some embarrassment, but success and money too."
+  },
+  {
+   "ref": "104.20",
+   "doc_type": "transit",
+   "key": "mercury_transit_3",
+   "text": "When he passes through the 3rd house the person will get friends and will be afraid of troubles from the king and from his enemies and he will quit his place from his own wicked deeds.",
+   "plain": "New friends, but worry about authorities and rivals; your own missteps may force a move."
+  },
+  {
+   "ref": "104.21",
+   "doc_type": "transit",
+   "key": "mercury_transit_4",
+   "text": "When Mercury passes through the 4th house from the Moon a person's kinsmen and family will increase … and there will be much gain.",
+   "plain": "Family grows closer and gains come in."
+  },
+  {
+   "ref": "104.21",
+   "doc_type": "transit",
+   "key": "mercury_transit_5",
+   "text": "When Mercury passes through the 5th house from the Moon, the person will quarrel with his wife and sons and will not enjoy the company of an excellent wife.",
+   "plain": "Friction with your partner and children."
+  },
+  {
+   "ref": "104.22",
+   "doc_type": "transit",
+   "key": "mercury_transit_6",
+   "text": "When Mercury passes through the 6th house from the Moon, the person will be liked by all and will gain renown.",
+   "plain": "Well liked and well known."
+  },
+  {
+   "ref": "104.22",
+   "doc_type": "transit",
+   "key": "mercury_transit_7",
+   "text": "When Mercury passes through the 7th house the person's appearance will become less bright and there will be quarrels.",
+   "plain": "Lower energy and some quarrels."
+  },
+  {
+   "ref": "104.22",
+   "doc_type": "transit",
+   "key": "mercury_transit_8",
+   "text": "When Mercury passes through the 8th house the person will get sons, success, cloths and wealth and will become happy and powerful.",
+   "plain": "A good stretch: success, money, happiness and influence.",
+   "ocr": "When Mercury passess throuf];h the th liouse the person will get sons, success, cloths and wealth and will become happy and powerful."
+  },
+  {
+   "ref": "104.23",
+   "doc_type": "transit",
+   "key": "mercury_transit_9",
+   "text": "When Mercury passes through the 9th house from Moon the person will meet with obstacles to his work.",
+   "plain": "Obstacles at work.",
+   "in": "104.22"
+  },
+  {
+   "ref": "104.23",
+   "doc_type": "transit",
+   "key": "mercury_transit_10",
+   "text": "When Mercury passes through the 10th house from the Moon the person's enemies will meet with ruin and the person will get wealth, will enjoy the company of his wife",
+   "plain": "Rivals fall away, money comes and home life is happy.",
+   "in": "104.22"
+  },
+  {
+   "ref": "104.24",
+   "doc_type": "transit",
+   "key": "mercury_transit_11",
+   "text": "When Mercury passes through the 11th house from the Moon the person will get wealth, comfort, sons, women, friends and conveyance, will be happy and will receive good intelligence.",
+   "plain": "A very good stretch: money, comfort, friends and good news."
+  },
+  {
+   "ref": "104.24",
+   "doc_type": "transit",
+   "key": "mercury_transit_12",
+   "text": "When Mercury passes through the 12th house from the Moon, the person will suffer disgrace from his enemies, will suffer from diseases and will not enjoy the company of a good wife.",
+   "plain": "Rivals may embarrass you; look after your health and your relationship."
+  },
+  {
+   "ref": "104.25",
+   "doc_type": "transit",
+   "key": "jupiter_transit_1",
+   "text": "When Jupiter passes through the sign occupied by the Moon at the time of birth of a person, such person will lose his wealth and intelligence, will quit his place and will suffer from many quarrels.",
+   "plain": "A testing year: money and clear thinking can slip, a move or change of place is likely, and quarrels increase."
+  },
+  {
+   "ref": "104.25",
+   "doc_type": "transit",
+   "key": "jupiter_transit_2",
+   "text": "When Jupiter passes through the 2nd house from the Moon, the person will have no enemies and will enjoy wealth and women.",
+   "plain": "A good year: no real rivals, money and comforts."
+  },
+  {
+   "ref": "104.26",
+   "doc_type": "transit",
+   "key": "jupiter_transit_3",
+   "text": "When Jupiter passes through the 3rd house from the Moon, the person will quit his place and will meet with obstacles in his work",
+   "plain": "A change of place and obstacles at work.",
+   "in": "104.25"
+  },
+  {
+   "ref": "104.26",
+   "doc_type": "transit",
+   "key": "jupiter_transit_4",
+   "text": "When Jupiter passes through the 4th house from the Moon, the person will suffer from troubles caused by his kinsmen, will become patient and resigned and will delight in nothing.",
+   "plain": "Trouble from relatives and a flat mood; patience helps.",
+   "in": "104.25"
+  },
+  {
+   "ref": "104.27",
+   "doc_type": "transit",
+   "key": "jupiter_transit_5",
+   "text": "When Jupiter passes through the 5th house from the Moon, the person will get servants, prosperity, sons, elephants, horses, bullocks, gold, towns, houses, women, cloths, gems and good qualities.",
+   "plain": "An excellent year: prosperity, property, children and good fortune of every kind."
+  },
+  {
+   "ref": "104.28",
+   "doc_type": "transit",
+   "key": "jupiter_transit_6",
+   "text": "When Jupiter passes through the 6th house from the Moon, the person will be so much afflicted at heart that he will take no delight in the agreeable faces of beautiful women, in the music of the peacock and the cuckoo and in houses made pleasant by the frolic of children",
+   "plain": "A heavy-hearted year: even pleasant things fail to cheer. Be gentle with yourself."
+  },
+  {
+   "ref": "104.29",
+   "doc_type": "transit",
+   "key": "jupiter_transit_7",
+   "text": "When Jupiter passes through the 7th house from the Moon, the person will enjoy a good bed, the company of an excellent woman, wealth, good meals, flowers, conveyance and the like and he will be of good speech and intelligence.",
+   "plain": "A good year for partnership, comfort and money; you speak and think well."
+  },
+  {
+   "ref": "104.30",
+   "doc_type": "transit",
+   "key": "jupiter_transit_8",
+   "text": "When Jupiter passes through the 8th house from the Moon, the person will suffer from imprisonment, diseases, heavy grief, the fatigue of journey and serious illness.",
+   "plain": "The book warns of a hard year: restrictions, grief and health worries. Look after your health and avoid risks."
+  },
+  {
+   "ref": "104.30",
+   "doc_type": "transit",
+   "key": "jupiter_transit_9",
+   "text": "When Jupiter passes through the 9th house from the Moon the person will become efficient at work and influential and he will get sons, success in work, wealth and grain.",
+   "plain": "A very good year: effective at work, influential, successful and prosperous."
+  },
+  {
+   "ref": "104.31",
+   "doc_type": "transit",
+   "key": "jupiter_transit_10",
+   "text": "When Jupiter passes through the 10th house from the Moon, the person will quit his place and suffer loss of health and wealth.",
+   "plain": "A change of place, with strain on health and money."
+  },
+  {
+   "ref": "104.31",
+   "doc_type": "transit",
+   "key": "jupiter_transit_11",
+   "text": "When Jupiter passes through the 11th house, the person will return to his country and will recover his health and wealth.",
+   "plain": "A good year: you return home and recover health and money."
+  },
+  {
+   "ref": "104.31",
+   "doc_type": "transit",
+   "key": "jupiter_transit_12",
+   "text": "When Jupiter passes through the 12th house, the person will suffer grief in his return journey.",
+   "plain": "Sorrow around travel and returning home."
+  },
+  {
+   "ref": "104.32",
+   "doc_type": "transit",
+   "key": "venus_transit_1",
+   "text": "When Venus passes through the sign occupied by the Moon at the time of birth of a person, such person will enjoy excellent perfumes, flowers, cloths, houses, bed, … meals and women.",
+   "plain": "A pleasant stretch: comfort, beauty and enjoyment."
+  },
+  {
+   "ref": "104.33",
+   "doc_type": "transit",
+   "key": "venus_transit_2",
+   "text": "When Venus passes through the 2nd house from the Moon the person will get sons, wealth, grain and presents from the king; will have a prosperous family, will enjoy flowers and gems and will be of bright appearance",
+   "plain": "Money, gifts and a prosperous family; you look and feel good.",
+   "in": "104.32"
+  },
+  {
+   "ref": "104.34",
+   "doc_type": "transit",
+   "key": "venus_transit_3",
+   "text": "When Venus passes through the 3rd house from the Moon, the person will become influential, wealthy and respectable and will return to his place and will get cloths. His enemies will meet with ruin.",
+   "plain": "Influence, money and respect; rivals fall away."
+  },
+  {
+   "ref": "104.34",
+   "doc_type": "transit",
+   "key": "venus_transit_4",
+   "text": "When Venus passes through the 4th house, the person will get friends and will become greatly powerful.",
+   "plain": "New friends and growing influence."
+  },
+  {
+   "ref": "104.35",
+   "doc_type": "transit",
+   "key": "venus_transit_5",
+   "text": "When Venus passes through the 5th house, the person will become happy, will get kinsmen, sons, wealth and friends and will not suffer defeat by the enemy.",
+   "plain": "Happiness, family, money and friends; rivals cannot beat you."
+  },
+  {
+   "ref": "104.36",
+   "doc_type": "transit",
+   "key": "venus_transit_6",
+   "text": "When Venus passes through the 6th house from the Moon, the person will suffer disgrace, will be afflicted with diseases and will be exposed to danger.",
+   "plain": "Embarrassment and health worries; avoid risks."
+  },
+  {
+   "ref": "104.36",
+   "doc_type": "transit",
+   "key": "venus_transit_7",
+   "text": "When Venus passes through the 7th house the person will suffer injuries through women.",
+   "plain": "Trouble through relationships."
+  },
+  {
+   "ref": "104.36",
+   "doc_type": "transit",
+   "key": "venus_transit_8",
+   "text": "When Venus passes through the 8th house from the Moon, the person will get houses, articles of luxury and beautiful women.",
+   "plain": "Comforts, property and luxuries come your way."
+  },
+  {
+   "ref": "104.37",
+   "doc_type": "transit",
+   "key": "venus_transit_9",
+   "text": "When Venus passes through the 9th house from the Moon, the person will become virtuous, happy and wealthy, and he will get plenty of cloths.",
+   "plain": "Good conduct, happiness and money."
+  },
+  {
+   "ref": "104.37",
+   "doc_type": "transit",
+   "key": "venus_transit_10",
+   "text": "When Venus passes through the 10th house from the Moon, the person will suffer disgrace and will also suffer from quarrels.",
+   "plain": "Embarrassment and quarrels; keep a low profile."
+  },
+  {
+   "ref": "104.38",
+   "doc_type": "transit",
+   "key": "venus_transit_11",
+   "text": "When Venus passes through the 11th house from the Moon, the person will get the wealth of his friends and will also get perfumes and cloths.",
+   "plain": "Help and gains through friends, with small luxuries.",
+   "in": "104.37"
+  },
+  {
+   "ref": "104.38",
+   "doc_type": "transit",
+   "key": "venus_transit_12",
+   "text": "When Venus passes through the 12th house the person will get very few cloths.",
+   "plain": "Few comforts this stretch; spend carefully.",
+   "in": "104.37"
+  },
+  {
+   "ref": "104.39",
+   "doc_type": "transit",
+   "key": "saturn_transit_1",
+   "text": "When Saturn passes through the sign occupied by the Moon at the time of birth of a person, such person will suffer from poison and from fire, will quit his kinsmen, … will suffer imprisonment and torture, will travel to foreign lands and live with his friends there; will suffer miseries, loss of wealth and of sons, will suffer also from the fatigues of foot-journey and from humiliation.",
+   "plain": "The book's heaviest transit (the peak of Sade Sati): separation from family, travel or living away, losses and humbling experiences. A time for patience, discipline and care.",
+   "in": "104.37"
+  },
+  {
+   "ref": "104.40",
+   "doc_type": "transit",
+   "key": "saturn_transit_2",
+   "text": "When Saturn passes through the 2nd house from the Moon, the person will suffer loss of beauty and comfort, will become weak and will get wealth from other men and he will not enjoy this wealth long.",
+   "plain": "Less comfort and energy; money comes from others but does not stay."
+  },
+  {
+   "ref": "104.41",
+   "doc_type": "transit",
+   "key": "saturn_transit_3",
+   "text": "When Saturn passes through the 3rd house from the Moon, the person will get wealth, servants, articles of enjoyment, camels, buffaloes, horses, elephants, asses and houses. He will become influential, happy, free from diseases and will become greatly powerful and will defeat his enemies in fight.",
+   "plain": "One of the best transits: wealth, property, good health, influence and victory over rivals."
+  },
+  {
+   "ref": "104.42",
+   "doc_type": "transit",
+   "key": "saturn_transit_4",
+   "text": "When Saturn passes through the 4th house from the Moon, the person will be separated from his friends, wealth and wife and ever suspecting evil in everything will never feel happy.",
+   "plain": "Distance from friends, money and partner, and a suspicious, unhappy mood (Kantaka Shani). Stay connected."
+  },
+  {
+   "ref": "104.43",
+   "doc_type": "transit",
+   "key": "saturn_transit_5",
+   "text": "When Saturn passes through the 5th house from the Moon, the person will be separated from his sons and wealth and will suffer from quarrels.",
+   "plain": "Distance from children, strain on money and more quarrels."
+  },
+  {
+   "ref": "104.43",
+   "doc_type": "transit",
+   "key": "saturn_transit_6",
+   "text": "When Saturn passes through the 6th house from the Moon, the person will be freed from his enemies and diseases and will enjoy the company of women.",
+   "plain": "A good transit: rivals and ill health fall away and life is pleasant."
+  },
+  {
+   "ref": "104.44",
+   "doc_type": "transit",
+   "key": "saturn_transit_7",
+   "text": "When Saturn passes through the 7th or 8th house from the Moon, the person will be separated from his wife and sons and will travel on foot in a pitiable condition.",
+   "plain": "Distance from partner and children, and hard, tiring travel."
+  },
+  {
+   "ref": "104.44",
+   "doc_type": "transit",
+   "key": "saturn_transit_8",
+   "text": "When Saturn passes through the 7th or 8th house from the Moon, the person will be separated from his wife and sons and will travel on foot in a pitiable condition.",
+   "plain": "Distance from partner and children, and hard, tiring travel (Ashtama Shani). A time for patience."
+  },
+  {
+   "ref": "104.44",
+   "doc_type": "transit",
+   "key": "saturn_transit_9",
+   "text": "When he passes through the 9th house, the person will be all that was stated for Saturn passing through the 8th house and will besides suffer from hatred, chest-pain, imprisonment and in consequence will not properly observe the daily duties.",
+   "plain": "As in the 8th, plus ill will, restrictions and health strain that upset your routine."
+  },
+  {
+   "ref": "104.45",
+   "doc_type": "transit",
+   "key": "saturn_transit_10",
+   "text": "When Saturn passes through the 10th house, the person will get work and will suffer loss of wealth, learning and fame.",
+   "plain": "Plenty of work, but with strain on money and reputation."
+  },
+  {
+   "ref": "104.45",
+   "doc_type": "transit",
+   "key": "saturn_transit_11",
+   "text": "When Saturn passes through the 11th house from the Moon, the person will become cruel and will get women and wealth.",
+   "plain": "Gains and comforts, though you may become hard-edged."
+  },
+  {
+   "ref": "104.45",
+   "doc_type": "transit",
+   "key": "saturn_transit_12",
+   "text": "When Saturn passes through the 12th house from the Moon the person will suffer much grief.",
+   "plain": "A sorrowful stretch (the start of Sade Sati); lean on others and rest."
+  }
+ ]
+}

@@ -27,6 +27,7 @@ func (s *Server) featureRoutes() {
 	s.mux.HandleFunc("GET /api/muhurta/events", s.muhurtaEvents)
 	s.mux.Handle("GET /api/muhurta", s.limit(s.muhurta, 30))
 	s.mux.HandleFunc("GET /api/today", s.today)
+	s.mux.HandleFunc("GET /api/transits", s.transits)
 	s.mux.HandleFunc("GET /api/calendar.ics", s.calendarICS)
 	s.mux.HandleFunc("DELETE /api/chat/session", s.deleteChat)
 }

@@ -142,7 +142,8 @@
    "rights": "public_domain",
    "rights_basis": "Sanskrit original is ancient. The English translation was published in 1884 (US public domain: published before 1931) and the translator died long before 1965 (India: life + 60). archive.org records possible-copyright-status NOT_IN_COPYRIGHT.",
    "system": "parashari",
-   "notes": "Mundane astrology, omens, muhurta, marriage, gems and portents. Used as training text; not yet mapped to engine tokens."
+   "notes": "Mundane astrology, omens, muhurta, marriage, gems and portents. Used as training text; not yet mapped to engine tokens. Split with segment=loose: many verse numbers are lost to OCR, and the second part restarts Roman chapter numbers with the standard number in brackets.",
+   "segment": "loose"
   },
   {
    "id": "brihat-samhita-kern-1865",

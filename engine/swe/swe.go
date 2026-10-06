@@ -138,3 +138,25 @@ func RiseSet(afterJD, latitude, longitude float64, body, event int) (float64, er
 	}
 	return float64(result), nil
 }
+
+// NextSolarEclipse returns the UT Julian day of the greatest phase of the
+// next solar eclipse (any type) after jdUT.
+func NextSolarEclipse(jdUT float64) (float64, error) {
+	var tret [10]C.double
+	var serr [256]C.char
+	if C.swe_sol_eclipse_when_glob(C.double(jdUT), C.int(FlagSwiss), 0, &tret[0], 0, &serr[0]) < 0 {
+		return 0, fmt.Errorf("swe_sol_eclipse_when_glob: %s", C.GoString(&serr[0]))
+	}
+	return float64(tret[0]), nil
+}
+
+// NextLunarEclipse returns the UT Julian day of the greatest phase of the
+// next lunar eclipse (any type, penumbral included) after jdUT.
+func NextLunarEclipse(jdUT float64) (float64, error) {
+	var tret [10]C.double
+	var serr [256]C.char
+	if C.swe_lun_eclipse_when(C.double(jdUT), C.int(FlagSwiss), 0, &tret[0], 0, &serr[0]) < 0 {
+		return 0, fmt.Errorf("swe_lun_eclipse_when: %s", C.GoString(&serr[0]))
+	}
+	return float64(tret[0]), nil
+}

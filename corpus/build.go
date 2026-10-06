@@ -76,6 +76,10 @@ type MapEntry struct {
 	// OCR is the scan's literal wording, matched instead of Text where the
 	// scan is too damaged for the corrected reading in Text to match.
 	OCR string `json:"ocr,omitempty"`
+	// In names the split segment that holds the text when the scan lost
+	// this verse's number and it was merged into the verse before ("104.22"
+	// holding verse 104.23). Ref stays the true verse.
+	In string `json:"in,omitempty"`
 }
 
 // MapExcerpt is one further verbatim excerpt and the stanza it comes from.
@@ -83,6 +87,15 @@ type MapExcerpt struct {
 	Ref  string `json:"ref"`
 	Text string `json:"text"`
 	OCR  string `json:"ocr,omitempty"`
+	In   string `json:"in,omitempty"`
+}
+
+// segmentRef is the split segment to match against: In when given, else Ref.
+func segmentRef(ref, in string) string {
+	if in != "" {
+		return in
+	}
+	return ref
 }
 
 // matchText is what is matched against the scan: the literal OCR wording
@@ -278,7 +291,7 @@ func Build(opts BuildOptions) ([]Entry, BuildReport, error) {
 			return nil, rep, err
 		}
 		lines := CleanLines(string(raw))
-		segs := SegmentLines(lines)
+		segs := SegmentFor(s, lines)
 		if opts.AuditDir != "" {
 			if err = writeAudit(opts.AuditDir, s.ID, lines, segs); err != nil {
 				return nil, rep, err
@@ -297,7 +310,7 @@ func Build(opts BuildOptions) ([]Entry, BuildReport, error) {
 			lang = "en"
 		}
 		for _, me := range sm.Entries {
-			sg, ok := byRef[me.Ref]
+			sg, ok := byRef[segmentRef(me.Ref, me.In)]
 			if !ok {
 				return nil, rep, fmt.Errorf("%s: %s cites %s but segmentation found no such stanza", name, me.Key, me.Ref)
 			}
@@ -307,7 +320,7 @@ func Build(opts BuildOptions) ([]Entry, BuildReport, error) {
 				return nil, rep, fmt.Errorf("%s: excerpt for %s does not match OCR of %s (score %.2f < %.2f)", name, me.Key, me.Ref, score, threshold)
 			}
 			for _, v := range me.Via {
-				vs, ok := byRef[v.Ref]
+				vs, ok := byRef[segmentRef(v.Ref, v.In)]
 				if !ok {
 					return nil, rep, fmt.Errorf("%s: %s cites %s but segmentation found no such stanza", name, me.Key, v.Ref)
 				}

@@ -1,6 +1,7 @@
 package reading
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
@@ -502,4 +503,33 @@ func matchPlain(mc MatchChatContext, boy, girl *insight, ts []string) plain {
 		p.point(fmt.Sprintf("Mangal dosha: groom %s, bride %s.", yesNo[m.BoyMangal], yesNo[m.GirlMangal]))
 	}
 	return p
+}
+
+// BookView is what a classical book says for one condition, in plain words.
+type BookView struct {
+	Ref    string `json:"ref"`
+	Source string `json:"source"`
+	Plain  string `json:"plain"`
+}
+
+// BookViews returns the classical passage, in plain words, for each token
+// that a public-domain book covers (keyed "doc:key").
+func (s *Service) BookViews(ctx context.Context, keys []engine.CorpusKey) map[string]BookView {
+	out := map[string]BookView{}
+	if s.Corpus == nil {
+		return out
+	}
+	rules, err := s.Corpus.RulesFor(ctx, keys)
+	if err != nil {
+		return out
+	}
+	for _, r := range rules {
+		k := r.DocType + ":" + r.Key
+		i := strings.Index(r.Body, corpus.PlainLabel)
+		if _, done := out[k]; done || !classical(r) || i < 0 {
+			continue
+		}
+		out[k] = BookView{Ref: r.Ref, Source: cite(r), Plain: strings.TrimSuffix(strings.TrimSpace(r.Body[i+len(corpus.PlainLabel):]), "]")}
+	}
+	return out
 }

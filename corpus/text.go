@@ -95,9 +95,12 @@ var (
 	// the OCR produced ("ImtHAT jAtAKA", "UTAKir", "JATAW").
 	headerRe  = regexp.MustCompile(`(?i)(j\s?a\s?t\s?a\s?[kw]|utak|jatak|jauk)`)
 	chapterRe = regexp.MustCompile(`^.{0,3}CHA\S{0,5}\s+([IVXLZHilr!1]+)\W*`)
-	verseRe   = regexp.MustCompile(`^[\s.(]*([0-9]{1,2})\s*[.*,]\)?\s+([A-Za-z(].*)$`)
-	junkRe    = regexp.MustCompile(`[\^\\|~_{}<>»«•€]`)
-	spaceRe   = regexp.MustCompile(`\s+`)
+	// chapterNumRe finds a bracketed standard chapter number in a heading.
+	chapterNumRe = regexp.MustCompile(`\(\s*([0-9lIOoT]{1,3})\s*[.)]`)
+	looseVerseRe = regexp.MustCompile(`^\s*\.([0-9]{1,2})\s+([A-Z].*)$`)
+	verseRe      = regexp.MustCompile(`^[\s.(]*(?:[a-z]\s+)?([0-9]{1,2})\s*[.*,:-]\)?\s+([A-Za-z("].*)$`)
+	junkRe       = regexp.MustCompile(`[\^\\|~_{}<>»«•€]`)
+	spaceRe      = regexp.MustCompile(`\s+`)
 )
 
 // CleanLines removes page furniture (running headers, folio numbers, margin
@@ -139,8 +142,29 @@ func CleanLines(raw string) []string {
 	return out
 }
 
+// ocrDigits maps letters the OCR substitutes inside bracketed numbers.
+var ocrDigits = strings.NewReplacer("l", "1", "I", "1", "O", "0", "o", "0", "T", "7")
+
 // romanOCR maps characters the OCR substitutes inside chapter numerals.
 var romanOCR = strings.NewReplacer("i", "I", "l", "I", "L", "I", "r", "I", "!", "I", "1", "I", "Z", "X", "H", "II")
+
+// strictRoman reads a numeral as printed (I, V, X, L, C), or 0.
+func strictRoman(s string) int {
+	vals := map[byte]int{'I': 1, 'V': 5, 'X': 10, 'L': 50, 'C': 100}
+	total := 0
+	for i := 0; i < len(s); i++ {
+		v, ok := vals[s[i]]
+		if !ok {
+			return 0
+		}
+		if i+1 < len(s) && vals[s[i+1]] > v {
+			total -= v
+		} else {
+			total += v
+		}
+	}
+	return total
+}
 
 func parseRoman(s string) int {
 	s = romanOCR.Replace(s)
@@ -183,9 +207,19 @@ func numberMatches(got string, want int) bool {
 // increase; stanza numbers must run consecutively within a chapter (allowing
 // known OCR digit confusions), so page numbers and note markers are not
 // mistaken for stanzas.
-func SegmentLines(lines []string) []Segment {
+func SegmentLines(lines []string) []Segment { return segmentLines(lines, false) }
+
+// SegmentFor splits a source with the rules its manifest entry asks for:
+// "loose" also resumes after a verse number the OCR lost (one or two ahead,
+// on a capitalised line), for scans where that happens often. It must not be
+// used where note numbers sit at line starts.
+func SegmentFor(s Source, lines []string) []Segment {
+	return segmentLines(lines, s.Segment == "loose")
+}
+
+func segmentLines(lines []string, loose bool) []Segment {
 	var out []Segment
-	chapter, verse := 0, 0
+	chapter, verse, offset := 0, 0, 0
 	var cur *Segment
 	var buf []string
 	flush := func() {
@@ -197,7 +231,27 @@ func SegmentLines(lines []string) []Segment {
 	}
 	for _, l := range lines {
 		if m := chapterRe.FindStringSubmatch(l); m != nil {
-			if n := parseRoman(m[1]); n > chapter && (chapter == 0 || n <= chapter+3) {
+			// "XL" is 40, but OCR also prints I as L: try the literal numeral
+			// first and the OCR-corrected one if the literal does not fit.
+			fits := func(n int) bool { return n > chapter && (chapter == 0 || n <= chapter+3) }
+			roman := strictRoman(m[1])
+			if !fits(roman + offset) {
+				roman = parseRoman(m[1])
+			}
+			n := roman + offset
+			// Some editions restart Roman numbering in a second part and give
+			// the standard chapter number in brackets: "CHAPTER LVII (104)."
+			// Prefer the bracket; when OCR garbles it, Roman plus the last
+			// known difference between the two still gives the chapter.
+			if p := chapterNumRe.FindStringSubmatch(l); p != nil {
+				if v, err := strconv.Atoi(ocrDigits.Replace(p[1])); err == nil && fits(v) {
+					n = v
+					if roman > 0 {
+						offset = v - roman
+					}
+				}
+			}
+			if fits(n) {
 				flush()
 				chapter, verse = n, 0
 				continue
@@ -206,7 +260,23 @@ func SegmentLines(lines []string) []Segment {
 		if chapter > 0 {
 			// A lowercase stanza start ("3. person born…", the OCR dropped "A")
 			// is accepted only on an exact number, never a confusable one.
-			if m := verseRe.FindStringSubmatch(l); m != nil && numberMatches(m[1], verse+1) && (m[1] == strconv.Itoa(verse+1) || !unicode.IsLower(rune(m[2][0]))) {
+			m := verseRe.FindStringSubmatch(l)
+			if m == nil {
+				// ".6 When the Sun…": the stop printed before the number.
+				// Accepted only for the exact next number and a capital start.
+				if lm := looseVerseRe.FindStringSubmatch(l); lm != nil && lm[1] == strconv.Itoa(verse+1) {
+					m = lm
+				}
+			}
+			if loose && m != nil && verse > 0 && !numberMatches(m[1], verse+1) {
+				// A verse number lost to OCR: resume at a clean number one or
+				// two ahead, on a capitalised line; the lost verse's text stays
+				// with the verse before it.
+				if n, err := strconv.Atoi(m[1]); err == nil && n >= verse+2 && n <= verse+3 && unicode.IsUpper(rune(strings.TrimLeft(m[2], "\"(")[0])) {
+					verse = n - 1
+				}
+			}
+			if m != nil && numberMatches(m[1], verse+1) && (m[1] == strconv.Itoa(verse+1) || !unicode.IsLower(rune(m[2][0]))) {
 				flush()
 				verse++
 				cur = &Segment{Chapter: chapter, Verse: verse, Ref: fmt.Sprintf("%d.%d", chapter, verse)}

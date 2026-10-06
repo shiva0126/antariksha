@@ -60,3 +60,49 @@ func TestHouseExcerptsNameTheirHouse(t *testing.T) {
 		}
 	}
 }
+
+// Every transit passage (Brihat Samhita 104) must speak about its own house
+// from the Moon and its own planet, for the Sun to Saturn in all 12 houses.
+func TestTransitExcerptsNameTheirHouseAndPlanet(t *testing.T) {
+	b, err := files.ReadFile("maps/brihat_samhita_iyer_1884.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var sm sourceMap
+	if err = json.Unmarshal(b, &sm); err != nil {
+		t.Fatal(err)
+	}
+	key := regexp.MustCompile(`^(\w+)_transit_(\d+)$`)
+	ord := []string{"", "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th", "11th", "12th"}
+	name := map[string]string{"sun": "sun", "moon": "moon", "mars": "mars", "mercury": "mercury", "jupiter": "jupiter", "venus": "venus", "saturn": "saturn"}
+	seen := map[string]bool{}
+	for _, me := range sm.Entries {
+		m := key.FindStringSubmatch(me.Key)
+		if me.DocType != "transit" || m == nil {
+			t.Fatalf("bad transit entry %s:%s", me.DocType, me.Key)
+		}
+		var h int
+		fmt.Sscan(m[2], &h)
+		seen[me.Key] = true
+		text := strings.ToLower(me.Text)
+		house := strings.Contains(text, ord[h]+" house") || strings.Contains(text, ord[h]+" or ") ||
+			h == 1 && (strings.Contains(text, "sign occupied by the moon") || strings.Contains(text, "sign occupied by herself")) ||
+			h == 3 && strings.Contains(text, "third house")
+		if !house {
+			t.Errorf("%s (%s) does not speak about the %s house: %q", me.Key, me.Ref, ord[h], me.Text)
+		}
+		if !strings.Contains(text, name[m[1]]) && !strings.HasPrefix(text, "when he ") && !strings.HasPrefix(text, "when she ") {
+			t.Errorf("%s (%s) does not name its planet: %q", me.Key, me.Ref, me.Text)
+		}
+		if strings.TrimSpace(me.Plain) == "" {
+			t.Errorf("%s has no plain summary", me.Key)
+		}
+	}
+	for _, g := range []string{"sun", "moon", "mars", "mercury", "jupiter", "venus", "saturn"} {
+		for h := 1; h <= 12; h++ {
+			if !seen[fmt.Sprintf("%s_transit_%d", g, h)] {
+				t.Errorf("no Brihat Samhita passage for %s transiting the %s house", g, ord[h])
+			}
+		}
+	}
+}

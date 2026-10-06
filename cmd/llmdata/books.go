@@ -71,7 +71,7 @@ func books(rawDir, out string) error {
 		}
 		raw, _ := os.ReadFile(path)
 		lines := corpus.CleanLines(string(raw))
-		segs := corpus.SegmentLines(lines)
+		segs := corpus.SegmentFor(s, lines)
 		total, inSegs := len(strings.Join(lines, " ")), 0
 		for _, sg := range segs {
 			inSegs += len(sg.Text)

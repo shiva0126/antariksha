@@ -41,6 +41,8 @@ type Source struct {
 	RightsBasis string `json:"rights_basis"`
 	System      string `json:"system"`
 	Notes       string `json:"notes,omitempty"`
+	// Segment selects verse-splitting rules: "" (strict) or "loose".
+	Segment string `json:"segment,omitempty"`
 }
 
 type Manifest struct {

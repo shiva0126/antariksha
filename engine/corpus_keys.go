@@ -18,6 +18,7 @@ const (
 	DocDignity      = "dignity"
 	DocBhava        = "bhava"
 	DocAspect       = "aspect"
+	DocTransit      = "transit"
 )
 
 // SystemParashari is the only school the engine detects; Jaimini entries live
@@ -123,6 +124,13 @@ func CorpusVocabulary() []VocabEntry {
 	for h := 1; h <= 12; h++ {
 		add(DocBhava, fmt.Sprintf("bhava_%d", h), fmt.Sprintf("significations of the %s house", ordinal(h)), true)
 	}
+	// Transits are optional tokens: Brihat Samhita 104 covers the Sun to
+	// Saturn; Rahu and Ketu have no classical transit verse.
+	for _, g := range GrahaIDs {
+		for h := 1; h <= 12; h++ {
+			add(DocTransit, TransitKey(g, h), fmt.Sprintf("%s transiting the %s house from the natal Moon", grahaEnglish[g], ordinal(h)), false)
+		}
+	}
 	for _, s := range rashiNames {
 		add(DocBhava, "lagna_"+Slug(s), s+" rising as the ascendant", true)
 	}
@@ -198,4 +206,10 @@ func CorpusKeys(f ChartFacts) []CorpusKey {
 	}
 	sort.Slice(out, func(i, j int) bool { return out[i].String() < out[j].String() })
 	return out
+}
+
+// TransitKey is the corpus token for a graha transiting a house counted
+// from the natal Moon: "jupiter_transit_5".
+func TransitKey(graha string, houseFromMoon int) string {
+	return fmt.Sprintf("%s_transit_%d", graha, houseFromMoon)
 }
