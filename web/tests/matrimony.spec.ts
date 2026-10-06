@@ -81,24 +81,25 @@ test('sign-up stores the birthplace; phone layout has a bottom tab bar', async (
   await page.getByLabel('Your name').fill('Meera');
   await page.getByLabel('Email').fill(`meera_${Date.now()}@example.com`);
   await page.getByLabel('Password').fill('sign-up-browser-password');
+  await page.getByRole('button', { name: 'Continue' }).click();
   await page.getByLabel('Date of birth').fill('1997-03-03');
   await page.getByLabel('Birth time').fill('08:00');
   await page.getByLabel('Birthplace').fill('Mysuru');
   await page.locator('.place-list').getByRole('option').first().click();
   await page.getByRole('button', { name: 'Create account' }).click();
-  await expect(page.locator('.site-header')).toBeVisible();
+  await expect(page.locator('.shell-header')).toBeVisible();
   try {
     const me = await (await page.request.get('/api/me')).json();
     expect(me.birth_place.name).toContain('Mysuru');
     expect(me.profile.name).toBe('Meera');
     await page.setViewportSize({ width: 390, height: 844 });
-    await expect(page.locator('.tab-bar')).toBeVisible();
-    await page.locator('.tab-bar').getByRole('button', { name: /Matrimony/ }).click();
+    await expect(page.locator('.shell-tabbar')).toBeVisible();
+    await page.locator('.shell-tabbar').getByRole('link', { name: /Matrimony/ }).click();
     await expect(page.getByRole('heading', { name: 'Matrimony', level: 1 })).toBeVisible();
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
     expect(overflow).toBe(false);
-    await page.locator('.more-toggle').click();
-    await expect(page.getByRole('menuitem', { name: 'Muhurta' })).toBeVisible();
+    await page.locator('.shell-me__toggle').click();
+    await expect(page.getByRole('menuitem', { name: 'Saved charts' })).toBeVisible();
   } finally {
     await page.request.delete('/api/me', { headers: { Origin: baseURL! } });
   }

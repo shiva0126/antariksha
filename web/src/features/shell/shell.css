@@ -1,0 +1,39 @@
+.shell { min-height: 100vh; display: flex; flex-direction: column; background: var(--c-bg); }
+.shell-skip { position: absolute; left: -999px; top: 8px; z-index: 100; padding: 8px 12px; background: var(--c-accent); color: var(--c-on-accent); border-radius: var(--r-control); }
+.shell-skip:focus { left: 8px; }
+.shell-header { position: sticky; top: 0; z-index: 40; background: var(--c-header-bg); backdrop-filter: blur(14px); border-bottom: 1px solid var(--c-hairline); padding-top: env(safe-area-inset-top, 0px); }
+.shell-header__inner { max-width: var(--page-max); margin: 0 auto; padding: 12px var(--gutter); display: flex; align-items: center; gap: var(--s-4); }
+.shell-nav { display: flex; gap: var(--s-1); margin: 0 auto; }
+.shell-nav a { padding: 9px 16px; border-radius: var(--r-control); border: 1px solid transparent; color: var(--c-nav-text); text-decoration: none; font-size: var(--fs-14); }
+.shell-nav a:hover { color: var(--c-white); }
+.shell-nav a[aria-current=page] { background: var(--c-accent-wash); border-color: var(--c-accent-border); color: var(--c-accent-strong); }
+.shell-tools { display: flex; align-items: center; gap: var(--s-2); }
+.shell-bell { position: relative; width: 40px; height: 40px; border-radius: var(--r-pill); border: 1px solid var(--c-line); background: var(--c-surface); color: var(--c-text); display: grid; place-items: center; }
+.shell-bell .ds-count { position: absolute; top: -4px; right: -4px; }
+.shell-me { position: relative; }
+.shell-me__toggle { height: 40px; min-height: 40px; padding: 0 12px 0 4px; border-radius: var(--r-pill); border-color: var(--c-line); background: var(--c-surface); }
+.shell-me__name { max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.shell-me__menu { position: absolute; right: 0; top: calc(100% + 8px); width: 260px; padding: 8px; display: flex; flex-direction: column; background: var(--c-menu-bg); border: 1px solid var(--c-line); border-radius: var(--r-card); box-shadow: 0 16px 40px var(--c-shadow-strong); z-index: 50; }
+.shell-me__who { display: flex; gap: 10px; align-items: center; padding: 8px 8px 12px; margin-bottom: 4px; border-bottom: 1px solid var(--c-line-soft); }
+.shell-me__who div { display: flex; flex-direction: column; min-width: 0; }
+.shell-me__who span { font-size: var(--fs-12); color: var(--c-text-muted); overflow: hidden; text-overflow: ellipsis; }
+.shell-me__menu a, .shell-me__menu button { display: flex; align-items: center; min-height: 40px; padding: 0 10px; border-radius: 8px; border: 0; background: none; color: var(--c-text-control); text-decoration: none; font-size: var(--fs-14); justify-content: flex-start; }
+.shell-me__menu a:hover, .shell-me__menu button:hover { background: var(--c-accent-wash); color: var(--c-accent-strong); }
+.shell-main { flex: 1; }
+.shell-footer { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 6px 12px; padding: 32px var(--gutter) calc(32px + env(safe-area-inset-bottom, 0px)); color: var(--c-text-faint); font-size: var(--fs-12); text-align: center; }
+.shell-footer a { color: var(--c-text-muted); }
+.shell-tabbar { display: none; }
+.page { width: min(var(--page-max), 100% - 2 * var(--gutter)); margin: 0 auto; padding: 24px 0 32px; display: flex; flex-direction: column; gap: var(--s-6); }
+@media (max-width: 860px) { .shell-nav a { padding: 8px 10px; } .shell-me__name { display: none; } .shell-me__toggle { padding: 0 4px; } }
+@media (max-width: 720px) {
+  .shell-nav { display: none; }
+  .shell-tools { margin-left: auto; }
+  .shell-bell, .shell-me__toggle { width: 44px; height: 44px; }
+  .shell-tabbar { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; background: var(--c-bar-bg); backdrop-filter: blur(14px); border-top: 1px solid var(--c-line); padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .shell-tabbar a { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 2px 9px; color: var(--c-text-muted); text-decoration: none; font-size: 11px; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .shell-tabbar a[aria-current=page] { color: var(--c-accent-strong); }
+  .shell { padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px)); }
+  .shell-me__menu { position: fixed; left: 12px; right: 12px; top: calc(64px + env(safe-area-inset-top, 0px)); width: auto; }
+  .page { padding-top: 16px; gap: var(--s-4); }
+}
+@media print { .shell-header, .shell-footer, .shell-tabbar { display: none !important; } .shell { padding: 0; } }

@@ -182,12 +182,12 @@ func (s *Server) communityPeople(w http.ResponseWriter, r *http.Request, id stri
 	if !s.adultCommunity(w, r, id) {
 		return
 	}
-	s.memberRows(w, r, `SELECT a.id,a.handle,c.public_bio,c.avatar,c.accent,c.interests,c.links,
+	s.memberRows(w, r, `SELECT a.id,a.handle,COALESCE(a.profile->>'name','') display_name,c.public_bio,c.avatar,c.accent,c.interests,c.links,
  COALESCE((SELECT CASE WHEN f.accepted THEN 'accepted' ELSE 'pending' END FROM member_follows f WHERE f.follower=$1 AND f.target=a.id),'none') following
- FROM member_accounts a JOIN member_settings c ON c.account_id=a.id WHERE c.community AND a.id<>$1 AND NOT member_blocked($1,a.id) AND a.handle ILIKE $2 ORDER BY a.handle LIMIT 50`, id, "%"+r.URL.Query().Get("q")+"%")
+ FROM member_accounts a JOIN member_settings c ON c.account_id=a.id WHERE c.community AND a.id<>$1 AND NOT member_blocked($1,a.id) AND (a.handle ILIKE $2 OR a.profile->>'name' ILIKE $2) ORDER BY a.handle LIMIT 50`, id, "%"+r.URL.Query().Get("q")+"%")
 }
 func (s *Server) communityFollows(w http.ResponseWriter, r *http.Request, id string) {
-	s.memberRows(w, r, `SELECT a.id,a.handle,f.accepted FROM member_follows f JOIN member_accounts a ON a.id=f.follower WHERE f.target=$1 AND NOT member_blocked($1,a.id) ORDER BY a.handle`, id)
+	s.memberRows(w, r, `SELECT a.id,a.handle,COALESCE(a.profile->>'name','') display_name,f.accepted FROM member_follows f JOIN member_accounts a ON a.id=f.follower WHERE f.target=$1 AND NOT member_blocked($1,a.id) ORDER BY a.handle`, id)
 }
 func (s *Server) followAction(w http.ResponseWriter, r *http.Request, id string) {
 	if !s.adultCommunity(w, r, id) {
@@ -263,7 +263,7 @@ func (s *Server) feed(w http.ResponseWriter, r *http.Request, id string) {
 		before = n
 	}
 	mode := r.URL.Query().Get("mode")
-	s.memberRows(w, r, `SELECT p.id,p.caption,p.audience,p.family_id,p.hidden,p.created_at,p.owner=$1 mine,a.id author_id,a.handle,c.avatar,c.accent,
+	s.memberRows(w, r, `SELECT p.id,p.caption,p.audience,p.family_id,p.hidden,p.created_at,p.owner=$1 mine,a.id author_id,a.handle,COALESCE(a.profile->>'name','') display_name,c.avatar,c.accent,
  COALESCE((SELECT json_agg(json_build_object('id',m.id,'alt',m.alt) ORDER BY m.created_at,m.id) FROM community_media m WHERE m.post_id=p.id),'[]') media,
  (SELECT count(*) FROM community_reactions v WHERE v.post_id=p.id AND v.kind='like') likes,
  EXISTS(SELECT 1 FROM community_reactions v WHERE v.post_id=p.id AND v.account_id=$1 AND v.kind='like') liked,
@@ -454,7 +454,7 @@ func (s *Server) comments(w http.ResponseWriter, r *http.Request, id string) {
 		problem(w, 404, fmt.Errorf("post unavailable"))
 		return
 	}
-	s.memberRows(w, r, `SELECT c.id,c.body,c.created_at,a.handle,c.owner=$2 mine FROM community_comments c JOIN member_accounts a ON a.id=c.owner WHERE c.post_id=$1 AND NOT member_blocked(c.owner,$2) ORDER BY c.id DESC LIMIT 100`, r.PathValue("post"), id)
+	s.memberRows(w, r, `SELECT c.id,c.body,c.created_at,a.handle,COALESCE(a.profile->>'name','') display_name,c.owner=$2 mine FROM community_comments c JOIN member_accounts a ON a.id=c.owner WHERE c.post_id=$1 AND NOT member_blocked(c.owner,$2) ORDER BY c.id DESC LIMIT 100`, r.PathValue("post"), id)
 }
 func (s *Server) addComment(w http.ResponseWriter, r *http.Request, id string) {
 	if !s.postAllowed(r, id) {

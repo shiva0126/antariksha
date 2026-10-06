@@ -1,3 +1,4 @@
+import { useFeedback } from '../../ds';
 import { useEffect,useId,useState } from 'react';
 import { Feedback,Field,memberAPI,useAction } from './shared';
 
@@ -21,7 +22,7 @@ function CharacterPortrait({profile:p}:{profile:Profile}) {
 }
 
 export function MyCharacter(){
- const action=useAction(),[saved,setSaved]=useState<Saved>(),[profile,setProfile]=useState<Profile>(fresh),[consent,setConsent]=useState(false),[custom,setCustom]=useState('');
+ const action=useAction(), fb = useFeedback(),[saved,setSaved]=useState<Saved>(),[profile,setProfile]=useState<Profile>(fresh),[consent,setConsent]=useState(false),[custom,setCustom]=useState('');
  const [source,setSource]=useState<Omit<Source,'id'>>({platform:'instagram',url:'',text:''}),[sourceConsent,setSourceConsent]=useState(false),[topics,setTopics]=useState<string[]|null>(null),[selected,setSelected]=useState<string[]>([]);
  const load=async()=>{const data=await memberAPI<Saved>('/api/me/character');setSaved(data);setProfile(data.profile);setConsent(false);};
  useEffect(()=>{void action.run(load);},[]);
@@ -38,7 +39,7 @@ export function MyCharacter(){
  <div className="chips">{profile.interests.map(x=><button type="button" key={x} onClick={()=>toggle(x)} aria-label={`Remove interest ${x}`}>{x} ×</button>)}</div>
  <Field label="Goals and things I want to learn"><textarea maxLength={1000} value={profile.goals} onChange={e=>setProfile({...profile,goals:e.target.value})}/></Field><Field label="Values in my own words"><textarea maxLength={1000} value={profile.values} onChange={e=>setProfile({...profile,values:e.target.value})}/></Field><Field label="How I like to communicate"><textarea maxLength={500} value={profile.communication} onChange={e=>setProfile({...profile,communication:e.target.value})}/></Field>
  <label><input type="checkbox" required checked={consent} onChange={e=>setConsent(e.target.checked)}/> Save these details and my chosen source notes privately in my account.</label><button disabled={action.busy||!saved}>Save private character</button>
- <button type="button" disabled={action.busy} onClick={()=>{if(confirm('Reload your saved character? Unsaved edits will be replaced.'))void action.run(load);}}>Reload saved character</button><Feedback {...action}/>
+ <button type="button" disabled={action.busy} onClick={async()=>{if(await fb.confirm({title:'Reload your saved character? Unsaved edits will be replaced.' }))void action.run(load);}}>Reload saved character</button><Feedback {...action}/>
  </form></section>
  <section className="card"><h2>Bring your own social story</h2><p>Paste a bio or post you wrote. Review the interest words it mentions and select those that describe you. A profile link alone does not import posts.</p>
  <p className="small muted">Instagram and LinkedIn connections are not enabled yet. These notes are labelled user-provided and remain private.</p>

@@ -9,10 +9,12 @@ test.beforeEach(async ({ page, baseURL }) => {
 });
 test.afterAll(async ({request,baseURL})=>{await request.delete('/api/me',{headers:{Origin:baseURL!,Cookie:suiteCookies.map(c=>`${c.name}=${c.value}`).join('; ')}});});
 
-// Language and month settings live in the "More" menu.
+// Language and month settings live in Me → Settings; they persist per device.
 async function setting(page: Page, label: 'Language' | 'Month system', value: string) {
-  if (!(await page.locator('.more-panel').isVisible())) await page.locator('.more-toggle').click();
-  await page.getByLabel(label).selectOption(value);
+  const back = page.url();
+  await page.goto('/#me/settings');
+  await page.getByLabel(label, { exact: true }).selectOption(value);
+  if (!back.includes('#me/settings')) await page.goto(back);
 }
 
 async function openChart(page: Page) {
@@ -21,7 +23,7 @@ async function openChart(page: Page) {
   await page.goto('/');
   await page.getByRole('checkbox').check();
   await page.getByRole('button', { name: 'Reveal my chart' }).click();
-  await expect(page.locator('.profile')).toBeVisible();
+  await expect(page.locator('.chart-bar')).toBeVisible();
 }
 
 test('kundali: placement, dasha, tabs and no horizontal overflow', async ({ page }) => {
@@ -33,8 +35,8 @@ test('kundali: placement, dasha, tabs and no horizontal overflow', async ({ page
   // Reference chart (14 May 1996 10:15 Bengaluru): Karka lagna, Sun in Mesha, Moon in Meena.
   await expect(page.locator('svg [data-sign="1"]')).toContainText('Surya');
   await expect(page.locator('svg [data-sign="12"]')).toContainText('Chandra');
-  await expect(page.locator('.profile')).toContainText('Karka');
-  await expect(page.locator('.profile')).toContainText('Revati');
+  await expect(page.locator('.chart-bar')).toContainText('Karka');
+  await expect(page.locator('.chart-bar')).toContainText('Revati');
   await page.getByRole('tab', { name: 'Chart', exact: true }).click();
   await page.getByRole('tab', { name: 'North Indian' }).click();
   await expect(page.locator('svg [data-house="10"]')).toContainText('Surya');
@@ -42,7 +44,7 @@ test('kundali: placement, dasha, tabs and no horizontal overflow', async ({ page
   await page.getByRole('tab', { name: 'Circular' }).click();
   await expect(page.locator('svg [data-longitude]')).toHaveCount(9);
   await page.getByRole('tab', { name: 'Planets' }).click();
-  await expect(page.locator('.planet-table tbody tr')).toHaveCount(9);
+  await expect(page.locator('.planet-table').first().locator('tbody tr')).toHaveCount(9);
   await page.getByRole('tab', { name: 'Dasha' }).click();
   // Ketu must follow the Mercury birth dasha; Venus–Jupiter runs in 2026.
   await expect(page.locator('.dasha-list li').nth(1)).toContainText('Ketu');
@@ -113,18 +115,19 @@ test('new kundali tabs: today, divisional charts, dasha levels, ashtakavarga, re
   const errors: string[] = [];
   page.on('pageerror', e => errors.push(e.message));
   await openChart(page);
-  await page.getByRole('tab', { name: 'Today' }).click();
+  await page.getByRole('tab', { name: 'Overview' }).click();
   await expect(page.locator('.today')).toContainText('Tara bala');
   await expect(page.locator('.today .planet-table tbody tr')).toHaveCount(9);
   await page.getByRole('tab', { name: 'Chart', exact: true }).click();
   await page.getByLabel('Divisional chart').selectOption('9');
-  await expect(page.locator('svg')).toContainText('Navamsha');
+  await expect(page.locator('.chart-svg').first()).toContainText('Navamsha');
   await page.getByRole('tab', { name: 'Dasha' }).click();
   await expect(page.locator('.dasha')).toContainText('Pratyantardashas');
   await expect(page.locator('.dasha')).toContainText('Yogini dasha');
-  await page.getByRole('tab', { name: 'Ashtakavarga' }).click();
+  await page.getByRole('tab', { name: 'Planets' }).click();
   await expect(page.locator('.av-total')).toContainText('337');
-  await page.getByRole('tab', { name: 'Report' }).click();
+  await page.getByRole('tab', { name: 'Reading' }).click();
+  await page.getByRole('button', { name: /printable kundali/ }).click();
   await expect(page.locator('.report')).toContainText('Planetary positions');
   expect(errors).toEqual([]);
 });
@@ -136,7 +139,7 @@ test('profiles: add a second chart and switch', async ({ page }) => {
   await page.getByRole('textbox', { name: 'Birth date' }).fill('1990-01-01');
   await page.getByRole('checkbox').check();
   await page.getByRole('button', { name: 'Reveal my chart' }).click();
-  await expect(page.locator('.profile h1')).toContainText('Ravi');
+  await expect(page.locator('.chart-bar h1')).toContainText('Ravi');
   await expect(page.getByLabel('Profiles').locator('option')).toHaveCount(3);
 });
 
@@ -169,8 +172,8 @@ test('hindi interface and purnimanta months', async ({ page }) => {
   await setting(page, 'Language', 'hi');
   await setting(page, 'Month system', 'purnimanta');
   await page.getByLabel('Panchang date').fill('2026-09-05');
-  await expect(page.locator('.page-switch')).toContainText('दैनिक पंचांग');
-  await expect(page.locator('.main-nav')).toContainText('विवाह');
+  await expect(page.locator('.ds-page-header')).toContainText('दैनिक पंचांग');
+  await expect(page.locator('.shell-nav')).toContainText('विवाह');
   // Krishna paksha of Amanta Shravana is Purnimanta Bhadrapada.
   await expect(page.locator('.day-head')).toContainText('भाद्रपद');
   await setting(page, 'Language', 'en');
@@ -195,7 +198,7 @@ test('strength tab shows shadbala for seven grahas', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', e => errors.push(e.message));
   await openChart(page);
-  await page.getByRole('tab', { name: 'Strength' }).click();
+  await page.getByRole('tab', { name: 'Planets' }).click();
   await expect(page.locator('.sb-row[role=listitem]')).toHaveCount(7);
   await expect(page.locator('.strength tbody tr')).toHaveCount(7);
   await expect(page.locator('.sb-notes')).toContainText('Weekday lord Mars');
@@ -203,15 +206,14 @@ test('strength tab shows shadbala for seven grahas', async ({ page }) => {
 });
 
 test('regional languages: Tamil, Kannada, Bengali', async ({ page }) => {
-  await page.goto('/#day');
-  await page.getByLabel('Panchang date').fill('2026-09-22');
-  await setting(page, 'Language', 'ta');
-  await expect(page.locator('.page-switch')).toContainText('தினசரி பஞ்சாங்கம்');
+  const day = async (lang: string) => { await setting(page, 'Language', lang); await page.goto('/#panchang/today'); await page.getByLabel('Panchang date').fill('2026-09-22'); };
+  await day('ta');
+  await expect(page.locator('.ds-page-header')).toContainText('தினசரி பஞ்சாங்கம்');
   await expect(page.locator('.limb-grid')).toContainText('செவ்வாய்'); // Tuesday
   await expect(page.locator('.limb-grid')).toContainText('ஏகாதசி');
-  await setting(page, 'Language', 'kn');
+  await day('kn');
   await expect(page.locator('.limb-grid')).toContainText('ಮಂಗಳವಾರ');
-  await setting(page, 'Language', 'bn');
+  await day('bn');
   await expect(page.locator('.limb-grid')).toContainText('একাদশী');
   await setting(page, 'Language', 'en');
 });

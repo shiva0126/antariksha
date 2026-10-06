@@ -26,8 +26,9 @@ test('owner grants family assistance, helper suggests, owner revokes',async({pag
   await helperPage.getByRole('button',{name:'Accept helper invitation'}).click();
   await helperPage.getByRole('button',{name:'Find suggestions'}).click();
   const candidate=helperPage.getByRole('article').filter({has:helperPage.getByRole('heading',{name:`@${members[2].handle}`,exact:false})});
-  helperPage.once('dialog',dialog=>dialog.accept('Both enjoy hiking'));
   await candidate.getByRole('button',{name:'Suggest this profile'}).click();
+  await helperPage.getByRole('dialog').getByRole('textbox').fill('Both enjoy hiking');
+  await helperPage.getByRole('dialog').getByRole('button',{name:'Save'}).click();
   await expect(helperPage.getByText('Suggestion saved. The profile owner decides whether to make contact.')).toBeVisible();
   await page.getByRole('button',{name:'Refresh family assistance'}).click();
   await expect(page.getByText('Both enjoy hiking',{exact:true})).toBeVisible();

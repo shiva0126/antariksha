@@ -1,0 +1,76 @@
+/* Astrisk design tokens. Every colour, size, space and radius in the app
+   comes from here; see the design canvas "Astrisk brand, design system and
+   key screens". Dark theme only. */
+:root {
+  /* colour */
+  --c-bg: #05060d;
+  --c-surface: #0d1322;
+  --c-surface-raised: #111a2d;
+  --c-input: #0a1020;
+  --c-line: #22304a;
+  --c-line-soft: #1a253a;
+  --c-line-strong: #3a4a68;
+  --c-text: #ece7da;
+  --c-text-muted: #9aa6bc;
+  --c-text-faint: #6b778e;
+  --c-accent: #d6b467;
+  --c-accent-strong: #f3dca5;
+  --c-accent-soft: #2a2412;
+  --c-accent-line: #8d7141;
+  --c-on-accent: #1a1206;
+  --c-info: #67e8f9;
+  --c-success: #6fd6a8;
+  --c-success-soft: #0f2a1f;
+  --c-success-line: #2f6b4f;
+  --c-warning: #f2b56b;
+  --c-warning-soft: #2a1f0f;
+  --c-warning-line: #7a5a2a;
+  --c-danger: #ff8a7a;
+  --c-danger-text: #ffb3a6;
+  --c-danger-soft: #2a1414;
+  --c-danger-line: #6b3a3a;
+  /* derived (component states) */
+  --c-black: #000;
+  --c-shadow: #000a;
+  --c-scrim: #000b;
+  --c-shadow-strong: #000c;
+  --c-info-soft: #0f2624;
+  --c-selected: #1c2842;
+  --c-info-line: #2f6b64;
+  --c-focus-border: #4f6a96;
+  --c-focus-ring: #67e8f922;
+  --c-info-text: #8fe8d8;
+  --c-invalid: #b4564a;
+  --c-success-text: #b9f0d6;
+  --c-text-soft: #cdd6e4;
+  --c-text-control: #d6dcea;
+  --c-accent-hover: #e3c47c;
+  --c-brand-text: #f0e6ca;
+  --c-accent-text: #f1d58f;
+  --c-warning-text: #f7d3a2;
+  --c-danger-strong: #ffc9c0;
+  --c-hover-wash: #ffffff0d;
+  --c-header-bg: #05060de0;
+  --c-bar-bg: #05060df2;
+  --c-menu-bg: #0a0e1a;
+  --c-nav-text: #aab4c8;
+  --c-accent-border: #ac8c4b66;
+  --c-accent-wash: #c5a46214;
+  --c-white: #fff;
+  --c-hairline: #ffffff10;
+  /* graha (identity only, always beside the name) */
+  --g-sun: #f5b955; --g-moon: #dfe6f2; --g-mars: #ff7f72; --g-mercury: #6fd6a8; --g-jupiter: #f2c96b;
+  --g-venus: #f4a6d6; --g-saturn: #8fb0ff; --g-rahu: #67e8f9; --g-ketu: #c4a6ff;
+  /* type */
+  --font-display: Marcellus, var(--script-font, system-ui), Georgia, serif;
+  --font-body: 'DM Sans', var(--script-font, system-ui), system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --fs-12: 12px; --fs-13: 13px; --fs-14: 14px; --fs-16: 16px; --fs-20: 20px; --fs-24: 24px; --fs-32: 32px;
+  /* space */
+  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-6: 24px; --s-8: 32px; --s-12: 48px;
+  /* radius */
+  --r-control: 6px; --r-card: 12px; --r-pill: 999px;
+  /* layout */
+  --page-max: 1200px; --gutter: 20px; --control-h: 44px; --control-h-sm: 36px;
+  --header-h: 64px;
+}
+@media (max-width: 640px) { :root { --gutter: 16px; } }

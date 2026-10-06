@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { Button, Chip, PageHeader } from '../../ds';
 import { getMuhurta, getMuhurtaEvents } from '../../api/client';
 import type { MuhurtaEvent, MuhurtaResponse } from '../../api/types';
 import { longDate } from '../../astro/format';
@@ -9,7 +10,7 @@ import { loadProfiles } from '../common/profiles';
 
 const todayIST = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
 
-export function MuhurtaPage() {
+export function MuhurtaPage({ tabs }: { tabs?: ReactNode } = {}) {
   const t = useT(), n = useNames();
   const { profiles } = useMemo(loadProfiles, []);
   const [events, setEvents] = useState<MuhurtaEvent[]>([]);
@@ -35,13 +36,9 @@ export function MuhurtaPage() {
   const ev = events.find(x => x.ID === event);
   return (
     <div className="page muhurta">
-      <header className="page-head">
-        <div>
-          <p className="kicker">Auspicious timing</p>
-          <h1>{t('Muhurta')}</h1>
-          <p className="muted">Finds days whose nakshatra, tithi and weekday suit the event, avoids Rikta tithis, Amavasya, Bhadra and inauspicious yogas, and, with a saved profile, checks your personal tara bala and chandra bala.</p>
-        </div>
-      </header>
+      <PageHeader kicker="Auspicious timing" title={t('Muhurta')} compactOnMobile
+        description="Finds days whose nakshatra, tithi and weekday suit the event, avoids Rikta tithis, Amavasya, Bhadra and inauspicious yogas, and, with a saved profile, checks your personal tara bala and chandra bala." />
+      {tabs}
       <form className="card muhurta-form" onSubmit={find}>
         <label className="field"><span>{t('Event')}</span>
           <select value={event} onChange={e => setEvent(e.target.value)}>{(events.length ? events : [{ ID: 'marriage', Name: 'Marriage (Vivaha)', Description: '' }]).map(x => <option key={x.ID} value={x.ID}>{x.Name}</option>)}</select></label>
@@ -52,9 +49,9 @@ export function MuhurtaPage() {
         <label className="field"><span>Personalise for</span>
           <select value={who} onChange={e => setWho(e.target.value)}>
             <option value="">No one (general muhurta)</option>
-            {profiles.map(p => <option key={p.id} value={p.id}>{p.name || p.date}</option>)}
+            {profiles.map(p => <option key={p.id} value={p.id}>{p.name || `Chart of ${longDate(p.date)}`}</option>)}
           </select></label>
-        <button className="primary" disabled={busy}>{busy ? 'Searching…' : t('Find muhurta')}</button>
+        <Button type="submit" variant="primary" busy={busy}>{t('Find muhurta')}</Button>
       </form>
       {ev?.Description && <p className="muted small">{ev.Description}</p>}
       {error && <p role="alert" className="form-error">{error}</p>}
@@ -68,7 +65,7 @@ export function MuhurtaPage() {
           <div className="muhurta-list">
             {list.map(d => (
               <article key={d.date} className={'card muhurta-day ' + (d.good ? 'good' : 'bad')}>
-                <header><h3>{longDate(d.date)} · {n(d.vaara)}</h3><span className={'badge ' + (d.good ? 'badge-strong' : 'badge-caution')}>{d.good ? 'Suitable' : 'Not suitable'}</span></header>
+                <header><h3>{longDate(d.date)} · {n(d.vaara)}</h3><Chip tone={d.good ? 'success' : 'danger'}>{d.good ? 'Suitable' : 'Not suitable'}</Chip></header>
                 <p className="muted small">{n(d.tithi)} ({n(d.paksha)}) · {n(d.nakshatra)} · {n(d.yoga)} yoga</p>
                 {d.reasons.length > 0 && <ul className="reasons">{d.reasons.map(r => <li key={r}>✓ {r}</li>)}</ul>}
                 {d.cautions.length > 0 && <ul className="cautions">{d.cautions.map(r => <li key={r}>✕ {r}</li>)}</ul>}

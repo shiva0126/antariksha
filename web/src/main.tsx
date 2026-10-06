@@ -1,7 +1,10 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import App from './App';
+// Order matters: tokens, legacy page styles, then the design system on top.
+import './ds/tokens.css';
 import './styles.css';
+import './ds/ds.css';
+import App from './App';
 
 createRoot(document.getElementById('root')!).render(<React.StrictMode><App /></React.StrictMode>);
 

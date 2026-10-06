@@ -1,7 +1,8 @@
 import {useEffect,useState} from 'react';
 import {memberAPI} from './community/shared';
 import {Moderation} from './community/Settings';
-import {MatrimonyModeration} from './community/MatrimonyModeration';
+import {MatrimonyModeration,VerificationQueue} from './community/MatrimonyModeration';
+import {PageHeader,Tabs} from '../ds';
 import {ReadingLibrary} from './common/ReadingLibrary';
 import './admin.css';
 
@@ -13,11 +14,11 @@ export function AdminPage(){
  const [tab,setTab]=useState('Users'),[summary,setSummary]=useState<Summary>(),[error,setError]=useState('');
  const refresh=async()=>{setSummary(await memberAPI<Summary>('/api/admin/summary'));};
  useEffect(()=>{void refresh().catch(e=>setError(e.message));},[]);
- return <div className="page admin-page"><header className="page-head"><div><p className="kicker">Astrisk administration</p><h1>Superadmin</h1><p>Manage members, review reports and check the reading library.</p></div></header>
+ return <div className="page admin-page"><PageHeader kicker="Astrisk administration" title="Superadmin" description="Manage members, review reports and check the reading library."/>
  {error&&<p role="alert">{error}</p>}{summary&&<>
  <div className="grid-3"><article className="card"><h2>{summary.users} users</h2><p>{summary.suspended} suspended · {summary.active_sessions} active sessions</p></article><article className="card"><h2>{summary.moderators} moderators</h2><p>{summary.superadmins} superadmin accounts</p></article><article className="card"><h2>{summary.open_post_reports+summary.open_profile_reports} open reports</h2><p>{summary.open_post_reports} post reports · {summary.open_profile_reports} profile reports</p></article></div>
- <nav className="tabs" aria-label="Administration sections">{['Users','Moderation','Reading library','Action log'].map(t=><button key={t} onClick={()=>setTab(t)} aria-current={tab===t?'page':undefined}>{t}</button>)}</nav>
- {tab==='Users'&&<Users changed={refresh}/>}{tab==='Moderation'&&<><Moderation/><MatrimonyModeration/></>}{tab==='Reading library'&&<ReadingLibrary/>}{tab==='Action log'&&<ActionLog/>}
+ <Tabs label="Administration sections" active={tab} onSelect={setTab} items={['Users','Moderation','Photo verification','Reading library','Action log'].map(t=>({id:t,label:t}))}/>
+ {tab==='Users'&&<Users changed={refresh}/>}{tab==='Moderation'&&<><Moderation/><MatrimonyModeration/></>}{tab==='Photo verification'&&<VerificationQueue/>}{tab==='Reading library'&&<ReadingLibrary/>}{tab==='Action log'&&<ActionLog/>}
  </>}</div>;
 }
 

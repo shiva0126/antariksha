@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { deleteChatSession } from '../../api/client';
 import { chatKey, loadProfiles, localDataKeys } from '../common/profiles';
 
-export function PrivacyPage() {
+/** The privacy policy text and the device-data deletion, shown in Me → Privacy and data. */
+export function PrivacyPage({ embedded }: { embedded?: boolean } = {}) {
   const [status, setStatus] = useState('');
   async function deleteAll() {
     const { profiles } = loadProfiles();
@@ -22,9 +23,9 @@ export function PrivacyPage() {
     setStatus(`Deleted ${removed} conversation${removed === 1 ? '' : 's'} from the server and all profiles and settings from this device.`);
   }
   return (
-    <div className="page privacy">
-      <header className="page-head"><div><p className="kicker">Your data</p><h1>Privacy</h1></div></header>
-      <article className="card prose">
+    <div className={embedded ? 'privacy' : 'page privacy'}>
+      {!embedded && <header className="page-head"><div><p className="kicker">Your data</p><h1>Privacy</h1></div></header>}
+      <article className="ds-card prose">
         <h3>Free, with no payments</h3>
         <p>Astrisk is free. It takes no payment, has no premium tier and sells no remedies, gemstones or consultations.</p>
         <h3>What is stored, and where</h3>
@@ -35,8 +36,8 @@ export function PrivacyPage() {
         <p><b>Account administration:</b> superadmins can view account email, handle, verification status, role, join date and active-session counts; suspend accounts, revoke sessions, assign moderators or delete accounts. Administrative actions are recorded with a reason. This admin screen does not expose passwords, private messages or private birth details. Administrative logs and retained backups may outlast account deletion.</p>
         <p>Birth details support charts and age eligibility. Community and matrimony require adult opt-in. Hobbies and introductions are optional. Family information should only be added with permission; avoid sensitive information about children. Sharing with other members allows them to save copies outside this service.</p>
         <h3>Delete your data</h3>
-        <p>Deleting a chart profile removes its conversation. The button below clears this account's charts on this device and linked conversations, not the account or community data. For full export visit Community → Security. To delete the server account and its data visit <a href="#account">My account</a>.</p>
-        <button className="primary danger-bg" onClick={deleteAll}>Delete charts on this device</button>
+        <p>Deleting a chart profile removes its conversation. The button below clears this account's charts on this device and linked conversations, not the account or community data. For a full export, or to delete the server account and its data, use <b>Your data</b> above.</p>
+        <button className="ds-btn ds-btn--danger" onClick={deleteAll}>Delete charts on this device</button>
         {status && <p role="status" className="good-text">{status}</p>}
         <h3>Credits</h3>
         <p className="muted small">Astronomy: Swiss Ephemeris (Astrodienst, AGPL). Place data © GeoNames (geonames.org), CC BY 4.0. Classical passages: The Brihat Jataka of Varaha Mihira, tr. N. Chidambaram Iyer (1885), public domain.</p>

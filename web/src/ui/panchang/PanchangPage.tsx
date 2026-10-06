@@ -1,4 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
+import { Button, PageHeader } from '../../ds';
+import { longDate } from '../../astro/format';
 import { calendarURL, fetchJSON, getChart } from '../../api/client';
 import type { MonthDay, PanchangDay } from '../../api/panchang';
 import type { ChartResponse } from '../../api/types';
@@ -14,7 +16,7 @@ const shift = (iso: string, days: number) => { const d = new Date(iso + 'T12:00:
 const shiftMonth = (ym: string, n: number) => { const [y, m] = ym.split('-').map(Number); const d = new Date(Date.UTC(y, m - 1 + n, 1)); return d.toISOString().slice(0, 7); };
 const monthTitle = (ym: string) => new Date(ym + '-01T12:00:00Z').toLocaleDateString('en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' });
 
-export function PanchangPage({ mode }: { mode: 'day' | 'month' }) {
+export function PanchangPage({ mode, tabs }: { mode: 'day' | 'month'; tabs?: ReactNode }) {
   const t = useT();
   const [place, setPlace] = useState<Place>(defaultPlace);
   const [date, setDate] = useState(() => todayIn(defaultPlace.tz));
@@ -54,36 +56,32 @@ export function PanchangPage({ mode }: { mode: 'day' | 'month' }) {
 
   return (
     <div className="page panchang">
-      <header className="page-head">
-        <div>
-          <p className="kicker">Hindu calendar</p>
-          <h1>{mode === 'month' ? t('Panchang calendar') : t('Daily Panchang')}</h1>
-          <p className="muted">The five limbs at local sunrise, festivals, muhurta windows and choghadiya for your location.</p>
-        </div>
-        <div className="filters">
+      <PageHeader kicker="Hindu calendar" title={mode === 'month' ? t('Panchang calendar') : t('Daily Panchang')} compactOnMobile
+        description="The five limbs at local sunrise, festivals, muhurta windows and choghadiya for your location." />
+      {tabs}
+      <div className="filters panchang-toolbar">
           <PlaceSearch label={t('Location')} value={place} onChange={p => setPlace(p)} compact />
           {mode === 'day' ? (
             <div className="stepper">
-              <button className="ghost" aria-label="Previous day" onClick={() => pick(shift(date, -1))}>‹</button>
+              <Button size="sm" icon aria-label="Previous day" onClick={() => pick(shift(date, -1))}>‹</Button>
               <label className="field compact"><span>{t('Date')}</span><input type="date" aria-label="Panchang date" value={date} onChange={e => e.target.value && pick(e.target.value)} /></label>
-              <button className="ghost" aria-label="Next day" onClick={() => pick(shift(date, 1))}>›</button>
+              <Button size="sm" icon aria-label="Next day" onClick={() => pick(shift(date, 1))}>›</Button>
             </div>
           ) : (
             <div className="stepper">
-              <button className="ghost" aria-label="Previous month" onClick={() => setMonth(shiftMonth(month, -1))}>‹</button>
+              <Button size="sm" icon aria-label="Previous month" onClick={() => setMonth(shiftMonth(month, -1))}>‹</Button>
               <label className="field compact"><span>{t('Month')}</span><input type="month" aria-label="Calendar month" value={month} onChange={e => e.target.value && setMonth(e.target.value)} /></label>
-              <button className="ghost" aria-label="Next month" onClick={() => setMonth(shiftMonth(month, 1))}>›</button>
+              <Button size="sm" icon aria-label="Next month" onClick={() => setMonth(shiftMonth(month, 1))}>›</Button>
             </div>
           )}
-          <button className="ghost" onClick={() => pick(today)}>{t('Today')}</button>
-        </div>
-      </header>
+          <Button size="sm" variant="ghost" onClick={() => pick(today)}>{t('Today')}</Button>
+      </div>
 
       {mode === 'month' && (
         <section className="card calendar" aria-label={`Panchang calendar for ${monthTitle(month)}`}>
           <div className="calendar-head">
             <h2>{monthTitle(month)}</h2>
-            <a className="ghost" href={calendarURL(Number(month.slice(0, 4)), place)} download>Add {month.slice(0, 4)} festivals to my calendar (.ics)</a>
+            <a className="ds-btn ds-btn--secondary ds-btn--sm" href={calendarURL(Number(month.slice(0, 4)), place)} download>Add {month.slice(0, 4)} festivals to my calendar (.ics)</a>
           </div>
           {monthError && <p role="alert" className="form-error">{monthError}</p>}
           <div className="calendar-grid">
@@ -116,7 +114,7 @@ export function PanchangPage({ mode }: { mode: 'day' | 'month' }) {
       {day ? <DayDetails day={day} placeName={place.name} /> : !error && <div className="card loading-card">Calculating Panchang…</div>}
 
       <details className="card transits">
-        <summary><h2>Planet positions on {date}</h2><span className="muted small">Transits at a chosen local time — not a birth chart</span></summary>
+        <summary><h2>Planet positions on {longDate(date)}</h2><span className="muted small">Transits at a chosen local time — not a birth chart</span></summary>
         <label className="field compact transit-time"><span>Time · {place.tz}</span><input type="time" value={time} aria-label="Planet positions time" onChange={e => e.target.value && setTime(e.target.value)} /></label>
         {chartError && <p className="form-error">{chartError}</p>}
         {chart ? <div className="transit-body"><div className="transit-chart"><SouthIndian chart={chart} /></div><PlanetTable chart={chart} /></div> : !chartError && <p className="muted">Calculating planet positions…</p>}

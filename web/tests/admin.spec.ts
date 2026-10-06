@@ -34,7 +34,7 @@ test('superadmin manages accounts while members cannot access administration',as
   await form.getByRole('button',{name:'Apply account action'}).click();
   await expect(page.getByText('member · Active',{exact:true})).toBeVisible();
   expect((await other.request.post('/api/auth/login',{headers,data:{email:targetEmail,password}})).status()).toBe(200);
-  await page.getByRole('button',{name:'Action log',exact:true}).click();
+  await page.getByRole('tab',{name:'Action log',exact:true}).click();
   await expect(page.getByText('Reason: Browser suspension check',{exact:true})).toBeVisible();
   await page.setViewportSize({width:390,height:844});
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);

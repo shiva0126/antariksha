@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useT } from '../../i18n';
+import { useFeedback } from '../../ds';
 import { Avatar, memberAPI } from '../community/shared';
 import { displayName, type Interest } from './types';
 
@@ -10,6 +11,7 @@ const POLL_MS = 10_000;
  *  while the page is visible; contact details are shared only on request. */
 function Conversation({ peer, onClose, onChanged }: { peer: Interest; onClose: () => void; onChanged: () => void }) {
   const t = useT();
+  const fb = useFeedback();
   const [messages, setMessages] = useState<Message[]>([]), [body, setBody] = useState(''), [error, setError] = useState(''), [busy, setBusy] = useState(false);
   const [contacts, setContacts] = useState<{ mine: string; theirs: string }>({ mine: '', theirs: '' }), [contact, setContact] = useState(''), [sharing, setSharing] = useState(false);
   const log = useRef<HTMLDivElement>(null);
@@ -53,7 +55,7 @@ function Conversation({ peer, onClose, onChanged }: { peer: Interest; onClose: (
       </div>
       <div className="mat-actions">
         <button className="ghost" disabled={busy} onClick={() => void act(async () => { await memberAPI('/api/matrimony/interests', 'POST', { target: peer.id, action: 'unmatch' }); onChanged(); onClose(); })}>Unmatch</button>
-        <button className="ghost danger-text" disabled={busy} onClick={() => { if (confirm(`Block ${name}? You will no longer see each other or be able to message.`)) void act(async () => { await memberAPI('/api/community/blocks', 'POST', { target: peer.id, block: true }); onChanged(); onClose(); }); }}>Block</button>
+        <button className="ghost danger-text" disabled={busy} onClick={async () => { if (await fb.confirm({ title: `Block ${name}? You will no longer see each other or be able to message.` })) void act(async () => { await memberAPI('/api/community/blocks', 'POST', { target: peer.id, block: true }); onChanged(); onClose(); }); }}>Block</button>
       </div>
       {error && <p role="alert" className="form-error">{error}</p>}
     </section>

@@ -26,8 +26,8 @@ test('family prepares photos and biodata, member reviews before publication',asy
   await expect(draft.getByText(/Awaiting review/)).toBeVisible();
   const memberPage=await other.newPage();await memberPage.goto('/#matrimony/family');
   await expect(memberPage.getByRole('heading',{name:'Family prepared profile'})).toBeVisible();
-  memberPage.once('dialog',dialog=>dialog.accept());
   await memberPage.getByRole('button',{name:'Use this biodata privately'}).click();
+  await memberPage.getByRole('dialog').getByRole('button',{name:'Confirm'}).click();
   await expect(memberPage.getByText('No drafts or review requests yet.')).toBeVisible();
   await memberPage.getByRole('tab',{name:'My matrimony profile'}).click();
   const own=memberPage.locator('form.mat-editor');

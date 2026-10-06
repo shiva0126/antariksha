@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useT } from '../../i18n';
+import { Notice, PageHeader, Tabs } from '../../ds';
 import { FamilyBiodata } from '../community/Biodata';
 import { FamilyAssistance } from '../community/FamilyAssistance';
 import { memberAPI } from '../community/shared';
@@ -32,15 +33,10 @@ export function MatrimonyPage() {
   const ready = profile !== undefined;
   return (
     <div className="page matrimony">
-      <header className="page-head">
-        <div><p className="kicker">Matrimony · horoscope-aware</p><h1>{t('Matrimony')}</h1>
-          <p className="muted">Profiles you can filter, with each person's guna score and the reasons they were suggested. Free, private by default, and you choose what to share.</p></div>
-      </header>
-      {ready && community === false && <div className="card notice"><p>To use matrimony, first turn on <b>Community</b> with your adult date of birth in <a href="#community">Community → Profile &amp; interests</a>.</p></div>}
-      {ready && !profile && community !== false && tab !== 'profile' && <div className="card notice"><p>Start by creating your matrimony profile. It stays private until you make it discoverable. <button className="primary" onClick={() => go('profile')}>Create my profile</button></p></div>}
-      <nav className="tabs mat-tabs" role="tablist" aria-label="Matrimony sections">
-        {TABS.map(([k, l]) => <button key={k} role="tab" aria-selected={tab === k} className={tab === k ? 'active' : ''} onClick={() => go(k)}>{t(l)}{k === 'interests' && pending > 0 && <span className="badge-count" aria-label={`${pending} new`}>{pending}</span>}</button>)}
-      </nav>
+      <PageHeader kicker="Matrimony · horoscope-aware" title={t('Matrimony')} compactOnMobile description="Profiles you can filter, with each person's guna score and why they were suggested. Free, private by default, and you choose what to share." />
+      {ready && community === false && <Notice tone="warning">To use matrimony, first turn on your community profile with your adult date of birth in <a href="#me/profile">Me → Profile</a>.</Notice>}
+      {ready && !profile && community !== false && tab !== 'profile' && <Notice>Start with your biodata. It stays private until you make it discoverable. <a href="#matrimony/profile">Create my biodata →</a></Notice>}
+      <Tabs label="Matrimony sections" base="matrimony" active={tab} items={TABS.map(([k, l]) => ({ id: k, label: t(l), count: k === 'interests' ? pending : 0 }))} />
       {tab === 'discover' && ready && <Discover key={JSON.stringify(profile?.saved_search ?? {})} saved={profile?.saved_search ?? {}} horoscopeOn={!!profile?.horoscope_visible} />}
       {tab === 'interests' && <Interests />}
       {tab === 'profile' && <ProfileEditor onSaved={() => void load()} />}

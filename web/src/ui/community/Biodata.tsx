@@ -1,3 +1,4 @@
+import { useFeedback } from '../../ds';
 import { useEffect, useState } from 'react';
 import { Feedback, Field, memberAPI, useAction } from './shared';
 import { OPTIONS } from '../matrimony/options';
@@ -51,7 +52,7 @@ export function PhotoEditor({photos,onChange,draftId}:{photos:MatrimonyPhoto[];o
 
 type Draft={id:string;relationship:string;details:Biodata;status:'draft'|'pending';mine:boolean;creator_handle:string;recipient_handle?:string;photos:MatrimonyPhoto[]};
 function DraftCard({draft,onChange,onImported}:{draft:Draft;onChange:()=>Promise<void>;onImported:()=>Promise<void>}) {
- const action=useAction(),[handle,setHandle]=useState('');
+ const action=useAction(), fb = useFeedback(),[handle,setHandle]=useState('');
  return <article className="card"><h3>{draft.details.display_name}</h3><p>{draft.mine?`Prepared by you · ${draft.status==='draft'?'Private draft':'Awaiting review by @'+draft.recipient_handle}`:`Prepared by @${draft.creator_handle} (${draft.relationship})`}</p>
   <details><summary>Review biodata</summary><dl className="biodata-review">{fields.filter(([key])=>draft.details[key]).map(([key,label])=><div key={key}><dt>{label}</dt><dd>{draft.details[key]}</dd></div>)}<div><dt>Preferred age range</dt><dd>{draft.details.min_age}–{draft.details.max_age}</dd></div></dl>{draft.details.social_links?.map(link=><p key={link}><a href={link} target="_blank" rel="noopener noreferrer">{link}</a></p>)}</details>
   {draft.mine&&draft.status==='draft'?<><PhotoEditor photos={draft.photos} draftId={draft.id} onChange={()=>void onChange()}/>
@@ -59,8 +60,8 @@ function DraftCard({draft,onChange,onImported}:{draft:Draft;onChange:()=>Promise
    <p>The member will receive this in their biodata inbox and review the details and photos before publishing.</p>
    <button disabled={action.busy||!handle.trim()} onClick={()=>void action.run(async()=>{await memberAPI('/api/matrimony/drafts/'+draft.id,'POST',{action:'send',handle:handle.replace(/^@/,'')});await onChange();})}>Send for their review</button>
   </>:<PhotoGallery photos={draft.photos}/>}
-  {!draft.mine&&<><p>Accepting replaces your current biodata and adds these photos privately. Your profile will be paused for you to review and publish.</p><button disabled={action.busy} onClick={()=>{if(confirm('Is this your biodata? Replace your current biodata with this draft and add its photos? Your profile will be paused.'))void action.run(async()=>{await memberAPI('/api/matrimony/drafts/'+draft.id,'POST',{action:'accept',consent:true});await onChange();await onImported();});}}>Use this biodata privately</button></>}
-  <button disabled={action.busy} onClick={()=>{if(confirm('Delete this draft and its photos?'))void action.run(async()=>{await memberAPI('/api/matrimony/drafts/'+draft.id,'DELETE');await onChange();});}}>{draft.mine?'Delete draft':'Decline and delete'}</button><Feedback {...action}/>
+  {!draft.mine&&<><p>Accepting replaces your current biodata and adds these photos privately. Your profile will be paused for you to review and publish.</p><button disabled={action.busy} onClick={async()=>{if(await fb.confirm({title:'Is this your biodata? Replace your current biodata with this draft and add its photos? Your profile will be paused.' }))void action.run(async()=>{await memberAPI('/api/matrimony/drafts/'+draft.id,'POST',{action:'accept',consent:true});await onChange();await onImported();});}}>Use this biodata privately</button></>}
+  <button disabled={action.busy} onClick={async()=>{if(await fb.confirm({title:'Delete this draft and its photos?' }))void action.run(async()=>{await memberAPI('/api/matrimony/drafts/'+draft.id,'DELETE');await onChange();});}}>{draft.mine?'Delete draft':'Decline and delete'}</button><Feedback {...action}/>
  </article>;
 }
 

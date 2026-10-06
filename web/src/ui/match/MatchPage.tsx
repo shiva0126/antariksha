@@ -4,8 +4,11 @@ import { Explanation } from './Explanation';
 import { MatchChat } from './MatchChat';
 import type { MatchResponse } from '../../api/types';
 import { useNames, useT } from '../../i18n';
+import { Button, Checkbox, PageHeader } from '../../ds';
 import { loadProfiles } from '../common/profiles';
 import { BirthFields, draftFrom, resolveDraft, type BirthDetails, type BirthDraft } from '../kundali/BirthForm';
+
+const ord = (n: number) => (n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th');
 
 function ProfilePicker({ onPick }: { onPick: (d: BirthDraft) => void }) {
   const { profiles } = useMemo(loadProfiles, []);
@@ -14,7 +17,7 @@ function ProfilePicker({ onPick }: { onPick: (d: BirthDraft) => void }) {
     <label className="field compact"><span>Fill from a saved profile</span>
       <select defaultValue="" onChange={e => { const p = profiles.find(x => x.id === e.target.value); if (p) onPick(draftFrom(p)); }}>
         <option value="" disabled>Choose…</option>
-        {profiles.map(p => <option key={p.id} value={p.id}>{p.name || p.date}</option>)}
+        {profiles.map(p => <option key={p.id} value={p.id}>{p.name || `Chart of ${p.date}`}</option>)}
       </select>
     </label>
   );
@@ -46,15 +49,10 @@ export function MatchPage() {
   const pct = m ? Math.round((m.total / m.max) * 100) : 0;
   return (
     <div className="page match">
-      <header className="page-head">
-        <div>
-          <p className="kicker">Ashtakoota Guna Milan</p>
-          <h1>{t('Matching')}</h1>
-          <p className="muted">Compare the traditional 36-point Moon-based tables and the app's Mars rule. Get plain-language explanations and conversation prompts. Scores are not a prediction of relationship success.</p>
-        </div>
-      </header>
+      <PageHeader kicker="Ashtakoota Guna Milan" title={t('Matching')} compactOnMobile
+        description="Compare the traditional 36-point Moon-based tables and the Mars rule, with plain-language explanations and Ask Astrisk. Scores are not a prediction of relationship success." />
       <form className="match-form" onSubmit={submit} noValidate>
-        <fieldset disabled={busy} style={{display:'contents'}}>
+        <fieldset disabled={busy} className="contents">
         <div className="card">
           <div className="match-side-head"><h3>{t('Groom')}</h3><ProfilePicker onPick={changeBoy} /></div>
           <BirthFields draft={boy} onChange={changeBoy} />
@@ -64,9 +62,9 @@ export function MatchPage() {
           <BirthFields draft={girl} onChange={changeGirl} />
         </div>
         {error && <p role="alert" className="form-error field-wide">{error}</p>}
-        <label className="field-wide"><input type="checkbox" checked={useAI} onChange={e=>{setUseAI(e.target.checked);setResult(undefined);}}/> Use AI for a more detailed explanation</label>
+        <div className="field-wide"><Checkbox label="Use AI for a more detailed explanation" checked={useAI} onChange={e=>{setUseAI(e.target.checked);setResult(undefined);}}/></div>
         <p className="small muted field-wide">AI receives only calculated factor scores and flags—not names or birth details. Use birth information shared with permission. Results are not saved. A complete fact-based guide is available without AI.</p>
-        <button className="primary field-wide" disabled={busy}>{busy ? 'Matching…' : t('Match charts')}</button>
+        <Button type="submit" variant="primary" block busy={busy} className="field-wide">{t('Match charts')}</Button>
         </fieldset>
       </form>
 
@@ -99,8 +97,8 @@ export function MatchPage() {
           <div className="grid-2">
             <article className="card"><h3>Mangal dosha</h3>
               <dl className="kv">
-                <div><dt>{t('Groom')}</dt><dd>{m.boy_mangal_dosha ? `Present (Mars in house ${result.boy.mars_house})` : `Not present (Mars in house ${result.boy.mars_house})`}</dd></div>
-                <div><dt>{t('Bride')}</dt><dd>{m.girl_mangal_dosha ? `Present (Mars in house ${result.girl.mars_house})` : `Not present (Mars in house ${result.girl.mars_house})`}</dd></div>
+                <div><dt>{t('Groom')}</dt><dd>{m.boy_mangal_dosha ? `Present: Mars in the ${result.boy.mars_house}${ord(result.boy.mars_house)} house` : `Not present: Mars in the ${result.boy.mars_house}${ord(result.boy.mars_house)} house`}</dd></div>
+                <div><dt>{t('Bride')}</dt><dd>{m.girl_mangal_dosha ? `Present: Mars in the ${result.girl.mars_house}${ord(result.girl.mars_house)} house` : `Not present: Mars in the ${result.girl.mars_house}${ord(result.girl.mars_house)} house`}</dd></div>
               </dl>
               <p className="muted small">{m.mangal_note}</p>
             </article>

@@ -12,8 +12,7 @@ test('private inbox supports read, dismiss and invitation revocation',async({pag
   const groups=await (await actor.get(origin+'/api/families')).json();
   const url=origin+`/api/families/${groups[0].id}/members`;
   expect((await actor.post(url,{headers,data:{action:'invite',handle:me.handle,role:'viewer'}})).status()).toBe(200);
-  await page.goto('/#community');
-  await page.getByRole('button',{name:'Notifications',exact:true}).click();
+  await page.goto('/#me/notifications');
   await expect(page.getByText(/invited you to a private family group/)).toBeVisible();
   await page.getByRole('button',{name:'Mark read',exact:true}).click();
   await expect(page.getByRole('button',{name:'Mark read',exact:true})).toHaveCount(0);
@@ -37,16 +36,15 @@ test('community opt-in, private post, comment and family tree',async({page,baseU
  const response=await page.request.post('/api/auth/register',{headers:{Origin:origin},data:{email:`community_${Date.now()}@example.com`,password:'community-browser-password',birth_date:'1996-05-14',birth_time:'10:15',consent:true}});
  expect(response.status()).toBe(201);
  try{
-  await page.goto('/#community');
-  await page.getByRole('button',{name:'Notifications',exact:true}).click();
+  await page.goto('/#me/notifications');
   await expect(page.getByText('No notifications yet.')).toBeVisible();
-  await page.getByRole('button',{name:'Profile & interests',exact:true}).click();
+  await page.goto('/#me/profile');
   await page.getByLabel('Community introduction',{exact:true}).fill('I enjoy the night sky and hiking.');
   await page.getByLabel('Interests, separated by commas').fill('Hiking, astronomy');
-  await page.getByRole('checkbox').check();
+  await page.getByLabel(/Join the adult community/).check();
   await page.getByRole('button',{name:'Save profile & privacy'}).click();
-  await expect(page.getByRole('status')).toContainText('Profile and privacy choices saved.');
-  await page.getByRole('button',{name:'Feed',exact:true}).click();
+  await expect(page.getByText('Profile and privacy choices saved.')).toBeVisible();
+  await page.goto('/#community/feed');
   await page.getByLabel('Caption',{exact:true}).fill('My private stargazing journal');
   await page.getByRole('button',{name:'Save privately',exact:true}).click();
   await page.getByRole('button',{name:'My posts',exact:true}).click();
@@ -55,7 +53,7 @@ test('community opt-in, private post, comment and family tree',async({page,baseU
   await page.getByLabel('Your comment').fill('A clear sky tonight');
   await page.getByRole('button',{name:'Comment',exact:true}).click();
   await expect(page.locator('.post-comments')).toContainText('A clear sky tonight');
-  await page.getByRole('button',{name:'Family',exact:true}).click();
+  await page.goto('/#community/family');
   await page.getByLabel('New family group name').fill('Our private tree');
   await page.getByRole('button',{name:'Create private group'}).click();
   await page.getByRole('button',{name:'Open group'}).click();

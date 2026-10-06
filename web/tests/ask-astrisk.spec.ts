@@ -43,7 +43,7 @@ test('numerology shows the ruling graha of each root number',async({page,baseURL
  const headers={Origin:baseURL!};
  expect((await page.request.post('/api/auth/register',{headers,data:{email:`ank_${Date.now()}@example.com`,password:'ank-browser-password-1',birth_date:'1996-05-14',birth_time:'10:15',consent:true}})).status()).toBe(201);
  try {
-  await page.goto('/#readings');
+  await page.goto('/#kundali/systems');
   await page.getByRole('button',{name:'Read my numbers'}).click();
   const card=page.locator('.ank-card');
   await expect(card).toContainText('ruled by Mercury');

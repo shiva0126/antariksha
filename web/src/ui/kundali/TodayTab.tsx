@@ -63,7 +63,7 @@ export function TodayTab({ birth }: { birth: ChartInput }) {
           <table className="planet-table">
             <thead><tr><th>Graha</th><th>Transit sign</th><th>Nakshatra</th><th>From Lagna</th><th>From Moon</th></tr></thead>
             <tbody>{data.transits.map(g => (
-              <tr key={g.id}><td style={{ color: grahaColor[g.id] }}>{grahaGlyph[g.id]} {n(g.name)} <small>{grahaEnglish(g.id)}</small></td>
+              <tr key={g.id}><td><span style={{ color: grahaColor[g.id] }} aria-hidden>{grahaGlyph[g.id]}</span> {n(g.name)} <small>{grahaEnglish(g.id)}</small></td>
                 <td>{n(g.rashi)} {g.degree.toFixed(1)}°{g.retrograde && g.id !== 'rahu' && g.id !== 'ketu' ? ' ℞' : ''}</td><td>{n(g.nakshatra)}</td>
                 <td className="num">{ord(g.house_from_lagna)}</td><td className="num">{ord(g.house_from_moon)}</td></tr>
             ))}</tbody>

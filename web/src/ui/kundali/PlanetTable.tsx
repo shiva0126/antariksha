@@ -16,8 +16,8 @@ export function PlanetTable({ chart, facts, onSelect, selected, caption }: { cha
               const notes = [facts?.combustion[g.id] ? 'combust' : '', d?.neecha_bhanga ? 'neecha bhanga' : ''].filter(Boolean).join(', ');
               return (
                 <tr key={g.id} className={selected === g.id ? 'is-selected' : ''}>
-                  <td><button className="graha-link" onClick={() => onSelect?.(g)} style={{ color: grahaColor[g.id] }} disabled={!onSelect}>
-                    <span aria-hidden>{grahaGlyph[g.id]}</span> {g.name} <small>{grahaEnglish(g.id)}</small></button></td>
+                  <td><button className="graha-link" onClick={() => onSelect?.(g)} disabled={!onSelect}>
+                    <span aria-hidden><span style={{ color: grahaColor[g.id] }} aria-hidden>{grahaGlyph[g.id]}</span></span> {g.name} <small>{grahaEnglish(g.id)}</small></button></td>
                   <td>{g.rashi}</td>
                   <td className="num">{degreeLabel(g.rashi_degree)}</td>
                   <td>{g.nakshatra} · {g.nakshatra_pada}</td>

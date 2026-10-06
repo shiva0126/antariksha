@@ -1,0 +1,5 @@
+.me-list { list-style: none; margin: 0; padding: 0; }
+.me-list li { display: flex; justify-content: space-between; align-items: center; gap: var(--s-3); flex-wrap: wrap; padding: 12px 0; border-top: 1px solid var(--c-line-soft); }
+.me-list li:first-child { border-top: 0; }
+.me-list li > div:first-child { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
+.me-list li.unread b { color: var(--c-accent-strong); }

@@ -1,0 +1,16 @@
+.chart-bar { flex-direction: row; flex-wrap: wrap; align-items: center; gap: var(--s-6); }
+.chart-bar__who { flex: 1 1 300px; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.chart-bar__who h1 { margin: 0; font: 400 var(--fs-32)/1.15 var(--font-display); }
+.chart-bar__who p { margin: 0; }
+.chart-bar__switch { display: flex; align-items: center; gap: 8px; }
+.chart-bar__switch select { width: auto; min-height: 32px; padding: 4px 10px; font-size: var(--fs-13); }
+.chart-bar__facts { flex: 2 1 520px; min-width: 0; margin: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+.chart-bar .ds-chip a { color: inherit; text-decoration: none; }
+.danger-text { color: var(--c-danger-text) !important; }
+@media (max-width: 720px) {
+  .chart-bar { gap: var(--s-3); }
+  .chart-bar__who h1 { font-size: 24px; }
+  .chart-bar__facts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .chart-bar__facts .ds-stat:nth-child(n+4) { display: none; }
+}
+@media print { .chart-bar, .ds-tabs { display: none !important; } }
