@@ -3,9 +3,11 @@ import { EmailRecovery } from './EmailRecovery';
 import { NorthStar } from '../ds';
 import { PlaceSearch } from './common/PlaceSearch';
 import type { Place } from './common/places';
+import { useRoute } from '../lib/router';
 import './login.css';
 
 export function LoginPage({ onSignedIn }: { onSignedIn: () => Promise<void> }) {
+  const adminEntry = useRoute().section === 'admin';
   const [emailRecovery,setEmailRecovery]=useState(false),[emailAvailable,setEmailAvailable]=useState(false);
   useEffect(()=>{fetch('/api/auth/options').then(r=>r.json()).then(o=>setEmailAvailable(o.email_delivery_available)).catch(()=>{});},[]);
   const [mode, setMode] = useState<'login' | 'register' | 'recover'>('login');
@@ -15,11 +17,12 @@ export function LoginPage({ onSignedIn }: { onSignedIn: () => Promise<void> }) {
   // Sign-up is two short steps: who you are, then when and where you were born.
   const [step, setStep] = useState<1 | 2>(1);
   const [busy, setBusy] = useState(false), [error, setError] = useState(''), [legacy, setLegacy] = useState(false);
-  const title = mode === 'register' ? 'Begin your journey' : mode === 'recover' ? 'Recover your account' : 'Welcome to Astrisk';
+  const title = mode === 'register' ? 'Begin your journey' : mode === 'recover' ? 'Recover your account' : adminEntry ? 'Administrator sign in' : 'Welcome to Astrisk';
   if(emailRecovery)return <EmailRecovery action="request" onBack={()=>setEmailRecovery(false)}/>;
   return <main className="login-screen"><section className="login-card">
     <div className="login-emblem" aria-hidden><NorthStar size={56} /></div><p className="kicker">ASTRISK.SPACE</p>
-    <h1>{title}</h1><p className="login-intro">{mode === 'register' ? 'A few details to create your private account.' : mode === 'recover' ? 'Use the recovery key you saved in account security.' : 'Sign in to enter your personal universe.'}</p>
+    <h1>{title}</h1><p className="login-intro">{mode === 'register' ? 'A few details to create your private account.' : mode === 'recover' ? 'Use the recovery key you saved in account security.' : adminEntry ? 'Use the email and password of your existing administrator account. Access is checked securely after sign-in.' : 'Sign in to enter your personal universe.'}</p>
+    {adminEntry && mode === 'login' && <p>No separate admin password is needed. Creating a new account does not grant administrator access.</p>}
     <form onSubmit={async event => { event.preventDefault(); if (mode === 'register' && step === 1) { setError(''); setStep(2); return; } setBusy(true); setError(''); try {
       const response = await fetch('/api/auth/' + mode, { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(mode === 'recover' ? { handle: email, key, password } : { ...(legacy ? { handle: email } : { email }), password, ...(mode === 'register' ? { birth_date: date, birth_time: time, consent: true, name, ...(handle ? { handle: handle.toLowerCase() } : {}), ...(place ? { birth_place: { name: [place.name, place.region].filter(Boolean).join(', '), lat: place.lat, lon: place.lon, tz: place.tz } } : {}) } : {}) }) });
       const result = await response.json(); if (!response.ok) throw new Error(result.error || 'Unable to sign in');
@@ -42,5 +45,6 @@ export function LoginPage({ onSignedIn }: { onSignedIn: () => Promise<void> }) {
     {mode==='recover'&&<p>{emailAvailable?<button onClick={()=>setEmailRecovery(true)}>Send an email reset link instead</button>:'Email reset is not available yet. Use your saved recovery key.'}</p>}
     {mode === 'login' && <details className="login-legacy"><summary>Existing account without an email?</summary><label><input type="checkbox" checked={legacy} onChange={e => setLegacy(e.target.checked)} /> Use my original handle</label></details>}
     <p className="login-foot">Your profile starts private. You choose what to share.</p>
+    {mode === 'login' && <a href={adminEntry ? '#kundali' : '#admin'}>{adminEntry ? 'Back to member sign in' : 'Administrator sign in'}</a>}
   </section></main>;
 }

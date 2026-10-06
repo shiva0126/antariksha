@@ -74,6 +74,7 @@ export function Shell({ route, me, onSignOut, children }: { route: Route; me: Me
             {PRIMARY.map(([id, label]) => <a key={id} href={href(id)} aria-current={current === id ? 'page' : undefined}>{t(label)}</a>)}
           </nav>
           <div className="shell-tools">
+            {(me.role === 'superadmin' || me.role === 'moderator') && <a className="shell-admin" href={href('admin')} aria-label={me.role === 'superadmin' ? 'Superadmin console' : 'Moderation console'} aria-current={current === 'admin' ? 'page' : undefined}>{t('Admin')}</a>}
             <a className="shell-bell" href={href('me', 'notifications')} aria-label={unread ? `${t('Notifications')}, ${unread} new` : t('Notifications')}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" /></svg>
               {unread > 0 && <span className="ds-count">{unread > 9 ? '9+' : unread}</span>}
