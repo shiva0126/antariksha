@@ -67,7 +67,35 @@ type MapEntry struct {
 	Text string `json:"text"`
 	// Note is an optional editor's gloss, stored visibly labelled.
 	Note string `json:"note,omitempty"`
+	// Via cites further excerpts the rule defers to ("the same effects as
+	// the Sun in those places"); each must match its own stanza.
+	Via []MapExcerpt `json:"via,omitempty"`
+	// Plain is a self-authored, plain-language summary of exactly what the
+	// excerpt says for this key, stored visibly labelled.
+	Plain string `json:"plain,omitempty"`
+	// OCR is the scan's literal wording, matched instead of Text where the
+	// scan is too damaged for the corrected reading in Text to match.
+	OCR string `json:"ocr,omitempty"`
 }
+
+// MapExcerpt is one further verbatim excerpt and the stanza it comes from.
+type MapExcerpt struct {
+	Ref  string `json:"ref"`
+	Text string `json:"text"`
+	OCR  string `json:"ocr,omitempty"`
+}
+
+// matchText is what is matched against the scan: the literal OCR wording
+// when given, otherwise the corrected excerpt.
+func matchText(text, ocr string) string {
+	if ocr != "" {
+		return ocr
+	}
+	return text
+}
+
+// PlainLabel marks the plain-language summary inside an entry body.
+const PlainLabel = "[In plain words: "
 
 type sourceMap struct {
 	SourceID  string     `json:"source_id"`
@@ -273,25 +301,35 @@ func Build(opts BuildOptions) ([]Entry, BuildReport, error) {
 			if !ok {
 				return nil, rep, fmt.Errorf("%s: %s cites %s but segmentation found no such stanza", name, me.Key, me.Ref)
 			}
-			score := 1.0
-			for _, part := range strings.Split(me.Text, "…") {
-				if strings.TrimSpace(part) != "" {
-					score = min(score, MatchScore(part, sg.Text))
-				}
-			}
+			score := excerptScore(matchText(me.Text, me.OCR), sg.Text)
 			rep.Matches = append(rep.Matches, MatchResult{s.ID, me.Ref, me.Key, score})
 			if score < threshold {
 				return nil, rep, fmt.Errorf("%s: excerpt for %s does not match OCR of %s (score %.2f < %.2f)", name, me.Key, me.Ref, score, threshold)
+			}
+			for _, v := range me.Via {
+				vs, ok := byRef[v.Ref]
+				if !ok {
+					return nil, rep, fmt.Errorf("%s: %s cites %s but segmentation found no such stanza", name, me.Key, v.Ref)
+				}
+				if sc := excerptScore(matchText(v.Text, v.OCR), vs.Text); sc < threshold {
+					return nil, rep, fmt.Errorf("%s: excerpt %s for %s does not match OCR (score %.2f < %.2f)", name, v.Ref, me.Key, sc, threshold)
+				}
 			}
 			title := s.Title + " " + me.Ref
 			if v, ok := vocab[engine.CorpusKey{DocType: me.DocType, Key: me.Key}]; ok {
 				title = v.Label + " — " + s.Title + " " + me.Ref
 			}
 			body := strings.TrimSpace(me.Text)
+			for _, v := range me.Via {
+				body += " → " + strings.TrimSpace(v.Text) + " (" + v.Ref + ")"
+			}
 			src := provenance(s, me.Ref)
 			if me.Note != "" {
 				body += "\n[Editor's note: " + strings.TrimSpace(me.Note) + "]"
 				src += "; editor's note self-authored"
+			}
+			if me.Plain != "" {
+				body += "\n" + PlainLabel + strings.TrimSpace(me.Plain) + "]"
 			}
 			entries = append(entries, Entry{System: s.System, DocType: me.DocType, Key: me.Key, Language: lang, Title: title, Body: body, SourceID: s.ID, Ref: me.Ref, Source: src, Rights: s.Rights})
 		}
@@ -346,6 +384,18 @@ type CoverageReport struct {
 	Optional, OptionalCovered int
 	Missing                   []engine.VocabEntry
 	ByDocType                 map[string][2]int // covered, required
+}
+
+// excerptScore is the weakest match among the parts of an excerpt ("…"
+// separates parts, each matched against the stanza independently).
+func excerptScore(excerpt, stanza string) float64 {
+	score := 1.0
+	for _, part := range strings.Split(excerpt, "…") {
+		if strings.TrimSpace(part) != "" {
+			score = min(score, MatchScore(part, stanza))
+		}
+	}
+	return score
 }
 
 func (c CoverageReport) Green() bool { return c.RequiredCovered == c.Required }

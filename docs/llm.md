@@ -62,6 +62,32 @@ One arc-second is 1/3600 of a degree, so every sign, nakshatra pada and house is
 Rahu and Ketu (true node) are not in Horizons; they are checked against `swetest` in
 `engine/chart_reference_test.go`.
 
+## Book rules on real charts
+
+`go run ./cmd/bookbench -n 2000` (after `go run ./cmd/corpus build`) re-derives, from planet longitudes
+alone, every condition Brihat Jataka (tr. Iyer 1885) defines and compares it with the engine; checks
+that every detected condition has the book's passage for exactly that condition; and writes
+`.runtime/llm-data/book-bench.jsonl`: question, verse, exact clause and plain answer, the test set a
+model must answer exactly.
+
+Each book entry in `corpus/maps/brihat_jataka_iyer_1885.json` holds the exact clause for its condition
+(verified against the scan), `via` for rules that defer to another planet ("the same effects as the Sun
+in those places", also verified), an `ocr` reading where the scan is too damaged to match the
+corrected text, and a `plain` summary shown in answers as "Classical view (Brihat Jataka 20.3): …".
+`corpus/map_exact_test.go` fails if a house passage does not speak about its own house.
+
+Result on 2026-10-06, 2,000 charts: planet in house, Moon sign and birth star agree in all 18,000
+checks. Two yoga rules differ from the book by design choice, pending a decision:
+
+| Yoga | Charts that differ | Engine | Book |
+|---|---|---|---|
+| Adhi | 945 | one benefic in the 6th, 7th or 8th from the Moon is enough | benefics in the 6th, 7th and 8th (13.2) |
+| Kemadruma | 833 | cancelled when any planet is in a kendra from the Moon (later Parashari rule) | no cancellation of that kind; Garga's cancellation is the Moon in a kendra from the ascendant or joined by a planet (13.3) |
+
+Fixed on the same day: 33 house passages that carried another house's (or another planet's) clause,
+for example Mercury in the 5th showed the Mars-in-the-ascendant verse, and the Anapha and Kemadruma
+results, which had carried the Sunapha and Durudhura verses.
+
 ## Data
 
 `go run ./cmd/llmdata gen -n 20000` writes chat-format JSONL (`.runtime/llm-data/train.jsonl`):

@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/example/panchang/corpus"
 	"github.com/example/panchang/engine"
 )
 
@@ -21,8 +22,9 @@ const (
 
 // plain is the everyday-language part of an answer.
 type plain struct {
-	short  []string
-	points []string
+	short     []string
+	points    []string
+	bookNoted bool
 }
 
 func (p *plain) say(s string) {
@@ -32,7 +34,7 @@ func (p *plain) say(s string) {
 }
 
 func (p *plain) point(s string) {
-	if s = strings.TrimSpace(s); s != "" && len(p.points) < 5 && !contains(p.points, s) {
+	if s = strings.TrimSpace(s); s != "" && len(p.points) < 6 && !contains(p.points, s) {
 		p.points = append(p.points, s)
 	}
 }
@@ -205,6 +207,41 @@ func yogaStrength(s string) string {
 	return s
 }
 
+// book returns what the classical text says for a token, in plain words,
+// with its citation ("Brihat Jataka 20.3"); empty when no book covers it.
+func (in *insight) book(doc, key string) string {
+	for _, r := range in.rules[engine.CorpusKey{DocType: doc, Key: key}] {
+		if !classical(r) {
+			continue
+		}
+		i := strings.Index(r.Body, corpus.PlainLabel)
+		if i < 0 {
+			continue
+		}
+		in.use(r)
+		plain := strings.TrimSuffix(strings.TrimSpace(r.Body[i+len(corpus.PlainLabel):]), "]")
+		ref := "Brihat Jataka"
+		if r.Ref != "" {
+			ref += " " + r.Ref
+		}
+		return fmt.Sprintf("Classical view (%s): %s", ref, plain)
+	}
+	return ""
+}
+
+// bookPoint adds the classical view, with a one-time reminder of how to read
+// it: old texts state results as certain.
+func (p *plain) bookPoint(s string) {
+	if s == "" {
+		return
+	}
+	if !p.bookNoted {
+		s += " Old texts state results as certain; read them as traditional tendencies."
+		p.bookNoted = true
+	}
+	p.point(s)
+}
+
 // plainFor writes the everyday-language answer for the detected topics.
 func plainFor(in *insight, ts, gs []string, house int, cc ChatContext) plain {
 	var p plain
@@ -215,6 +252,7 @@ func plainFor(in *insight, ts, gs []string, house int, cc ChatContext) plain {
 			p.say(in.houseStory(10))
 			for _, id := range engine.GrahasInHouse(f.Chart, 10) {
 				p.point(in.where(id))
+				p.bookPoint(in.book(engine.DocGrahaInHouse, fmt.Sprintf("%s_in_10", id)))
 			}
 			for _, y := range f.Yogas {
 				if y.Type == "raja" || y.Type == "mahapurusha" {
@@ -226,6 +264,9 @@ func plainFor(in *insight, ts, gs []string, house int, cc ChatContext) plain {
 			p.point("Try this: pick one skill that fits these themes and practise it for the next few months.")
 		case "marriage":
 			p.say(in.houseStory(7))
+			for _, id := range engine.GrahasInHouse(f.Chart, 7) {
+				p.bookPoint(in.book(engine.DocGrahaInHouse, fmt.Sprintf("%s_in_7", id)))
+			}
 			p.point(in.where("venus"))
 			if ok, h := engine.MangalDosha(f.Chart); ok {
 				p.point(fmt.Sprintf("Mangal dosha is present by the usual rule (Mars in your %s house). Matching also checks the partner's chart, so this is one factor, not a verdict.", ordinal(h)))
@@ -290,12 +331,14 @@ func plainFor(in *insight, ts, gs []string, house int, cc ChatContext) plain {
 				p.say(fmt.Sprintf("Your chart has %d special pattern%s (yogas): %s.", len(f.Yogas), map[bool]string{true: "s", false: ""}[len(f.Yogas) > 1], strings.Join(in.yogaNames(), ", ")))
 				for _, y := range f.Yogas {
 					p.point(fmt.Sprintf("%s, %s: %s", y.Name, yogaStrength(y.Strength), firstSentence(in.entry(engine.DocYoga, engine.Slug(y.Name)), 150)))
+					p.bookPoint(in.book(engine.DocYoga, engine.Slug(y.Name)))
 				}
 			}
 		case "nakshatra":
 			moon := in.grahas["moon"]
 			p.say(fmt.Sprintf("Your birth star (nakshatra) is %s, part %d of 4. It is the star the Moon was in when you were born.", moon.Nakshatra, moon.NakshatraPada))
 			p.point(firstSentence(in.entry(engine.DocNakshatra, engine.Slug(moon.Nakshatra)), 220))
+			p.bookPoint(in.book(engine.DocNakshatra, engine.Slug(moon.Nakshatra)))
 		case "lagna":
 			lagna := in.signs[in.lagnaSign()]
 			p.say(fmt.Sprintf("Your rising sign (lagna) is %s. It is the sign that was rising in the east when you were born, and it colours how you meet the world.", signPlain(lagna)))
@@ -304,6 +347,7 @@ func plainFor(in *insight, ts, gs []string, house int, cc ChatContext) plain {
 		case "moon_sign":
 			p.say(fmt.Sprintf("Your Moon sign (rashi) is %s. It describes your mind and feelings.", signPlain(in.signs[in.signIdx("moon")])))
 			p.point(firstSentence(in.entry(engine.DocGrahaInSign, "moon_in_"+engine.Slug(in.signs[in.signIdx("moon")])), 220))
+			p.bookPoint(in.book(engine.DocGrahaInSign, "moon_in_"+engine.Slug(in.signs[in.signIdx("moon")])))
 			p.point(in.where("moon"))
 		case "strength":
 			if cc.Shadbala != nil && len(cc.Shadbala.Rows) > 0 {
@@ -350,6 +394,7 @@ func plainFor(in *insight, ts, gs []string, house int, cc ChatContext) plain {
 	for _, id := range gs {
 		p.say(in.where(id))
 		p.point(firstSentence(in.grahaMeaning(id), 220))
+		p.bookPoint(in.book(engine.DocGrahaInHouse, fmt.Sprintf("%s_in_%d", id, in.house(id))))
 	}
 	if house > 0 {
 		p.say(in.houseStory(house))
