@@ -47,6 +47,17 @@ func Close() { C.swe_close() }
 // Ayanamsa returns the configured (Lahiri) ayanamsa in degrees at a UT Julian day.
 func Ayanamsa(jdUT float64) float64 { return float64(C.swe_get_ayanamsa_ut(C.double(jdUT))) }
 
+// TrueAyanamsa includes nutation, the same ayanamsa that sidereal positions
+// are computed with (Ayanamsa is the mean value, up to ~17" different).
+func TrueAyanamsa(jdUT float64) (float64, error) {
+	var aya C.double
+	var serr [256]C.char
+	if C.swe_get_ayanamsa_ex_ut(C.double(jdUT), C.int(FlagSwiss), &aya, &serr[0]) < 0 {
+		return 0, fmt.Errorf("swe_get_ayanamsa_ex_ut: %s", C.GoString(&serr[0]))
+	}
+	return float64(aya), nil
+}
+
 func JulianDay(year, month, day int, hourUTC float64) float64 {
 	return float64(C.swe_julday(C.int(year), C.int(month), C.int(day), C.double(hourUTC), C.int(Gregorian)))
 }

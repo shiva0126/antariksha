@@ -84,7 +84,9 @@ func signPlain(rashi string) string {
 func gname(id string) string { return engine.GrahaEnglish(id) }
 
 // lifeArea names a house by its life theme: "the career and public life part of your chart".
-func lifeArea(h int) string { return fmt.Sprintf("the %s part of your chart (%s house)", houseArea[h], ordinal(h)) }
+func lifeArea(h int) string {
+	return fmt.Sprintf("the %s part of your chart (%s house)", houseArea[h], ordinal(h))
+}
 
 // condition says in plain words how comfortable a graha is where it sits.
 func (in *insight) condition(id string) string {

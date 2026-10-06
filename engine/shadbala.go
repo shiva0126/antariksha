@@ -138,7 +138,7 @@ func (e *Engine) Shadbala(c Chart) (Shadbala, error) {
 	var err error
 	func() {
 		defer e.begin()()
-		ayan = swe.Ayanamsa(jd)
+		ayan, _ = swe.TrueAyanamsa(jd)
 		// Sunrise on or before the birth instant, and the following sunset.
 		rise, err = swe.RiseSet(jd-1, c.Input.Lat, c.Input.Lon, swe.Sun, swe.Rise)
 		if err != nil {

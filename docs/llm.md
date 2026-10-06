@@ -50,6 +50,18 @@ To make it fast enough:
 2. **CPU share:** raising `.wslconfig` to `processors=8`, `memory=10GB` roughly doubles CPU speed.
    It needs `wsl --shutdown`, which restarts the site.
 
+## Chart accuracy
+
+`go run ./cmd/chartcheck -n 60` compares the engine with NASA JPL Horizons (an independent ephemeris)
+at random moments from 1900 to 2050: apparent geocentric longitudes of the Sun, Moon and five
+planets, and that every sidereal position equals the tropical one minus the true Lahiri ayanamsa.
+
+Result on 2026-10-06, 60 moments: Sun 0.21″, Mercury 0.29″, Venus 0.22″, Mars 0.21″, Jupiter 0.23″,
+Saturn 0.24″ largest difference; Moon 3.5″ (in 2050, where Earth-rotation timing is extrapolated).
+One arc-second is 1/3600 of a degree, so every sign, nakshatra pada and house is exact.
+Rahu and Ketu (true node) are not in Horizons; they are checked against `swetest` in
+`engine/chart_reference_test.go`.
+
 ## Data
 
 `go run ./cmd/llmdata gen -n 20000` writes chat-format JSONL (`.runtime/llm-data/train.jsonl`):
