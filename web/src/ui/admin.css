@@ -4,3 +4,4 @@
 .admin-page .field { margin-bottom: 1rem; }
 .admin-page fieldset > button { margin: .5rem .75rem .5rem 0; }
 .admin-page caption { text-align: left; padding: 1rem; color: var(--muted); }
+.admin-authenticator-secret { overflow-wrap: anywhere; }

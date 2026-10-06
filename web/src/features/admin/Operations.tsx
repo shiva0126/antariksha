@@ -1,12 +1,13 @@
 import {useEffect,useState} from 'react';
 import {api} from '../../lib/api';
+import {Button,Card} from '../../ds';
 type Data={metrics:{as_of:string;registrations_7d:number;registrations_30d:number;verified_emails:number;accounts_with_active_sessions:number;active_matrimony_profiles:number;incomplete_birthplaces:number;interests_created_7d:number;those_interests_accepted:number;pending_photo_reviews:number;oldest_photo_review:string|null;open_reports_over_24h:number;admins_with_authenticator:number};email_delivery_configured:boolean;phone_verification_configured:boolean;admin_authenticator_available:boolean};
 export function Operations(){
  const [data,setData]=useState<Data>(),[error,setError]=useState(''),[busy,setBusy]=useState(false);
  async function load(){setBusy(true);setError('');try{setData(await api<Data>('/api/admin/operations'));}catch(e){setError(e instanceof Error?e.message:'Could not load operations');}finally{setBusy(false);}}
  useEffect(()=>{void load();},[]);
  const m=data?.metrics;
- return <section className="card"><h2>Operations overview</h2><button disabled={busy} onClick={()=>void load()}>Refresh operations</button>{error&&<p role="alert">{error}</p>}{data&&m&&<>
+ return <Card title="Operations overview"><Button busy={busy} onClick={()=>void load()}>Refresh operations</Button>{error&&<p role="alert">{error}</p>}{data&&m&&<>
  <p>As of {new Date(m.as_of).toLocaleString()}. Aggregate counts only; private messages are not accessible here.</p>
  <dl className="kv">{[
  ['New accounts: last 7 / 30 days',`${m.registrations_7d} / ${m.registrations_30d}`],
@@ -20,5 +21,5 @@ export function Operations(){
  ['Authenticator encryption',data.admin_authenticator_available?'Available':'Not configured']
  ].map(([key,value])=><div key={key}><dt>{key}</dt><dd>{value}</dd></div>)}</dl>
  <p className="small">An unexpired session does not mean someone is active today. The interest counts describe a creation-date cohort, not a marriage-success rate. Provider configuration is not proof of successful delivery.</p>
- </>}</section>;
+ </>}</Card>;
 }
