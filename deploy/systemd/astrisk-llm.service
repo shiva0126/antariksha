@@ -1,0 +1,22 @@
+[Unit]
+Description=Astrisk local language model (llama.cpp, Qwen3-0.6B, loopback only)
+After=network.target
+
+[Service]
+Type=simple
+# Qwen3 answers directly, without a hidden reasoning pass (too slow on CPU).
+Environment="LLAMA_ARG_CHAT_TEMPLATE_KWARGS={\"enable_thinking\":false}"
+WorkingDirectory=%h/panchang/.runtime/llm
+ExecStart=%h/panchang/.runtime/llm/llama-b11443/llama-server -m %h/panchang/.runtime/llm/Qwen3-0.6B-Q8_0.gguf \
+  --host 127.0.0.1 --port 18092 --alias astrisk-local -c 8192 -np 1 -t 4 -fa on -ctk q8_0 -ctv q8_0 \
+  --jinja --no-webui
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+UMask=0077
+MemoryMax=2600M
+Nice=5
+
+[Install]
+WantedBy=default.target

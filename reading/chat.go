@@ -151,7 +151,7 @@ func (s *Service) Answer(ctx context.Context, facts engine.ChartFacts, rules []R
 		in.use(rule)
 	}
 	ans.Sources = in.used
-	prompt, err := chatPrompt(facts, in, question, history, grounded)
+	prompt, err := chatPrompt(facts, in, question, history, grounded, s.Compact)
 	if err == nil {
 		prompt += languageRule(cc.Lang)
 	}
@@ -226,8 +226,8 @@ func contains(xs []string, x string) bool {
 	return false
 }
 
-func chatPrompt(f engine.ChartFacts, in *insight, q string, history []ChatTurn, grounded string) (string, error) {
-	b, err := json.Marshal(f)
+func chatPrompt(f engine.ChartFacts, in *insight, q string, history []ChatTurn, grounded string, compact bool) (string, error) {
+	b, err := factsText(f, compact)
 	if err != nil {
 		return "", err
 	}
@@ -235,6 +235,10 @@ func chatPrompt(f engine.ChartFacts, in *insight, q string, history []ChatTurn, 
 	for _, r := range in.used {
 		if strings.Contains(r.Source, "[public_domain]") {
 			fmt.Fprintf(&rb, "\nHISTORICAL REFERENCE %s:%s (%s, %s); citation metadata only, use the project's plain-language interpretation.\n", r.DocType, r.Key, r.Source, r.Ref)
+			continue
+		}
+		if compact {
+			fmt.Fprintf(&rb, "\nRULE %s:%s: %s\n", r.DocType, r.Key, ruleBody(r.Body, true))
 			continue
 		}
 		fmt.Fprintf(&rb, "\nRULE %s:%s (%s): %s\n", r.DocType, r.Key, r.Source, r.Body)
@@ -250,7 +254,7 @@ RULES:%s
 CONVERSATION SO FAR:
 %s
 QUESTION: %s
-DRAFT ANSWER: %s`, string(b), rb.String(), hb.String(), q, grounded), nil
+DRAFT ANSWER: %s`, b, rb.String(), hb.String(), q, grounded), nil
 }
 
 func lastTurns(h []ChatTurn, n int) []ChatTurn {

@@ -102,7 +102,7 @@ func TestCompositeKeepsAllPassagesOfFirstSourcePerToken(t *testing.T) {
 }
 
 func TestPromptCarriesKeyedRules(t *testing.T) {
-	p, err := promptFor(sampleFacts(), []Rule{{DocType: "yoga", Key: "gajakesari", Title: "Gajakesari Yoga", Body: "body", Source: "src [public_domain]"}})
+	p, err := promptFor(sampleFacts(), []Rule{{DocType: "yoga", Key: "gajakesari", Title: "Gajakesari Yoga", Body: "body", Source: "src [public_domain]"}}, false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -192,5 +192,29 @@ func TestChatAnswersByTopic(t *testing.T) {
 	}
 	if _, err := svc.Answer(context.Background(), f, nil, "   ", nil, ChatContext{}); err == nil {
 		t.Fatal("empty question accepted")
+	}
+}
+
+func TestCompactPromptIsShortAndKeepsFacts(t *testing.T) {
+	f := referenceFacts(t)
+	rules, _ := DefaultCorpus.Rules(context.Background(), f)
+	full, _ := promptFor(f, rules, false)
+	short, err := promptFor(f, rules, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(short)*2 > len(full) {
+		t.Fatalf("compact prompt %d chars is not under half of %d", len(short), len(full))
+	}
+	in := newInsight(context.Background(), nil, f, nil)
+	for _, g := range f.Chart.Grahas {
+		if !strings.Contains(short, in.placement(g.ID)) {
+			t.Fatalf("compact prompt lost %s", g.ID)
+		}
+	}
+	for _, y := range f.Yogas {
+		if !strings.Contains(short, `"name":"`+y.Name+`"`) {
+			t.Fatalf("compact prompt lost yoga %s", y.Name)
+		}
 	}
 }

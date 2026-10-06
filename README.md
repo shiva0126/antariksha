@@ -83,6 +83,8 @@ Readings use exact-key retrieval from `astro_corpus`; the engine, not the LLM, s
 
 **Frontend:** a shared design system (`web/src/ds`), the north star logo, five sections with a Me menu and linkable tabs. See [docs/frontend.md](docs/frontend.md).
 
+**Language model:** the engine computes, the corpus grounds, a local open model narrates; data generator and scorer in `cmd/llmdata`. See [docs/llm.md](docs/llm.md).
+
 **Matrimony** is a top-level section with horoscope-aware discovery: guna score, Mangal dosha and nakshatra on every card between members who both opt in, structured biodata with filters and reasons, interests with notes, live chat, contact sharing, selfie verification, printable biodata with a kundali page, email and push alerts. See [docs/matrimony.md](docs/matrimony.md).
 
 **Ask Astrisk** answers questions about a chart (Kundali → Ask Astrisk) and about a compared pair (Matching, below the result). Both correlate numerology with astrology: the birth-date root number (mulank) and destiny number (bhagyank) are mapped to their ruling grahas in Indian numerology, and those grahas are looked up in the computed chart (placement, Shadbala, lagna/Moon/nakshatra lordship, current dasha); for a pair, the number grahas' friendship is compared with Graha Maitri. Matching conversations are not stored.

@@ -41,10 +41,18 @@ func main() {
 		corpus = reading.CompositeCorpus{reading.PostgresCorpus{Pool: p, Embedder: embedder}, reading.DefaultCorpus}
 	}
 	var llm reading.LLM
-	if key := os.Getenv("OPENAI_API_KEY"); key != "" {
+	if base := os.Getenv("LLM_BASE_URL"); base != "" {
+		// A local OpenAI-compatible server (llama.cpp, astrisk-llm.service): free, no
+		// key. The timeout stays under Cloudflare's 100 s limit; on timeout the
+		// grounded answer is served instead.
+		timeout, _ := time.ParseDuration(env("LLM_TIMEOUT", "75s"))
+		llm = reading.OpenAIClient{BaseURL: base, Model: env("LLM_MODEL", "local"), HTTP: &http.Client{Timeout: timeout}}
+	} else if key := os.Getenv("OPENAI_API_KEY"); key != "" {
 		llm = reading.OpenAIClient{BaseURL: env("OPENAI_BASE_URL", "https://api.openai.com/v1"), APIKey: key, Model: env("OPENAI_MODEL", "gpt-4o-mini"), HTTP: &http.Client{Timeout: 90 * time.Second}}
 	}
-	server := api.NewServerWithReading(e, cache, nil, reading.NewService(corpus, llm))
+	readings := reading.NewService(corpus, llm)
+	readings.Compact = os.Getenv("LLM_BASE_URL") != ""
+	server := api.NewServerWithReading(e, cache, nil, readings)
 	go server.RunAlerts(context.Background())
 	handler := server.Handler()
 	if dir := os.Getenv("WEB_DIST"); dir != "" {

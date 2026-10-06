@@ -64,6 +64,9 @@ type Reading struct {
 type Service struct {
 	Corpus Corpus
 	LLM    LLM
+	// Compact sends a shorter digest of the facts and rules, for small local
+	// models whose speed and attention depend on prompt length.
+	Compact bool
 }
 
 func NewService(c Corpus, l LLM) *Service { return &Service{Corpus: c, LLM: l} }
@@ -103,7 +106,7 @@ func (s *Service) Generate(ctx context.Context, facts engine.ChartFacts, rules [
 	if s.LLM == nil {
 		return grounded(), FallbackModel, nil
 	}
-	prompt, e := promptFor(facts, rules)
+	prompt, e := promptFor(facts, rules, s.Compact)
 	if e != nil {
 		return Reading{}, "", e
 	}
@@ -133,8 +136,8 @@ func (s *Service) modelName() string {
 	return "llm"
 }
 
-func promptFor(f engine.ChartFacts, rules []Rule) (string, error) {
-	b, e := json.Marshal(f)
+func promptFor(f engine.ChartFacts, rules []Rule, compact bool) (string, error) {
+	b, e := factsText(f, compact)
 	if e != nil {
 		return "", e
 	}
@@ -146,12 +149,18 @@ func promptFor(f engine.ChartFacts, rules []Rule) (string, error) {
 		if strings.Contains(r.Source, "[public_domain]") {
 			// Historical wording stays available in the grounding record, but old
 			// predictions are not needed in a user-facing language-generation prompt.
-			fmt.Fprintf(&rb, "\nHISTORICAL REFERENCE %s:%s — %s (%s, %s). Citation metadata only; use the project-authored plain-language rule for this key.\n", r.DocType, r.Key, r.Title, r.Source, r.Ref)
+			if !compact {
+				fmt.Fprintf(&rb, "\nHISTORICAL REFERENCE %s:%s — %s (%s, %s). Citation metadata only; use the project-authored plain-language rule for this key.\n", r.DocType, r.Key, r.Title, r.Source, r.Ref)
+			}
+			continue
+		}
+		if compact {
+			fmt.Fprintf(&rb, "\nRULE %s:%s: %s\n", r.DocType, r.Key, ruleBody(r.Body, true))
 			continue
 		}
 		fmt.Fprintf(&rb, "\nRULE %s:%s — %s (%s): %s\n", r.DocType, r.Key, r.Title, r.Source, r.Body)
 	}
-	return fmt.Sprintf(`You are Astrisk, explaining Vedic astrology to a curious person with no astrology background. Return only valid JSON matching this schema: {"summary":string,"lagna_and_moon":string,"grahas":[{"graha":string,"placement":string,"meaning":string}],"yogas":[{"name":string,"meaning":string,"effect":string,"strength":string}],"dashas":{"current":string,"upcoming":string},"themes":{"career":string,"relationships":string,"strengths":string,"growth_areas":string},"disclaimer":string}. Start each section with an everyday explanation, then give a practical reflection prompt. Use short sentences and define Indian astrology terms in familiar words. Do not assume chart themes are facts about the person's habits, family, work, health or relationships. The authoritative CHART FACTS below come from Swiss Ephemeris and Go; never calculate, alter or infer any position, house, dasha or yoga. Mention only listed yogas and return exactly one object per listed yoga. Strength is a technical label for the engine's rule, never a judgment of the person or certainty of an outcome. Never predict death, illness, divorce, financial ruin or unavoidable events. For medical, legal or financial questions advise a qualified professional. Always include: "For reflection, not certainty; this is not medical, legal or financial advice." Each INTERPRETATION RULE is keyed to a detected fact; use only its matching rule. Historical public-domain wording may be old-fashioned or harmful: explain a humane present-day theme in your own words and do not repeat it.\nCHART FACTS:\n%s\nINTERPRETATION RULES:%s\nWrite a complete natal reading in language a teenager could understand.`, string(b), rb.String()), nil
+	return fmt.Sprintf(`You are Astrisk, explaining Vedic astrology to a curious person with no astrology background. Return only valid JSON matching this schema: {"summary":string,"lagna_and_moon":string,"grahas":[{"graha":string,"placement":string,"meaning":string}],"yogas":[{"name":string,"meaning":string,"effect":string,"strength":string}],"dashas":{"current":string,"upcoming":string},"themes":{"career":string,"relationships":string,"strengths":string,"growth_areas":string},"disclaimer":string}. Start each section with an everyday explanation, then give a practical reflection prompt. Use short sentences and define Indian astrology terms in familiar words. Do not assume chart themes are facts about the person's habits, family, work, health or relationships. The authoritative CHART FACTS below come from Swiss Ephemeris and Go; never calculate, alter or infer any position, house, dasha or yoga. Mention only listed yogas and return exactly one object per listed yoga. Strength is a technical label for the engine's rule, never a judgment of the person or certainty of an outcome. Never predict death, illness, divorce, financial ruin or unavoidable events. For medical, legal or financial questions advise a qualified professional. Always include: "For reflection, not certainty; this is not medical, legal or financial advice." Each INTERPRETATION RULE is keyed to a detected fact; use only its matching rule. Historical public-domain wording may be old-fashioned or harmful: explain a humane present-day theme in your own words and do not repeat it.\nCHART FACTS:\n%s\nINTERPRETATION RULES:%s\nWrite a complete natal reading in language a teenager could understand.`, b, rb.String()), nil
 }
 func validate(r Reading, f engine.ChartFacts) error {
 	// Multiple planets may independently form the same named yoga. Compare
@@ -276,7 +285,9 @@ func (c OpenAIClient) Complete(ctx context.Context, prompt string) (string, erro
 		return "", e
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+c.APIKey)
+	if c.APIKey != "" {
+		req.Header.Set("Authorization", "Bearer "+c.APIKey)
+	}
 	hc := c.HTTP
 	if hc == nil {
 		hc = http.DefaultClient
