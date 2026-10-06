@@ -1,3 +1,11 @@
+/* Page base at zero specificity, so a page that uses only the design system
+   (no app stylesheet) still gets the dark surface and brand type. */
+:where(*, *::before, *::after) { box-sizing: border-box; }
+:where(:root) { color-scheme: dark; font-family: var(--font-body); color: var(--c-text); }
+:where(body) { margin: 0; line-height: 1.5; background: var(--c-bg); }
+:where(h1, h2, h3) { margin: 0; font-family: var(--font-display); font-weight: 400; }
+:where(button, input, select, textarea) { font: inherit; color: inherit; }
+
 /* Design-system components. Classes are prefixed "ds-"; feature code uses
    the React components in this folder, not these classes directly. */
 

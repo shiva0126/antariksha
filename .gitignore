@@ -11,3 +11,9 @@ corpus/raw/
 corpus/build/
 __pycache__/
 web/dist-test/
+web/dist-ds/
+.ds-sync/
+ds-bundle/
+.design-sync/.cache/
+.design-sync/learnings/
+.design-sync/node_modules

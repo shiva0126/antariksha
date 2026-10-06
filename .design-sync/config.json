@@ -1,0 +1,57 @@
+{
+  "pkg": "@astrisk/ds",
+  "globalName": "AstriskDS",
+  "shape": "package",
+  "buildCmd": "cd web && npx vite build -c vite.ds.config.ts && npx tsc -p tsconfig.ds.json",
+  "srcDir": "../src/ds",
+  "cssEntry": "astrisk-ds.css",
+  "runtimeFontPrefixes": [
+    "DM Sans",
+    "Marcellus",
+    "Noto Serif Devanagari"
+  ],
+  "docsDir": "../src/ds/docs",
+  "overrides": {
+    "Dialog": {
+      "cardMode": "single",
+      "viewport": "640x360"
+    },
+    "FeedbackProvider": {
+      "cardMode": "single"
+    },
+    "Input": {
+      "cardMode": "column"
+    },
+    "Textarea": {
+      "cardMode": "column"
+    },
+    "Card": {
+      "cardMode": "column"
+    },
+    "PageHeader": {
+      "cardMode": "column"
+    },
+    "FormGrid": {
+      "cardMode": "column"
+    },
+    "Tabs": {
+      "cardMode": "column"
+    },
+    "EmptyState": {
+      "cardMode": "column"
+    },
+    "Skeleton": {
+      "cardMode": "column"
+    },
+    "Field": {
+      "cardMode": "column"
+    },
+    "StatTile": {
+      "cardMode": "column"
+    },
+    "Notice": {
+      "cardMode": "column"
+    }
+  },
+  "readmeHeader": ".design-sync/conventions.md"
+}
