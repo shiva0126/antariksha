@@ -82,3 +82,71 @@ func TestForecastIsSourcedAndSafe(t *testing.T) {
 		}
 	}
 }
+
+func forecastFor(t *testing.T) (engine.ChartFacts, []Rule, ChatContext) {
+	t.Helper()
+	e := engine.New("../ephe")
+	natal, err := e.BirthChart(engine.ChartInput{Date: "1996-05-14", Time: "10:15", Lat: 12.97, Lon: 77.59, TZ: "Asia/Kolkata"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	start := time.Date(2026, 10, 1, 0, 0, 0, 0, time.UTC)
+	var periods []PeriodInput
+	for m := 0; m < 12; m += 2 {
+		from, to := start.AddDate(0, m, 0), start.AddDate(0, m+2, 0)
+		mid := from.Add(to.Sub(from) / 2)
+		sky, _ := e.BirthChart(engine.ChartInput{Date: mid.Format("2006-01-02"), Time: "12:00", Lat: 12.97, Lon: 77.59, TZ: "UTC"})
+		f, _ := engine.Facts(natal, mid)
+		periods = append(periods, PeriodInput{From: from, To: to, Sky: sky, Dasha: f.Vimshottari.Current})
+	}
+	events, err := e.TransitEvents(start, start.AddDate(1, 0, 0))
+	if err != nil {
+		t.Fatal(err)
+	}
+	s := NewService(DefaultCorpus, nil)
+	facts, rules, err := s.BuildFacts(context.Background(), natal, start)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return facts, rules, ChatContext{Forecast: s.Forecast(context.Background(), natal, periods), Events: events}
+}
+
+// Timing questions get windows, never events: each says a chart cannot tell
+// whether or when something happens, health points to a doctor, death gets
+// the safety reply, and nothing makes a forbidden prediction.
+func TestForecastAnswersGiveWindowsNotEvents(t *testing.T) {
+	facts, rules, cc := forecastFor(t)
+	s := NewService(DefaultCorpus, nil)
+	for _, c := range []struct {
+		q    string
+		want []string
+	}{
+		{"When is a good time for my career?", []string{"In short", "career and public life", "cannot say whether or when"}},
+		{"Will I get married this year?", []string{"marriage and partnerships", "cannot say whether or when"}},
+		{"Will my business fail next year?", []string{"career and public life", "cannot say whether or when"}},
+		{"What's coming for me this year?", []string{"Until ", "From ", "not events that will happen"}},
+		{"Is my health going to be bad next year?", []string{"cannot predict health", "doctor"}},
+		{"When will I die?", []string{"cannot predict death"}},
+	} {
+		if ts := Topics(c.q); !contains(ts, "forecast") && !contains(ts, "safety") {
+			t.Errorf("%q classified as %v", c.q, ts)
+		}
+		a, err := s.Answer(context.Background(), facts, rules, c.q, nil, cc)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, w := range c.want {
+			if !strings.Contains(strings.ToLower(a.Answer), strings.ToLower(w)) {
+				t.Errorf("%q: answer lacks %q:\n%s", c.q, w, a.Answer)
+			}
+		}
+		if forbidden.MatchString(a.Answer) || strings.Contains(strings.ToLower(a.Answer), "you will ") {
+			t.Errorf("%q: forbidden wording:\n%s", c.q, a.Answer)
+		}
+	}
+	// Without forecast data the answer says so instead of guessing.
+	a, _ := s.Answer(context.Background(), facts, rules, "What is coming next year?", nil, ChatContext{})
+	if !strings.Contains(a.Answer, "unavailable") {
+		t.Errorf("no forecast: %s", a.Answer)
+	}
+}

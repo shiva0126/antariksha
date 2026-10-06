@@ -6,6 +6,8 @@ import { useSettings } from '../../i18n';
 import { AnswerText } from './AnswerText';
 
 const suggestions = [
+  "What's coming for me this year?",
+  'When is a good time for my career?',
   'What does my chart say about my career?',
   'What about marriage and relationships?',
   'Which dasha am I running and what does it mean?',

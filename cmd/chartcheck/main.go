@@ -28,6 +28,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/example/panchang/engine"
 	"github.com/example/panchang/engine/swe"
 )
 
@@ -103,7 +104,11 @@ func main() {
 	limit := flag.Float64("limit", 5, "largest allowed difference in arc-seconds")
 	ephe := flag.String("ephe", "ephe", "Swiss Ephemeris data directory")
 	seed := flag.Int64("seed", 42, "random seed")
+	ingress := flag.Int("ingress", 0, "instead, check the engine's sign changes in this year and the next against JPL")
 	flag.Parse()
+	if *ingress > 0 {
+		os.Exit(checkIngresses(*ephe, *ingress))
+	}
 	// Swiss Ephemeris keeps its settings per OS thread, as the engine does.
 	runtime.LockOSThread()
 	swe.SetEphemerisPath(*ephe)
@@ -160,4 +165,61 @@ func main() {
 	if failed {
 		os.Exit(1)
 	}
+}
+
+// checkIngresses verifies every sign change of the Sun to Saturn that the
+// engine finds in two years: two minutes before it JPL must place the
+// planet in the old sidereal sign, two minutes after in the new one.
+func checkIngresses(ephe string, year int) int {
+	eng := engine.New(ephe)
+	from := time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC)
+	events, err := eng.TransitEvents(from, from.AddDate(2, 0, 0))
+	if err != nil {
+		log.Fatal(err)
+	}
+	runtime.LockOSThread()
+	swe.SetEphemerisPath(ephe)
+	swe.SetLahiri()
+	ids := map[string]string{"sun": "10", "mars": "499", "mercury": "199", "venus": "299", "jupiter": "599", "saturn": "699"}
+	byBody := map[string][]engine.TransitEvent{}
+	for _, ev := range events {
+		if _, ok := ids[ev.Graha]; ok && ev.Kind == "ingress" {
+			byBody[ev.Graha] = append(byBody[ev.Graha], ev)
+		}
+	}
+	signs := engine.RashiNames()
+	bad, total := 0, 0
+	for g, evs := range byBody {
+		var jds []float64
+		for _, ev := range evs {
+			for _, d := range []time.Duration{-2 * time.Minute, 2 * time.Minute} {
+				u := ev.At.Add(d).UTC()
+				jds = append(jds, swe.JulianDay(u.Year(), int(u.Month()), u.Day(), float64(u.Hour())+float64(u.Minute())/60+float64(u.Second())/3600))
+			}
+		}
+		ref, err := horizons(ids[g], jds)
+		if err != nil {
+			log.Fatal(err)
+		}
+		for i, ev := range evs {
+			sid := func(k int) string {
+				aya, err := swe.TrueAyanamsa(jds[k])
+				if err != nil {
+					log.Fatal(err)
+				}
+				l := math.Mod(ref[k]-aya+720, 360)
+				return signs[int(l/30)]
+			}
+			total++
+			if before, after := sid(2*i), sid(2*i+1); before != ev.From || after != ev.Rashi {
+				bad++
+				fmt.Printf("  %s into %s at %s: JPL gives %s before and %s after\n", g, ev.Rashi, ev.At.Format(time.RFC3339), before, after)
+			}
+		}
+	}
+	fmt.Printf("%d sign changes of the Sun to Saturn in %d-%d checked against JPL Horizons; %d disagree.\n", total, year, year+1, bad)
+	if bad > 0 {
+		return 1
+	}
+	return 0
 }

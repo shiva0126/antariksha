@@ -245,6 +245,9 @@ func (p *plain) bookPoint(s string) {
 
 // plainFor writes the everyday-language answer for the detected topics.
 func plainFor(in *insight, ts, gs []string, house int, cc ChatContext) plain {
+	if contains(ts, "forecast") {
+		return forecastPlain(in, ts, cc)
+	}
 	var p plain
 	f := in.f
 	for _, t := range ts {

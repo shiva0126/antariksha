@@ -1,7 +1,7 @@
 # Transits and forecasts
 
-Phases 1-2 are in place: the engine, the book rules, the forecast scoring, the Timing tab and the
-planets-now card on Today. Ask Astrisk forecast answers and alerts follow in phases 3-4.
+Phases 1-3 are in place: the engine, the book rules, the forecast scoring, the Timing tab, the
+planets-now card on Today, and timing answers in Ask Astrisk. Alerts follow in phase 4.
 
 ## Method
 
@@ -47,11 +47,24 @@ text makes a forbidden prediction.
 In the app: Kundali → Timing (the `#kundali/dasha` tab, renamed) shows the periods with folded reasons
 and the coming sign changes and eclipses; Today shows the planets read from the Moon with the book's view.
 
+## Ask Astrisk
+
+Questions with "when", "this year", "next year", "coming months", "future", "will I", "transit" and the
+like are classified as `forecast` (`reading/chat.go`), and only then does the chat handler compute the
+next 12 months of periods. A question that names an area (career, marriage, money, studies, health,
+travel, home…) gets that area's supportive and patience windows with a reason each, and always: "A chart
+cannot say whether or when a particular event will happen…". Health questions point to a doctor; death
+questions get the safety reply. General questions get the current period, the next two, and Jupiter's
+and Saturn's coming sign changes. The local model never answers timing questions (its chart lines carry
+no forecast). `reading/forecast_test.go` covers these, including "Will my business fail next year?".
+
 ## Exactness
 
 - `engine/transit_test.go`: the house table read off 104.4; 2025 sign changes and stations against
   published dates (Saturn into Meena 29 Mar 21:45 IST, Jupiter into Mithuna 14 May 22:36 IST, and so on);
   every ingress has the old sign two minutes before and the new one two minutes after.
+- `go run ./cmd/chartcheck -ingress 2025`: every sign change of the Sun to Saturn the engine finds in
+  two years, checked against NASA JPL Horizons two minutes either side. 2026-10-06: 96 of 96 agree.
 - `corpus/maps/brihat_samhita_iyer_1884.json`: 84 clauses (Sun to Saturn, 12 houses), each matched against
   the scan; `corpus/map_exact_test.go` checks each names its own house and planet.
 

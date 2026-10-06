@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"fmt"
 	"math"
 	"net/http"
@@ -190,4 +191,24 @@ func (s *Server) forecastPeriods(natal engine.Chart, in engine.ChartInput, event
 		out = append(out, reading.PeriodInput{From: a, To: b, Sky: sky, Dasha: f.Vimshottari.Current})
 	}
 	return out, nil
+}
+
+// forecastContext is the forecast for chat: the coming periods and the slow
+// planets' events over the next months. Failures leave it empty; the
+// answer then says the forecast is unavailable.
+func (s *Server) forecastContext(ctx context.Context, natal engine.Chart, in engine.ChartInput, now time.Time, months int) ([]reading.Period, []engine.TransitEvent) {
+	tc, ok := s.engine.(TransitCalculator)
+	if !ok {
+		return nil, nil
+	}
+	end := now.AddDate(0, months, 0)
+	events, err := tc.TransitEvents(now, end)
+	if err != nil {
+		return nil, nil
+	}
+	periods, err := s.forecastPeriods(natal, in, events, now, end)
+	if err != nil {
+		return nil, nil
+	}
+	return s.reading.Forecast(ctx, natal, periods), events
 }

@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
+	"slices"
 	"sync"
 	"time"
 
@@ -234,6 +235,9 @@ func (s *Server) chat(w http.ResponseWriter, r *http.Request) {
 	}
 	if n, err := divination.ReadNumerology(req.Birth.Date, "", nowLocal.Year()); err == nil {
 		cc.Numerology = &n
+	}
+	if slices.Contains(reading.Topics(req.Question), "forecast") {
+		cc.Forecast, cc.Events = s.forecastContext(r.Context(), c, req.Birth, now, 12)
 	}
 	ans, err := s.reading.Answer(r.Context(), facts, rules, req.Question, turns, cc)
 	if err != nil {

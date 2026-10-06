@@ -34,6 +34,10 @@ type ChatContext struct {
 	Numerology *divination.Numerology // birth-date numbers, correlated with the chart
 	Related    []Rule                 // library passages closest to the question (semantic search)
 	Lang       string                 // reply language code (en, hi, mr, kn, ta, te, ml, gu, bn)
+	// Forecast and Events are filled for timing questions only: the coming
+	// periods (see Forecast) and the slow planets' sign changes.
+	Forecast []Period
+	Events   []engine.TransitEvent
 }
 
 // LanguageNames maps the app's language codes to names an LLM understands.
@@ -75,7 +79,8 @@ var topics = []topic{
 	{"property", words(`property|properties|land|plot|real estate|vehicle|vehicles|car|bike|buy a house|own a house|home loan`)},
 	{"spirituality", words(`spiritual|spirituality|moksha|meditation|god|devotion|liberation|retreat`)},
 	{"numerology", words(`numerology|numerological|numbers?|life path|mulank|moolank|bhagyank|bhagyaank|destiny number|root number|psychic number|lucky numbers?|personal year|ank jyotish`)},
-	{"dasha", words(`dasha|dashas|dasa|mahadasha|antardasha|period|periods|timing|when|this year|next year|future|now|current|currently`)},
+	{"forecast", words(`when|this year|next year|coming months?|coming year|next few months|future|forecast|predict|prediction|predictions|upcoming|what'?s coming|will i|transit|transits|gochar|gochara|good time|right time|best time`)},
+	{"dasha", words(`dasha|dashas|dasa|mahadasha|antardasha|period|periods|timing`)},
 	{"yoga", words(`yoga|yogas|raja yoga|gajakesari|combination|combinations`)},
 	{"nakshatra", words(`nakshatra|nakshatras|star|birth star|janma nakshatra|pada`)},
 	{"lagna", words(`lagna|ascendant|rising|personality|nature|who am i|temperament`)},
@@ -392,6 +397,10 @@ func compose(in *insight, q string, history []ChatTurn, cc ChatContext) (string,
 			add(in.houseSummary(12))
 			add(in.houseSummary(9))
 			add("Jupiter and Ketu are the traditional significators of wisdom and detachment. Jupiter: " + in.placement("jupiter") + "; Ketu: " + in.placement("ketu") + ".")
+		case "forecast":
+			for _, l := range forecastDetails(cc) {
+				add(l)
+			}
 		case "remedy":
 			add("Astrisk describes the chart rather than prescribing remedies. Traditionally, strengthening a graha begins with its significations: for the current dasha lord " + engine.GrahaEnglish(f.Vimshottari.Current.Maha) + ", that means living its qualities consciously. For specific remedies such as gemstones or rituals, consult a trusted astrologer who can see the whole chart.")
 		}
@@ -540,8 +549,10 @@ var thinkBlock = regexp.MustCompile(`(?s)<think>.*?</think>`)
 // chart details are kept below it. Otherwise the grounded answer stands.
 func (s *Service) compactAnswer(ctx context.Context, in *insight, f engine.ChartFacts, question string, ts []string, cc ChatContext, grounded ChatAnswer) ChatAnswer {
 	cl, ok := s.LLM.(ChatLLM)
-	if !ok || (cc.Lang != "" && cc.Lang != "en") {
-		return grounded // the local model answers in English only
+	if !ok || (cc.Lang != "" && cc.Lang != "en") || contains(ts, "forecast") {
+		// The local model answers in English only, and its chart lines carry
+		// no forecast, so timing questions keep the grounded answer.
+		return grounded
 	}
 	raw, err := cl.Chat(ctx, CompactSystem, "CHART\n"+compactChart(in, f, cc)+"\nQUESTION: "+question)
 	if err != nil {
