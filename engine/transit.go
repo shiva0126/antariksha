@@ -329,3 +329,7 @@ func eclipses(j0, j1 float64) ([]TransitEvent, error) {
 
 // swePosition3D is the sidereal position, for tests outside the swe package.
 var swePosition3D = swe.Position3D
+
+// AspectedSigns returns the signs (0 = Mesha) a graha in sign s occupies or
+// aspects by classical graha drishti.
+func AspectedSigns(id string, s int) []int { return aspectedSigns(id, s) }

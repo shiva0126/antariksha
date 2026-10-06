@@ -5,6 +5,7 @@ import { grahaColor, grahaGlyph } from '../../astro/rashi';
 import { grahaEnglish, longDate } from '../../astro/format';
 import { useMonthName, useNames, useT } from '../../i18n';
 import { FestivalChips } from '../panchang/DayDetails';
+import { TransitNow } from './TransitNow';
 
 const ord = (n: number) => n + (n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th');
 
@@ -57,6 +58,7 @@ export function TodayTab({ birth }: { birth: ChartInput }) {
             <ul className="upcoming">{data.upcoming.map(u => <li key={u.date}><b>{longDate(u.date)}</b><FestivalChips names={u.festivals} /></li>)}</ul>}
         </article>
       </div>
+      <TransitNow birth={birth} />
       <div className="card table-card">
         <p className="muted table-caption">Planets now (gochar), counted from your natal Lagna and Moon</p>
         <div className="table-scroll">

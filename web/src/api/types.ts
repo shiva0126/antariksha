@@ -89,3 +89,44 @@ export interface VargaResponse { varga: number; name: string; theme: string; cha
 
 export interface ShadbalaRow { graha: string; sthana: number; dig: number; kala: number; chesta: number; naisargika: number; drik: number; total: number; rupas: number; required_rupas: number; required?: number; ratio: number; rank: number; ishta_phala: number; kashta_phala: number; details: Record<string, number>; chesta_motion?: string }
 export interface ShadbalaResponse { rows: (ShadbalaRow & { required: number })[]; notes: string[] }
+
+/** What a classical book says for one condition, in plain words. */
+export interface BookView { ref: string; source: string; plain: string }
+
+export interface TransitPlanet {
+  graha: string; rashi: string; degree: number; nakshatra: string; retrograde: boolean;
+  from_moon: number; from_lagna: number;
+  /** Brihat Samhita 104.4 verdict; absent for Rahu and Ketu. */
+  favourable?: boolean;
+  /** False while the planet is in the half of the sign where it does not yet act (104.49-50). */
+  active: boolean;
+  /** 104.53 conditions that weaken good results: debilitated, enemy, combust. */
+  weakened: string[];
+  bindus: number; sarva: number; aspects: string[];
+  book?: BookView;
+}
+
+export interface TransitEvent {
+  graha: string; kind: 'ingress' | 'retrograde' | 'direct' | 'solar_eclipse' | 'lunar_eclipse';
+  at: string; from?: string; rashi: string; degree: number;
+  from_moon?: number; from_lagna?: number; favourable?: boolean;
+  on_moon_sign?: boolean; on_lagna_sign?: boolean; degrees_to_moon?: number;
+  book?: BookView;
+}
+
+export interface ForecastReason { text: string; source: string; sign: number }
+export interface AreaForecast {
+  area: { id: string; name: string; houses: number[] };
+  tone: 'supportive' | 'mixed' | 'challenging';
+  confidence: 'strong' | 'moderate' | 'light';
+  score: number; reasons: ForecastReason[];
+}
+export interface ForecastPeriod { from: string; to: string; maha: string; antara: string; summary: string; areas: AreaForecast[] }
+
+export interface TransitsResponse {
+  now: string; months: number;
+  planets: TransitPlanet[]; events: TransitEvent[]; periods: ForecastPeriod[];
+  sade_sati: boolean; sade_sati_phase: number; kantaka_shani: boolean; ashtama_shani: boolean;
+  double_transit: number[];
+  notes: Record<string, string>;
+}

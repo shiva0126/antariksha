@@ -45,7 +45,7 @@ test('kundali: placement, dasha, tabs and no horizontal overflow', async ({ page
   await expect(page.locator('svg [data-longitude]')).toHaveCount(9);
   await page.getByRole('tab', { name: 'Planets' }).click();
   await expect(page.locator('.planet-table').first().locator('tbody tr')).toHaveCount(9);
-  await page.getByRole('tab', { name: 'Dasha' }).click();
+  await page.getByRole('tab', { name: 'Timing' }).click();
   // Ketu must follow the Mercury birth dasha; Venus–Jupiter runs in 2026.
   await expect(page.locator('.dasha-list li').nth(1)).toContainText('Ketu');
   await page.getByRole('tab', { name: 'Reading' }).click();
@@ -111,17 +111,25 @@ test('consent is required before a chart is created', async ({ page }) => {
   await expect(page.getByRole('alert')).toContainText('consent');
 });
 
-test('new kundali tabs: today, divisional charts, dasha levels, ashtakavarga, report', async ({ page }) => {
+test('new kundali tabs: today, transits, divisional charts, timing, ashtakavarga, report', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', e => errors.push(e.message));
   await openChart(page);
   await page.getByRole('tab', { name: 'Overview' }).click();
   await expect(page.locator('.today')).toContainText('Tara bala');
   await expect(page.locator('.today .planet-table tbody tr')).toHaveCount(9);
+  // The planets read from the Moon, with the book's view (Brihat Samhita 104).
+  await expect(page.locator('.transit-now li')).toHaveCount(6);
+  await expect(page.locator('.transit-now')).toContainText('from the Moon');
+  await expect(page.locator('.transit-now')).toContainText('Brihat Samhita 104.');
   await page.getByRole('tab', { name: 'Chart', exact: true }).click();
   await page.getByLabel('Divisional chart').selectOption('9');
   await expect(page.locator('.chart-svg').first()).toContainText('Navamsha');
-  await page.getByRole('tab', { name: 'Dasha' }).click();
+  await page.getByRole('tab', { name: 'Timing' }).click();
+  // Forecast periods: the running one first, each with a summary.
+  await expect(page.locator('.forecast-period').first()).toContainText('Now');
+  await expect(page.locator('.forecast-summary').first()).not.toBeEmpty();
+  await expect(page.locator('.timing-events li').first()).toBeVisible();
   await expect(page.locator('.dasha')).toContainText('Pratyantardashas');
   await expect(page.locator('.dasha')).toContainText('Yogini dasha');
   await page.getByRole('tab', { name: 'Planets' }).click();

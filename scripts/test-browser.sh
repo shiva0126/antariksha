@@ -9,6 +9,9 @@ if curl -fsS -m 2 "http://127.0.0.1:$PORT/healthz" >/dev/null 2>&1; then
   echo "port $PORT is already in use; stop that process or set TEST_PORT" >&2; exit 1
 fi
 DB_URL="$(bash "$ROOT/scripts/test-db.sh" | tail -1)"
+# The book passages (Brihat Jataka, Brihat Samhita) as on the live site,
+# without embeddings; sources whose scans are not on disk are skipped.
+(cd "$ROOT" && env -u OPENAI_API_KEY DATABASE_URL="$DB_URL" CGO_ENABLED=1 "$HOME/.local/toolchains/go/bin/go" run ./cmd/corpus load -allow-missing-raw >/dev/null)
 (cd "$ROOT" && PATH="$HOME/.local/toolchains/go/bin:$PATH" CGO_ENABLED=1 go build -buildvcs=false -o bin/panchang-api-test ./cmd/panchang-api)
 # Build into dist-test: web/dist is what the live site serves.
 (cd "$ROOT/web" && npx tsc -b && npx vite build --outDir dist-test --emptyOutDir >/dev/null)

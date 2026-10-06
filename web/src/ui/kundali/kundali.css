@@ -14,3 +14,24 @@
   .chart-bar__facts .ds-stat:nth-child(n+4) { display: none; }
 }
 @media print { .chart-bar, .ds-tabs { display: none !important; } }
+
+/* Timing: forecast periods and coming sign changes */
+.timing { display: grid; gap: var(--s-4, 16px); }
+.forecast { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s-3, 12px); }
+.forecast-period { border-left: 2px solid var(--c-line); padding: 4px 0 4px 14px; display: grid; gap: 6px; }
+.forecast-period--now { border-left-color: var(--c-accent); }
+.forecast-when { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
+.forecast-summary { margin: 0; color: var(--c-text); }
+.forecast-areas { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.forecast-area-head { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; }
+.forecast-area details summary { cursor: pointer; font-size: 13px; color: var(--c-text-muted); }
+.forecast-reasons { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 4px; font-size: 13px; }
+.timing-events { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.timing-events li { display: grid; grid-template-columns: 9.5em 1fr; gap: 10px; }
+.timing-date { font-variant-numeric: tabular-nums; color: var(--c-text-muted); font-size: 13px; }
+.block { display: block; margin-top: 2px; }
+@media (max-width: 640px) { .timing-events li { grid-template-columns: 1fr; gap: 2px; } }
+/* Today: the planets for you now */
+.transit-now { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.transit-now p { margin: 4px 0 0; }
+.transit-now-head { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; }

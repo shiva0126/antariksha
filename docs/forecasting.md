@@ -1,7 +1,7 @@
 # Transits and forecasts
 
-Phase 1 (engine, book rules, API) is in place; the Timing tab, scoring, Ask Astrisk answers and alerts
-follow in phases 2-4.
+Phases 1-2 are in place: the engine, the book rules, the forecast scoring, the Timing tab and the
+planets-now card on Today. Ask Astrisk forecast answers and alerts follow in phases 3-4.
 
 ## Method
 
@@ -25,6 +25,27 @@ forecasts combine the two (phase 2).
 `GET /api/transits?date=&time=&lat=&lon=&tz=&months=24` returns today's reading and the personal events.
 Rahu and Ketu use the true node, as birth charts do; panchangs often publish mean-node dates, a week or
 two apart.
+
+## Forecast periods (`reading/forecast.go`)
+
+The coming months are cut at every sign change of Jupiter, Saturn, Rahu and Ketu and every change of
+antardasha. In each period, each life area (career = 10th, money = 2nd and 11th, partnership = 7th,
+home = 4th, learning = 5th, effort = 3rd, wellbeing = 1st and 6th, change = 8th, travel = 9th and 12th)
+is read from:
+
+- the dasha lords that sit in or rule its houses, toned by their natal strength (dignity, a 6th/8th/12th
+  placement, combustion);
+- Jupiter and Saturn occupying or aspecting its houses, toned by the 104.4 verdict, 104.53 weakening
+  and ashtakavarga support, and halved when the dasha does not touch the area (104.46);
+- Rahu and Ketu, and double transit, as emphasis without a direction.
+
+An area is shown when at least two real factors touch it (or one plus double transit). Tone follows the
+score (≥1 supportive, ≤-1 challenging, otherwise mixed); confidence counts the factors that lean one way
+and agree. Every reason carries its source. `reading/forecast_test.go` checks sourcing, tone and that no
+text makes a forbidden prediction.
+
+In the app: Kundali → Timing (the `#kundali/dasha` tab, renamed) shows the periods with folded reasons
+and the coming sign changes and eclipses; Today shows the planets read from the Moon with the book's view.
 
 ## Exactness
 

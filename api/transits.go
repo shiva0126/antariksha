@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"net/http"
+	"sort"
 	"strconv"
 	"time"
 
@@ -128,8 +129,14 @@ func (s *Server) transits(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
+	periods, err := s.forecastPeriods(natal, in, events, now, now.AddDate(0, months, 0))
+	if err != nil {
+		problem(w, 500, err)
+		return
+	}
 	writeJSON(w, 200, map[string]any{
 		"now": now.Format(time.RFC3339), "months": months,
+		"periods": s.reading.Forecast(r.Context(), natal, periods),
 		"planets": planets, "sade_sati": report.SadeSati, "sade_sati_phase": report.SadeSatiPhase,
 		"kantaka_shani": report.KantakaShani, "ashtama_shani": report.AshtamaShani,
 		"double_transit": report.DoubleTransit, "events": out,
@@ -139,4 +146,48 @@ func (s *Server) transits(w http.ResponseWriter, r *http.Request) {
 			"double_transit": "Double transit (Jupiter and Saturn both occupying or aspecting a house) is a modern technique, not in the classical texts.",
 		},
 	})
+}
+
+// forecastPeriods cuts [from, to) at every sign change of Jupiter, Saturn,
+// Rahu and Ketu and every change of antardasha, and takes each period's sky
+// and running dasha at its middle.
+func (s *Server) forecastPeriods(natal engine.Chart, in engine.ChartInput, events []engine.TransitEvent, from, to time.Time) ([]reading.PeriodInput, error) {
+	cuts := []time.Time{from, to}
+	for _, ev := range events {
+		if ev.Kind == "ingress" && (ev.Graha == "jupiter" || ev.Graha == "saturn" || ev.Graha == "rahu") {
+			cuts = append(cuts, ev.At)
+		}
+	}
+	for t := from; t.Before(to); {
+		f, err := engine.Facts(natal, t)
+		if err != nil {
+			return nil, err
+		}
+		end, err := time.Parse("2006-01-02", f.Vimshottari.Current.To)
+		if err != nil || !end.After(t) {
+			break
+		}
+		cuts = append(cuts, end)
+		t = end.Add(time.Hour)
+	}
+	sort.Slice(cuts, func(i, j int) bool { return cuts[i].Before(cuts[j]) })
+	zone, _ := time.LoadLocation(in.TZ)
+	var out []reading.PeriodInput
+	for i := 0; i+1 < len(cuts); i++ {
+		a, b := cuts[i], cuts[i+1]
+		if a.Before(from) || b.After(to) || b.Sub(a) < 24*time.Hour {
+			continue
+		}
+		mid := a.Add(b.Sub(a) / 2).In(zone)
+		sky, err := s.engine.BirthChart(engine.ChartInput{Date: mid.Format("2006-01-02"), Time: mid.Format("15:04"), Lat: in.Lat, Lon: in.Lon, TZ: in.TZ})
+		if err != nil {
+			return nil, err
+		}
+		f, err := engine.Facts(natal, mid)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, reading.PeriodInput{From: a, To: b, Sky: sky, Dasha: f.Vimshottari.Current})
+	}
+	return out, nil
 }

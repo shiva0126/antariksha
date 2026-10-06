@@ -86,7 +86,8 @@ func cite(r Rule) string {
 	if i := strings.Index(s, " ["); i > 0 {
 		s = s[:i]
 	}
-	return strings.Replace(s, "The Brihat Jataka of Varaha Mihira", "Brihat Jataka", 1)
+	s = strings.Replace(s, "The Brihat Jataka of Varaha Mihira", "Brihat Jataka", 1)
+	return strings.Replace(s, "The Brihat Samhita of Varaha Mihira", "Brihat Samhita", 1)
 }
 
 func stripNote(s string) string {

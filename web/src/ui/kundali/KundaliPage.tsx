@@ -17,6 +17,7 @@ import { ReadingPanel } from './ReadingPanel';
 import { ReportView } from './ReportView';
 import { StrengthTab } from './StrengthTab';
 import { TodayTab } from './TodayTab';
+import { TimingTab } from './TimingTab';
 import './kundali.css';
 
 const TABS = ['overview', 'chart', 'planets', 'dasha', 'reading', 'ask', 'systems'] as const;
@@ -92,7 +93,7 @@ export function KundaliPage({ sub = '' }: { sub?: string }) {
     );
   }
 
-  const tabs = [{ id: 'overview', label: t('Overview') }, { id: 'chart', label: t('Chart') }, { id: 'planets', label: t('Planets') }, { id: 'dasha', label: t('Dasha') }, { id: 'reading', label: t('Reading') }, { id: 'ask', label: t('Ask Astrisk') }, { id: 'systems', label: t('Other systems') }] as { id: Tab; label: string }[];
+  const tabs = [{ id: 'overview', label: t('Overview') }, { id: 'chart', label: t('Chart') }, { id: 'planets', label: t('Planets') }, { id: 'dasha', label: t('Timing') }, { id: 'reading', label: t('Reading') }, { id: 'ask', label: t('Ask Astrisk') }, { id: 'systems', label: t('Other systems') }] as { id: Tab; label: string }[];
   return (
     <div className="page kundali">
       {!chart ? <Card>{busy ? <Skeleton lines={4} /> : <Notice tone="danger">{error}</Notice>}</Card> : (
@@ -109,7 +110,7 @@ export function KundaliPage({ sub = '' }: { sub?: string }) {
               <StrengthTab birth={profile} />
               {reading ? <AshtakavargaTab facts={reading.facts} /> : <Card><Skeleton /></Card>}
             </>}
-            {tab === 'dasha' && (reading ? <DashaTimeline facts={reading.facts} /> : <Card><Skeleton /></Card>)}
+            {tab === 'dasha' && <><TimingTab birth={profile} />{reading ? <DashaTimeline facts={reading.facts} /> : <Card><Skeleton /></Card>}</>}
             {tab === 'reading' && (report ? <><div className="ds-row no-print"><Button variant="ghost" onClick={() => setReport(false)}>← Back to the reading</Button><Button variant="primary" onClick={() => window.print()}>Print / save as PDF</Button></div><ReportView profile={profile} chart={chart} reading={reading} /></>
               : reading ? <><div className="ds-row"><Button onClick={() => setReport(true)}>{t('Report')}: printable kundali</Button></div><ReadingPanel data={reading} /></> : <Card><Skeleton lines={5} /></Card>)}
             {tab === 'ask' && <ChatPanel key={profile.id} birth={profile} name={profile.name} />}
