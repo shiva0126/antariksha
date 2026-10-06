@@ -3,6 +3,8 @@
 //
 //	llmdata gen  -n 2000 -out .runtime/llm-data/train.jsonl
 //	llmdata eval -n 10 -base http://127.0.0.1:18092/v1 -model astrisk-local
+//	llmdata books   (public-domain book passages, for continued pretraining)
+//	llmdata bookqa  (questions on every checked book rule, for fine-tuning)
 //
 // Charts are generated from a seeded random source (births 1950-2008 across
 // Indian and world cities), computed by the Swiss Ephemeris engine and paired
@@ -168,6 +170,7 @@ func gen(ctx context.Context, w world, n int, out string, seed int64) error {
 			if p == "" {
 				continue // safety questions never reach the model
 			}
+			p = withoutDraft(p)
 			if err = enc.Encode(example{[]message{{"system", "Return JSON only."}, {"user", p}, {"assistant", t}}, merge(meta, "task", "chat", "question", q, "topics", ts)}); err != nil {
 				return err
 			}
@@ -176,6 +179,22 @@ func gen(ctx context.Context, w world, n int, out string, seed int64) error {
 	}
 	log.Printf("wrote %d examples from %d charts to %s", count, n, out)
 	return nil
+}
+
+// withoutDraft removes the grounded draft from a chat prompt: the draft is
+// the training target, so leaving it in would teach the model to copy it
+// rather than to answer from the facts and rules.
+func withoutDraft(p string) string {
+	if i := strings.Index(p, "\nDRAFT ANSWER: "); i >= 0 {
+		rest := p[i+len("\nDRAFT ANSWER: "):]
+		tail := ""
+		if j := strings.Index(rest, " Write the answer in "); j >= 0 {
+			tail = rest[j:] // keep the language instruction
+		}
+		p = p[:i] + tail
+	}
+	p = strings.Replace(p, "Answer in 120-220 words of plain everyday English.", "Answer in plain everyday English.", 1)
+	return strings.Replace(p, "The DRAFT ANSWER is already correct and grounded; improve its clarity and relevance to the question, keep every fact in it, and add nothing that the facts or rules do not support.", "Start with a short plain answer under \"In short\", then a few points under \"What this means for you\", then \"Chart details\". Add nothing that the facts or rules do not support.", 1)
 }
 
 func merge(m map[string]any, kv ...any) map[string]any {
@@ -300,7 +319,7 @@ func summarize(rs []result) map[string]any {
 
 func main() {
 	if len(os.Args) < 2 {
-		log.Fatal("usage: llmdata gen|eval [flags]")
+		log.Fatal("usage: llmdata gen|eval|books|bookqa [flags]")
 	}
 	mode := os.Args[1]
 	fs := flag.NewFlagSet(mode, flag.ExitOnError)
@@ -336,6 +355,16 @@ func main() {
 			*out = ".runtime/llm-data/eval-" + strings.ReplaceAll(*model, "/", "_") + ".json"
 		}
 		err = eval(ctx, w, *n, *base, *model, *out, 7, *perChart, *readings)
+	case "books":
+		if *out == "" {
+			*out = ".runtime/llm-data/books.jsonl"
+		}
+		err = books("corpus/raw", *out)
+	case "bookqa":
+		if *out == "" {
+			*out = ".runtime/llm-data/book-qa.jsonl"
+		}
+		err = bookQA("corpus/build/entries.jsonl", *out)
 	default:
 		log.Fatalf("unknown mode %q", mode)
 	}

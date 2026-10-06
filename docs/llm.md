@@ -113,6 +113,30 @@ model on a fixed set of charts and questions that never overlaps the training se
 
 Results go to `.runtime/llm-data/eval-<model>.json`. Every model change must beat the previous score.
 
+## Training on the books
+
+Downloaded and verified (sha256 in `corpus/sources.json`, files under `corpus/raw/`, fetched again with
+`go run ./cmd/corpus acquire`): Brihat Jataka in three translations (Iyer 1885 and 1905, Vijnanananda
+1912) and Brihat Samhita in two (Iyer 1884, Kern 1865), about 456,000 words. Every other source in the
+manifest is still `not_acquired`: pre-1931 English translations of Saravali, Phaladeepika, Jataka
+Parijata and the others were not found on archive.org (only Sanskrit editions). Kalaprakashika (Subramonia
+Iyer, first published 1917) is on archive.org as an undated reprint; it stays out until its rights are
+confirmed.
+
+`scripts/pack-llm-data.sh` builds `.runtime/llm-data/astrisk-train.zip`:
+
+| File | What | Use |
+|---|---|---|
+| `books.jsonl` | book passages by chapter and verse | stage 1: read the books |
+| `book-qa.jsonl` | 360 questions on the 141 checked rules, answered in the app's format with the verse | stage 2 |
+| `train.jsonl` | ~4,600 engine-computed charts: chat questions and readings, answered from facts and rules (the draft answer is removed from these prompts so the model learns to compose, not copy) | stage 2 |
+| `book-bench.jsonl` | 2,130 exact-answer test items | check |
+
+`training/astrisk_finetune.ipynb` runs on a free Colab or Kaggle T4: LoRA on Qwen3-1.7B, stage 1 on the
+books, stage 2 on the answers, a book-benchmark check, and export to `astrisk-qwen3-1.7b-Q8_0.gguf` for
+`astrisk-llm.service`. The benchmark checks recall of the checked rules (the same rules are in training);
+`cmd/llmdata eval` on unseen charts measures whether the model generalises.
+
 ## Roadmap
 
 1. **Now:** local model live, eval baseline recorded, data generator.
