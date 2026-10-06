@@ -24,6 +24,11 @@ func secureMemberCookie(r *http.Request) bool {
 }
 func (s *Server) securityRoutes() {
 	s.memberRoute("GET /api/me/security", s.memberSecurity)
+	s.memberRoute("POST /api/me/password", s.changePassword)
+	s.memberRoute("GET /api/me/sessions", s.listSessions)
+	s.memberRoute("POST /api/me/sessions/{session}/revoke", s.revokeSession)
+	s.memberRoute("GET /api/me/admin-totp", s.totpStatus)
+	s.memberRoute("POST /api/me/admin-totp", s.manageTOTP)
 	s.memberRoute("POST /api/me/recovery-key", s.recoveryKey)
 	s.memberRoute("POST /api/me/logout-all", s.logoutAll)
 	s.memberRoute("GET /api/me/export", s.exportMember)
@@ -37,7 +42,9 @@ func (s *Server) memberSecurity(w http.ResponseWriter, r *http.Request, id strin
 	_ = s.membersDB().QueryRow(r.Context(), `SELECT count(*) FROM member_sessions WHERE account_id=$1 AND expires_at>now()`, id).Scan(&sessions)
 	_ = s.membersDB().QueryRow(r.Context(), `SELECT recovery_hash IS NOT NULL FROM member_accounts WHERE id=$1`, id).Scan(&recovery)
 	_ = s.membersDB().QueryRow(r.Context(), `SELECT verified FROM member_phone WHERE account_id=$1`, id).Scan(&verified)
-	writeJSON(w, 200, map[string]any{"sessions": sessions, "recovery_key_created": recovery, "phone_verified": verified, "phone_available": phoneReady(), "moderator": s.isModerator(r, id)})
+	var emailVerified bool
+	_ = s.membersDB().QueryRow(r.Context(), `SELECT email_verified_at IS NOT NULL FROM member_accounts WHERE id=$1`, id).Scan(&emailVerified)
+	writeJSON(w, 200, map[string]any{"sessions": sessions, "recovery_key_created": recovery, "phone_verified": verified, "phone_available": phoneReady(), "moderator": s.isModerator(r, id), "email_verified": emailVerified, "email_delivery_available": s.mailer != nil})
 }
 func (s *Server) passwordOK(r *http.Request, id, password string) bool {
 	var hash string

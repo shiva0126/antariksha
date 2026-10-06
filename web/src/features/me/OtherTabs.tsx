@@ -6,6 +6,7 @@ import { href } from '../../lib/router';
 import { loadAccountCharts, localDataKeys, restoreDeviceCharts, saveAccountCharts, setProfileOwner, loadProfiles } from '../../ui/common/profiles';
 import { LegacyImport } from '../../ui/common/LegacyImport';
 import { PrivacyPage } from '../../ui/privacy/PrivacyPage';
+import { AccountAccess } from './AccountAccess';
 
 const signedOut = () => { setProfileOwner('signed-out'); window.dispatchEvent(new Event('antariksha-signed-out')); };
 
@@ -90,6 +91,7 @@ export function SecurityTab() {
         </div>
         {recovery && <Notice tone="warning"><b>Your recovery key:</b> <code>{recovery}</code><br />Store it somewhere safe. It is shown once and replaces any earlier key; anyone with it and your handle can reset your password.</Notice>}
       </Card>
+      <AccountAccess />
       <Card title="Mobile number" sub={status?.phone_verified ? 'Verified access to your number.' : 'Not verified.'}>
         {!status?.phone_available ? <p className="ds-muted">SMS verification starts once a text-message provider is set up.</p> : <>
           <form className="ds-row" onSubmit={e => { e.preventDefault(); void run(async () => { await api('/api/me/phone/start', 'POST', { phone, password, consent }); toast('Code sent. Enter it within 10 minutes.'); }); }}>

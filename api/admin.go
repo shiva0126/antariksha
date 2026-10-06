@@ -25,6 +25,7 @@ func (s *Server) adminRoutes() {
 		fn      memberHandler
 	}{
 		{"GET /api/admin/summary", s.adminSummary}, {"GET /api/admin/users", s.adminUsers},
+		{"GET /api/admin/operations", s.adminOperations},
 		{"GET /api/admin/audit", s.adminAudit}, {"POST /api/admin/users/{user}/action", s.adminUserAction},
 	} {
 		fn := route.fn

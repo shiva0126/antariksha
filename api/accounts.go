@@ -103,6 +103,7 @@ type memberCredentials struct {
 	BirthDate string `json:"birth_date"`
 	BirthTime string `json:"birth_time"`
 	Password  string `json:"password"`
+	Code      string `json:"code"`
 	Consent   bool   `json:"consent"`
 	// Optional at registration: a display name and the birthplace that
 	// completes the kundali.
@@ -111,6 +112,10 @@ type memberCredentials struct {
 }
 
 func (s *Server) issueSession(w http.ResponseWriter, r *http.Request, id string) error {
+	return s.issuePasswordSession(w, r, id, "", "")
+}
+
+func (s *Server) issuePasswordSession(w http.ResponseWriter, r *http.Request, id, expectedHash, code string) error {
 	token := randomToken()
 	expires := time.Now().Add(7 * 24 * time.Hour)
 	tx, err := s.membersDB().Begin(r.Context())
@@ -118,11 +123,17 @@ func (s *Server) issueSession(w http.ResponseWriter, r *http.Request, id string)
 		return err
 	}
 	defer tx.Rollback(r.Context())
-	var activeID string
-	if err = tx.QueryRow(r.Context(), `SELECT id FROM member_accounts WHERE id=$1 AND NOT suspended FOR UPDATE`, id).Scan(&activeID); err != nil {
+	var currentHash string
+	if err = tx.QueryRow(r.Context(), `SELECT password_hash FROM member_accounts WHERE id=$1 AND NOT suspended FOR UPDATE`, id).Scan(&currentHash); err != nil {
 		return err
 	}
-	_, err = tx.Exec(r.Context(), `INSERT INTO member_sessions(token_hash,account_id,expires_at) VALUES($1,$2,$3)`, sessionHash(token), id, expires)
+	if expectedHash != "" && currentHash != expectedHash {
+		return fmt.Errorf("credentials changed; sign in again")
+	}
+	if err = checkLoginTOTP(r, tx, id, code); err != nil {
+		return err
+	}
+	_, err = tx.Exec(r.Context(), `INSERT INTO member_sessions(token_hash,account_id,expires_at,created_at,client_label) VALUES($1,$2,$3,now(),$4)`, sessionHash(token), id, expires, sessionClientLabel(r.UserAgent()))
 	if err != nil {
 		return err
 	}
@@ -234,8 +245,12 @@ func (s *Server) loginMember(w http.ResponseWriter, r *http.Request) {
 		problem(w, 401, fmt.Errorf("invalid credentials"))
 		return
 	}
-	if s.issueSession(w, r, id) != nil {
-		problem(w, 500, fmt.Errorf("sign-in unavailable"))
+	if !s.securityBudget.allow("login:"+id, time.Now()) {
+		problem(w, 429, fmt.Errorf("too many sign-in attempts; try again shortly"))
+		return
+	}
+	if s.issuePasswordSession(w, r, id, hash, in.Code) != nil {
+		problem(w, 401, fmt.Errorf("sign-in failed; if you enabled an authenticator, enter its next unused code"))
 		return
 	}
 	writeJSON(w, 200, map[string]bool{"ok": true})

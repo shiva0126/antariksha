@@ -39,7 +39,7 @@ func TestMatrimonyV2Journey(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer pool.Close()
+	t.Cleanup(pool.Close)
 	s := NewServer(realEngine(t), PostgresCache{Pool: pool}, nil)
 	mail := &fakeMailer{}
 	s.mailer = mail

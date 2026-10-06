@@ -8,13 +8,13 @@ birth. Everything is free.
 
 | Feature | How it works |
 | --- | --- |
-| Horoscope matching | Opt-in per member ("Show horoscope matching"). Between two members who have **both** opted in, each card shows the guna score out of 36, Moon sign and nakshatra, Mangal dosha and the root-number graha. Computed on the server from stored birth details; date, time and place are never returned. Without a birthplace the guna score still works (it uses the Moon) and Mangal dosha shows as unknown. |
+| Horoscope matching | Opt-in per member ("Show horoscope matching"). Between two members who have **both** opted in and supplied date, time and confirmed birthplace/timezone, each card shows the guna score out of 36, Moon sign and nakshatra, Mangal dosha and the root-number graha. Computed on the server from stored birth details; date, time and place are never returned. Missing birthplaces now withhold all horoscope results: assuming an Indian timezone can change even the Moon-based score. |
 | Full comparison | "Compare horoscopes" opens all eight kootas, doshas and cancellations, Mangal dosha, numerology and **Ask Astrisk** for that pair (`/api/matrimony/compare/{peer}` and `/chat`). Not stored. |
 | Structured biodata | Religion, community (free text, optional), mother tongue, diet, height, marital status, education level and field, occupation category and title, income band, family type, timeline, relocation, children. City from GeoNames. Values are validated against `matrimonyEnums` in `api/matrimony.go`. Completeness meter. |
 | Discovery | Filters (looking for, age, city, religion, mother tongue, diet, marital status, education, minimum guna, Mangal dosha, verified), sort (best match, guna, newest), 12 per page, saved search, shortlist and "Not now". Every card lists why it was suggested. |
 | Interests | Optional 300-character note; at most 20 interests a day. Received / connected / sent lists. Accepting notifies the sender. |
 | Chat | Opens after mutual acceptance, refreshes every 10 s while visible. "Share my contact" reveals a phone or email to that one person only; blocking removes it. |
-| Verification | Selfie + at least one published photo. A moderator compares them in Community → Moderation; the selfie is deleted after review and only the badge remains. |
+| Verification | Selfie + at least one published photo. A moderator compares them; the selfie is deleted after review and a Photo reviewed badge remains. Changing the published photo set invalidates the badge. This does not verify identity documents, income, employment or character. |
 | Biodata PDF | `#biodata`: printable biodata with an optional kundali page (South and North Indian charts and planet table), saved through the browser's print dialog. |
 | Family | Family-prepared biodata and 30-day shortlist helpers (unchanged), now under the Family tab; helpers also see guna scores and reasons. |
 | Safety | Guide with helplines (112, 181, 1930) and report reasons. |

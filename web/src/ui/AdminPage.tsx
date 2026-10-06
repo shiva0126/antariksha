@@ -5,6 +5,8 @@ import {MatrimonyModeration,VerificationQueue} from './community/MatrimonyModera
 import {PageHeader,Tabs} from '../ds';
 import {ReadingLibrary} from './common/ReadingLibrary';
 import './admin.css';
+import {AdminAuthenticator} from '../features/admin/AdminAuthenticator';
+import {Operations} from '../features/admin/Operations';
 
 type User={id:string;handle:string;email:string;role:string;suspended:boolean;created_at:string;email_verified:boolean;sessions:number;community:boolean;matrimony:boolean};
 type Summary={users:number;suspended:number;moderators:number;superadmins:number;active_sessions:number;open_post_reports:number;open_profile_reports:number};
@@ -17,7 +19,9 @@ export function AdminPage(){
  return <div className="page admin-page"><PageHeader kicker="Astrisk administration" title="Superadmin" description="Manage members, review reports and check the reading library."/>
  {error&&<p role="alert">{error}</p>}{summary&&<>
  <div className="grid-3"><article className="card"><h2>{summary.users} users</h2><p>{summary.suspended} suspended · {summary.active_sessions} active sessions</p></article><article className="card"><h2>{summary.moderators} moderators</h2><p>{summary.superadmins} superadmin accounts</p></article><article className="card"><h2>{summary.open_post_reports+summary.open_profile_reports} open reports</h2><p>{summary.open_post_reports} post reports · {summary.open_profile_reports} profile reports</p></article></div>
- <Tabs label="Administration sections" active={tab} onSelect={setTab} items={['Users','Moderation','Photo verification','Reading library','Action log'].map(t=>({id:t,label:t}))}/>
+ <Tabs label="Administration sections" active={tab} onSelect={setTab} items={['Users','Operations','Security','Moderation','Photo verification','Reading library','Action log'].map(t=>({id:t,label:t}))}/>
+ {tab==='Operations'&&<Operations/>}
+ {tab==='Security'&&<AdminAuthenticator/>}
  {tab==='Users'&&<Users changed={refresh}/>}{tab==='Moderation'&&<><Moderation/><MatrimonyModeration/></>}{tab==='Photo verification'&&<VerificationQueue/>}{tab==='Reading library'&&<ReadingLibrary/>}{tab==='Action log'&&<ActionLog/>}
  </>}</div>;
 }

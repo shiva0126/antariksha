@@ -21,15 +21,16 @@ type Calculator interface {
 	BirthChart(engine.ChartInput) (engine.Chart, error)
 }
 type Server struct {
-	engine      Calculator
-	cache       Cache
-	mux         *http.ServeMux
-	logger      *slog.Logger
-	reading     *reading.Service
-	chats       ChatStore
-	mailer      EmailSender
-	matchBudget *rateLimiter
-	adminBudget *rateLimiter
+	engine         Calculator
+	cache          Cache
+	mux            *http.ServeMux
+	logger         *slog.Logger
+	reading        *reading.Service
+	chats          ChatStore
+	mailer         EmailSender
+	matchBudget    *rateLimiter
+	adminBudget    *rateLimiter
+	securityBudget *rateLimiter
 }
 
 func NewServer(e Calculator, c Cache, l *slog.Logger) *Server {
@@ -45,7 +46,7 @@ func NewServerWithReading(e Calculator, c Cache, l *slog.Logger, rs *reading.Ser
 	if rs == nil {
 		rs = reading.NewService(reading.DefaultCorpus, nil)
 	}
-	s := &Server{engine: e, cache: c, mux: http.NewServeMux(), logger: l, reading: rs, chats: NewMemoryChatStore(), matchBudget: newRateLimiter(4), adminBudget: newRateLimiter(20)}
+	s := &Server{engine: e, cache: c, mux: http.NewServeMux(), logger: l, reading: rs, chats: NewMemoryChatStore(), matchBudget: newRateLimiter(4), adminBudget: newRateLimiter(20), securityBudget: newRateLimiter(10)}
 	if pc, ok := c.(PostgresCache); ok {
 		s.chats = PostgresChatStore{Pool: pc.Pool}
 	}

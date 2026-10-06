@@ -27,7 +27,7 @@ export function ProfileCard({ c, onChanged, onCompare }: { c: Candidate; onChang
         {h && <div className="guna-chip" title={`${h.guna} of ${h.max} gunas`}><b>{h.guna}</b><span>/36</span></div>}
       </div>
       <div className="mat-card-body">
-        <h3>{displayName(c)} · {c.age}{c.verified && <span className="verified" title="Photo verified by a moderator">✓ {t('Verified')}</span>}</h3>
+        <h3>{displayName(c)} · {c.age}{c.verified && <span className="verified" title="A moderator compared a selfie with profile photos. This does not verify identity documents, income, occupation or character.">✓ Photo reviewed</span>}</h3>
         <p className="mat-facts">{facts.join(' · ')}</p>
         {work.length > 0 && <p className="mat-facts">{work.join(' · ')}</p>}
         {d.introduction && <p className="mat-intro">{d.introduction}</p>}

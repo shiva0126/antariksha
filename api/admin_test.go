@@ -70,7 +70,7 @@ func TestSuperadminAccessAndLifecycle(t *testing.T) {
 	if _, err = p.Exec(ctx, `UPDATE member_accounts SET role=CASE WHEN id=$1 THEN 'superadmin' ELSE 'moderator' END WHERE id IN($1,$2)`, root.id, moderator.id); err != nil {
 		t.Fatal(err)
 	}
-	for _, path := range []string{"/api/admin/users", "/api/admin/summary", "/api/admin/audit"} {
+	for _, path := range []string{"/api/admin/users", "/api/admin/summary", "/api/admin/audit", "/api/admin/operations"} {
 		check(request(account{}, "GET", path, nil, ""), 401)
 		check(request(member, "GET", path, nil, ""), 403)
 		check(request(moderator, "GET", path, nil, ""), 403)

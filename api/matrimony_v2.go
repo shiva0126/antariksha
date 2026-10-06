@@ -86,8 +86,6 @@ func (s *Server) saveAlertPreference(w http.ResponseWriter, r *http.Request, id 
 
 // India's centre, used only for the Moon when no birthplace is saved: the Moon
 // needs the moment of birth, not the place; lagna-based rules are skipped.
-const fallbackLat, fallbackLon = 22.97, 78.66
-
 type memberBirth struct {
 	Date, Time string
 	Place      *birthPlace
@@ -116,13 +114,10 @@ func (s *Server) forgetChart(id string) {
 }
 
 func (s *Server) chartOf(id string, b memberBirth) (memberChart, bool) {
-	if b.Date == "" || b.Time == "" || s.engine == nil {
+	if b.Date == "" || b.Time == "" || b.Place == nil || !b.Place.valid() || s.engine == nil {
 		return memberChart{}, false
 	}
-	in := engine.ChartInput{Date: b.Date, Time: b.Time, Lat: fallbackLat, Lon: fallbackLon, TZ: "Asia/Kolkata"}
-	if b.Place != nil {
-		in.Lat, in.Lon, in.TZ = b.Place.Lat, b.Place.Lon, b.Place.TZ
-	}
+	in := engine.ChartInput{Date: b.Date, Time: b.Time, Lat: b.Place.Lat, Lon: b.Place.Lon, TZ: b.Place.TZ}
 	key := fmt.Sprintf("%s|%s|%s|%.4f|%.4f|%s", id, in.Date, in.Time, in.Lat, in.Lon, in.TZ)
 	memberCharts.mu.Lock()
 	if c, ok := memberCharts.m[key]; ok {
@@ -392,7 +387,7 @@ func (s *Server) discoverFor(w http.ResponseWriter, r *http.Request, owner, view
 			if h, ok := s.compareMembers(owner, c.ID, ownerBirth, b, mine.ProfileKind, c.Details.ProfileKind); ok {
 				c.Horoscope = h
 			} else {
-				c.HoroReason = "Birth details are incomplete."
+				c.HoroReason = "Both members need a birth date, birth time and confirmed birthplace/timezone for horoscope matching."
 			}
 		}
 		c.addReasons(mine, c.Horoscope)
@@ -543,7 +538,7 @@ func (s *Server) comparablePair(w http.ResponseWriter, r *http.Request, id, peer
 	}
 	h, ok := s.compareMembers(id, peer, mb, pb, myKind, theirKind)
 	if !ok {
-		problem(w, 409, fmt.Errorf("birth details are incomplete for this comparison"))
+		problem(w, 409, fmt.Errorf("both members need a birth date, birth time and confirmed birthplace/timezone for this comparison"))
 		return nil, false
 	}
 	return h, true

@@ -1,5 +1,31 @@
 # Superadmin
 
+## Account security and operations
+
+Admin → Operations shows aggregate adoption, matching and review-backlog counts,
+plus configuration readiness. Admin → Security offers opt-in authenticator setup.
+Use your own authenticator app with the displayed manual key and confirm one code.
+Setup expires after ten minutes; enabling/disabling signs out every device. Subsequent
+sign-ins require the password and a fresh six-digit code. Recently used codes cannot
+be reused, including immediately after setup: wait for the next code.
+
+`ADMIN_TOTP_KEY_FILE` must name a regular, owner-readable-only file containing 32
+random bytes. The service drop-in is `deploy/panchang-admin-security.conf`. Preserve
+the key through restarts and back it up separately with encryption: database-only
+backups are insufficient for restoring enrolled authenticators. Secrets in PostgreSQL
+are AES-GCM encrypted with account-bound associated data. Missing/wrong keys fail
+closed for enrolled accounts; they never bypass the authenticator.
+
+Recovery keys and email password resets preserve the factor. A lost authenticator
+requires verified server-operator assistance: identify the exact owner, transactionally
+delete that owner's `member_totp` row and sessions, record an audit reason, then have
+the owner enroll again. Do not expose a public bypass or use email-based role grants.
+The operator password-recovery script does not reset MFA.
+
+Me → Security now includes password change and per-session revocation. Changing a
+password revokes all sessions and recovery credentials. Full account and provider
+delivery work remaining is tracked in [the non-AI plan](non-ai-delivery-plan.md).
+
 Migration 14 adds persisted `member`, `moderator` and `superadmin` roles and suspension state. Open `/#admin` for the administrator sign-in screen, using the existing account email and password. Once signed in, **Admin** is visible in the header on desktop and mobile, as well as in the profile menu. Only the role returned by the authenticated server enables that navigation; all `/api/admin/*` requests independently check the role on the server. A user cannot set their own role through registration or profile fields. The administrator sign-in screen uses the normal authentication endpoint; it does not grant privileges or create a separate password.
 
 The page includes a paginated user list with literal email/handle search and status filtering, aggregate account counts, post/profile moderation queues, the reading library status and a paginated action log. User listings include account identifiers, email/verification status, role, join date, active-session count and opt-in flags. They do not expose passwords, phone ciphertext, private birth details, personal notes or messages.

@@ -91,13 +91,14 @@ export function ProfileEditor({ onSaved }: { onSaved: () => void }) {
         <p>When you and another member both turn this on, each of you sees your guna score (out of 36), Moon sign, nakshatra, Mangal dosha and root-number planet on the other's card, and can open the full kundali comparison with Ask Astrisk. <b>Your birth date, time and place are never shown</b> to anyone.</p>
         <label className="consent"><input type="checkbox" checked={horoscope} onChange={e => setHoroscope(e.target.checked)} /> <span>{t('Show horoscope matching')}</span></label>
         <div className="mat-birthplace">
-          <PlaceSearch label={t('Birthplace') + ' (needed for Mangal dosha and lagna)'} value={birthPlace} onChange={p => void act(async () => { await memberAPI('/api/me/birth-place', 'PUT', { name: [p.name, p.region].filter(Boolean).join(', '), lat: p.lat, lon: p.lon, tz: p.tz }); setBirthPlace(p); setMsg('Birthplace saved.'); })} />
-          {!birthPlace && <p className="muted small">Without a birthplace, the guna score still works (it uses the Moon), but Mangal dosha shows as unknown.</p>}
+          <PlaceSearch label={t('Birthplace') + ' (required for horoscope matching)'} value={birthPlace} onChange={p => void act(async () => { await memberAPI('/api/me/birth-place', 'PUT', { name: [p.name, p.region].filter(Boolean).join(', '), lat: p.lat, lon: p.lon, tz: p.tz }); setBirthPlace(p); setMsg('Birthplace saved.'); })} />
+          {!birthPlace && <p className="muted small">Add your birthplace so we can resolve the correct timezone. Horoscope scores remain unavailable until both members have complete birth details. Discovery and interests still work.</p>}
         </div>
       </section>
 
-      <section className="card mat-verify"><h3>Photo verification {me?.verified && <span className="verified">✓ {t('Verified')}</span>}</h3>
-        {me?.verified ? <p>Your profile shows a verified badge. Uploading new photos keeps it; a moderator may re-check after reports.</p> : me?.verification === 'pending' ? <p>Your selfie is waiting for a moderator. It is deleted after review.</p> : <>
+      <section className="card mat-verify"><h3>Photo verification {me?.verified && <span className="verified">✓ Photo reviewed</span>}</h3>
+        <p className="small">A photo review is not identity, occupation, income or character verification. Profile statements and social links remain self-declared.</p>
+        {me?.verified ? <p>A moderator reviewed your published photos. Changing the published photo set removes the badge until a new selfie review is completed.</p> : me?.verification === 'pending' ? <p>Your selfie is waiting for a moderator. It is deleted after review.</p> : <>
           <p>Take a selfie now and upload it. A moderator compares it with your published photos and then deletes it; only the badge remains.{me?.verification === 'rejected' && ' Your last selfie could not be matched; please try again with good light.'}</p>
           <div className="field-row">
             <label className="field"><span>Selfie (JPEG or PNG)</span><input type="file" accept="image/jpeg,image/png" capture="user" onChange={e => setSelfie(e.target.files?.[0] ?? null)} /></label>
