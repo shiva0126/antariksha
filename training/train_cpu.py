@@ -69,6 +69,18 @@ def chat_examples(tok, max_len):
     return out
 
 
+def answer_loss(model, x, y):
+    """Next-token loss on the labelled positions only. The vocabulary has
+    ~152k entries, so logits for every position of a 700-token example would
+    take ~425 MB (plus gradients); only the answer's ~200 positions need them."""
+    inner = model.get_base_model()
+    hidden = inner.model(input_ids=x).last_hidden_state[:, :-1]
+    target = y[:, 1:]
+    keep = target != -100
+    logits = inner.lm_head(hidden[keep])
+    return torch.nn.functional.cross_entropy(logits.float(), target[keep])
+
+
 def train(stage, minutes, max_len, threads, lr):
     torch.set_num_threads(threads)
     torch.manual_seed(7)
@@ -100,7 +112,7 @@ def train(stage, minutes, max_len, threads, lr):
     for i, (ids, labels) in enumerate(data):
         x = torch.tensor([ids])
         y = torch.tensor([labels])
-        loss = model(input_ids=x, labels=y).loss / accum
+        loss = answer_loss(model, x, y) / accum
         loss.backward()
         loss_sum += loss.item() * accum
         n_loss += 1
