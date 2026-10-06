@@ -242,6 +242,18 @@ main { flex: 1; }
 .msg-bubble p:last-of-type { margin-bottom: 0; }
 .msg-user .msg-bubble { background: linear-gradient(135deg, #a77d39, #c9a55c); color: #1a1206; border-bottom-right-radius: 4px; font-weight: 500; }
 .msg-assistant .msg-bubble { background: #0a1020; border: 1px solid var(--line); color: #d9dfea; border-bottom-left-radius: 4px; }
+/* Ask Astrisk answers: plain answer first, technical details folded. */
+.answer { display: grid; gap: 6px; }
+.msg-bubble .answer-label { margin: 6px 0 0; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--c-accent); }
+.msg-bubble .answer-label:first-child { margin-top: 0; }
+.msg-bubble .answer-short { font-size: 15px; color: var(--c-text); margin: 0; }
+.answer-points { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
+.answer-points li::marker { color: var(--c-accent); }
+.answer-details { margin-top: 6px; border-top: 1px solid var(--c-line-soft); padding-top: 8px; }
+.answer-details summary { cursor: pointer; font-size: 13px; color: var(--c-text-muted); }
+.answer-details[open] summary { margin-bottom: 8px; }
+.msg-bubble .answer-details p { font-size: 13px; color: var(--c-text-muted); }
+.msg-bubble .answer-closing { margin-top: 4px; font-size: 12px; color: var(--c-text-muted); font-style: italic; }
 .sources { margin-top: 10px; font-size: 12px; color: var(--muted); }
 .sources summary { cursor: pointer; }
 .sources ul { margin: 8px 0 0; padding-left: 16px; }

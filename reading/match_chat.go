@@ -204,7 +204,7 @@ func composeMatch(mc MatchChatContext, boy, girl *insight, q string, history []C
 		}
 		add("You can ask about any of the eight factors (Varna, Vashya, Tara, Yoni, Graha Maitri, Gana, Bhakoot, Nadi), doshas and their cancellations, Mangal dosha, the Moon signs and nakshatras, each person's 7th house and Venus, current dashas, or numerology.")
 	}
-	return strings.Join(dedupe(parts), "\n\n") + "\n\nFor reflection, not certainty.", ts
+	return matchPlain(mc, boy, girl, ts).render(dedupe(parts)), ts
 }
 
 func scoreLine(m engine.Match) string {

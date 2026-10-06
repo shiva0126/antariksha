@@ -3,6 +3,7 @@ import { getChatHistory, postChat } from '../../api/client';
 import type { ChartInput, ChatMessage } from '../../api/types';
 import { chatKey } from '../common/profiles';
 import { useSettings } from '../../i18n';
+import { AnswerText } from './AnswerText';
 
 const suggestions = [
   'What does my chart say about my career?',
@@ -24,7 +25,7 @@ const save = (k: string, v?: string) => { try { v ? localStorage.setItem(k, v) :
 function Answer({ m }: { m: ChatMessage }) {
   return (
     <>
-      {m.content.split(/\n\n+/).map((p, i) => <p key={i}>{p}</p>)}
+      <AnswerText text={m.content} />
       {m.sources.length > 0 && (
         <details className="sources">
           <summary>{m.sources.length} source{m.sources.length > 1 ? 's' : ''} · {m.model === 'grounded-corpus' ? 'grounded answer' : m.model}</summary>

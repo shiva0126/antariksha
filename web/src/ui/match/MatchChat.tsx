@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ChatAnswer, Source } from '../../api/types';
 import { useSettings } from '../../i18n';
+import { AnswerText } from '../chat/AnswerText';
 
 const suggestions = [
   'Explain our guna score',
@@ -61,7 +62,7 @@ export function MatchChat({ ask: send, intro }: { ask: AskFn; intro?: string }) 
         {turns.map(m => (
           <div key={m.id} className={'msg msg-' + m.role}>
             <div className="msg-bubble">
-              {m.content.split(/\n\n+/).map((p, i) => <p key={i}>{p}</p>)}
+              {m.role === 'assistant' ? <AnswerText text={m.content} /> : <p>{m.content}</p>}
               {m.sources && m.sources.length > 0 && (
                 <details className="sources">
                   <summary>{m.sources.length} source{m.sources.length > 1 ? 's' : ''} · {m.model === 'grounded-corpus' ? 'grounded answer' : m.model}</summary>

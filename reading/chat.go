@@ -423,8 +423,7 @@ func compose(in *insight, q string, history []ChatTurn, cc ChatContext) (string,
 		add(in.dashaLine())
 		add("You can ask about career, marriage, wealth, education, children, health, travel abroad, siblings, property, spirituality, your nakshatra, a planet (for example \"What does my Saturn mean?\"), a house, your yogas, Mangal dosha, Sade Sati, your current dasha, your planetary strength (Shadbala) or how your numerology connects with your chart.")
 	}
-	parts = dedupe(parts)
-	return strings.Join(parts, "\n\n") + "\n\nFor reflection, not certainty.", ts
+	return plainFor(in, ts, gs, house, cc).render(dedupe(parts)), ts
 }
 
 func dedupe(xs []string) []string {
