@@ -40,7 +40,9 @@ func DetectYogas(c Chart, d map[string]Dignity) []Yoga {
 		out = append(out, yoga("Chandra-Mangala", "wealth", []string{"moon", "mars"}, []string{strconv.Itoa(houseOf(gs["moon"].Longitude, c.Ascendant.Longitude))}, strength(c, "moon", "mars"), map[string]any{"same_sign": gs["moon"].Rashi}))
 	}
 	mah := map[string]string{"mars": "Ruchaka", "mercury": "Bhadra", "jupiter": "Hamsa", "venus": "Malavya", "saturn": "Sasa"}
-	for id, name := range mah {
+	// Fixed order (maps iterate randomly), so the same chart always lists its yogas the same way.
+	for _, id := range []string{"mars", "mercury", "jupiter", "venus", "saturn"} {
+		name := mah[id]
 		if dg := d[id]; (dg.State == "own" || dg.State == "exalted") && inSet(houseOf(gs[id].Longitude, c.Ascendant.Longitude), 1, 4, 7, 10) {
 			out = append(out, yoga(name, "mahapurusha", []string{id}, []string{strconv.Itoa(houseOf(gs[id].Longitude, c.Ascendant.Longitude))}, strength(c, id), map[string]any{"dignity": dg.State, "house": houseOf(gs[id].Longitude, c.Ascendant.Longitude)}))
 		}
@@ -69,7 +71,8 @@ func DetectYogas(c Chart, d map[string]Dignity) []Yoga {
 	if kemadruma(c, gs) {
 		out = append(out, yoga("Kemadruma", "caution", nil, []string{"from_moon"}, "caution", map[string]any{"exception_checks": []string{"no_planets_2nd_or_12th", "no_kendra_from_moon"}}))
 	}
-	for id, dg := range d {
+	for _, id := range GrahaIDs {
+		dg := d[id]
 		if dg.NeechaBhanga {
 			out = append(out, yoga("Neecha Bhanga Raja Yoga", "raja", []string{id}, []string{"cancellation_geometry"}, "moderate", map[string]any{"planet": id, "debilitation_cancelled": true}))
 		}

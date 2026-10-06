@@ -76,7 +76,11 @@ func ScoreAnswer(f engine.ChartFacts, topics []string, raw string) (answer strin
 	if json.Unmarshal([]byte(raw), &v) != nil || strings.TrimSpace(v.Answer) == "" {
 		return "", []string{"json"}
 	}
-	a := v.Answer
+	return v.Answer, ScoreText(f, topics, v.Answer)
+}
+
+// ScoreText applies ScoreAnswer's checks to a plain-text answer.
+func ScoreText(f engine.ChartFacts, topics []string, a string) (failed []string) {
 	n := len(strings.Fields(a))
 	if n < 60 || n > 320 {
 		failed = append(failed, fmt.Sprintf("length:%d", n))
@@ -112,5 +116,72 @@ func ScoreAnswer(f engine.ChartFacts, topics []string, raw string) (answer strin
 			}
 		}
 	}
-	return a, failed
+	return failed
+}
+
+// CompactSystem instructs a small model given compactChart lines. The
+// local model was fine-tuned on exactly this text; keep it unchanged.
+const CompactSystem = "You are Astrisk, a Vedic astrology guide. Use only the CHART lines. Answer in plain everyday words: a short answer under \"In short\", then points under \"What this means for you\". End with \"For reflection, not certainty.\""
+
+// compactChart is the chart as a handful of plain sentences: rising sign,
+// each planet's placement, the current period, the yogas, and the facts
+// some answers use that are not placements. An answer may only state what
+// these lines give it.
+func compactChart(in *insight, f engine.ChartFacts, cc ChatContext) string {
+	var b strings.Builder
+	fmt.Fprintf(&b, "Rising sign: %s. Moon sign: %s, birth star %s.\n", signPlain(in.signs[in.lagnaSign()]), signPlain(in.signs[in.signIdx("moon")]), in.grahas["moon"].Nakshatra)
+	for _, id := range engine.GrahaIDs {
+		b.WriteString(in.where(id) + "\n")
+	}
+	b.WriteString(in.periodNow() + "\n")
+	if names := in.yogaNames(); len(names) > 0 {
+		b.WriteString("Yogas: " + strings.Join(names, ", ") + ".\n")
+	}
+	if sb := cc.Shadbala; sb != nil && len(sb.Rows) > 0 {
+		best, worst := sb.Rows[0], sb.Rows[0]
+		for _, r := range sb.Rows {
+			if r.Rank < best.Rank {
+				best = r
+			}
+			if r.Rank > worst.Rank {
+				worst = r
+			}
+		}
+		fmt.Fprintf(&b, "Strength (Shadbala): strongest %s, weakest %s.\n", gname(best.Graha), gname(worst.Graha))
+	}
+	if cc.Transit != nil {
+		if on, phase := engine.SadeSati(f.Chart, *cc.Transit); on {
+			fmt.Fprintf(&b, "Sade Sati: yes, phase %d of 3.\n", phase)
+		} else {
+			b.WriteString("Sade Sati: no.\n")
+		}
+	}
+	if n := cc.Numerology; n != nil {
+		fmt.Fprintf(&b, "Numerology: life path %d, root number %d (%s).\n", n.LifePath.Number, n.Mulank, gname(n.MulankGraha))
+	}
+	if ok, h := engine.MangalDosha(f.Chart); ok {
+		fmt.Fprintf(&b, "Mangal dosha: yes (Mars in the %s house).\n", ordinal(h))
+	} else {
+		b.WriteString("Mangal dosha: no.\n")
+	}
+	return b.String()
+}
+
+// CompactPair is a short training example for small models trained on a
+// CPU: the compactChart lines and the question, answered with the plain
+// part of the answer, without the technical details.
+func (s *Service) CompactPair(ctx context.Context, f engine.ChartFacts, rules []Rule, question string, cc ChatContext) (prompt, target string, ok bool) {
+	in := newInsight(ctx, s.Corpus, f, rules)
+	ts, gs, house := classify(question)
+	if contains(ts, "safety") {
+		return "", "", false
+	}
+	p := plainFor(in, ts, gs, house, cc)
+	return "CHART\n" + compactChart(in, f, cc) + "\nQUESTION: " + question, p.render(nil), true
+}
+
+// Topics returns the topics a question is classified under.
+func Topics(q string) []string {
+	ts, _, _ := classify(q)
+	return ts
 }

@@ -360,13 +360,13 @@ func plainFor(in *insight, ts, gs []string, house int, cc ChatContext) plain {
 						worst = r
 					}
 				}
-				p.say(fmt.Sprintf("Your strongest planet is %s (%s) and the one needing most support is %s (%s), by the classical six-part strength score (Shadbala).", gname(best.Graha), grahaGist[best.Graha], gname(worst.Graha), grahaGist[worst.Graha]))
+				p.say(fmt.Sprintf("Your strongest planet is %s (%s) and the one needing most support is %s (%s), by the classical six-part strength score (Shadbala).", theName(best.Graha), grahaGist[best.Graha], theName(worst.Graha), grahaGist[worst.Graha]))
 				p.point(in.where(best.Graha))
 				p.point(in.where(worst.Graha))
 			}
 		case "numerology":
 			if n := cc.Numerology; n != nil {
-				p.say(fmt.Sprintf("Your life path number is %d and your root number (mulank) is %d, which is linked with %s.", n.LifePath.Number, n.Mulank, gname(n.MulankGraha)))
+				p.say(fmt.Sprintf("Your life path number is %d and your root number (mulank) is %d, which is linked with %s.", n.LifePath.Number, n.Mulank, theName(n.MulankGraha)))
 				p.point(in.where(n.MulankGraha))
 			}
 		case "travel":

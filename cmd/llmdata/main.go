@@ -5,6 +5,8 @@
 //	llmdata eval -n 10 -base http://127.0.0.1:18092/v1 -model astrisk-local
 //	llmdata books   (public-domain book passages, for continued pretraining)
 //	llmdata bookqa  (questions on every checked book rule, for fine-tuning)
+//	llmdata compact (short chart questions for small models trained on a CPU)
+//	llmdata evalcompact / evalbook (score a model on unseen charts / the book test)
 //
 // Charts are generated from a seeded random source (births 1950-2008 across
 // Indian and world cities), computed by the Swiss Ephemeris engine and paired
@@ -178,6 +180,41 @@ func gen(ctx context.Context, w world, n int, out string, seed int64) error {
 		}
 	}
 	log.Printf("wrote %d examples from %d charts to %s", count, n, out)
+	return nil
+}
+
+// compactData writes short chart questions with plain answers (see
+// reading.CompactPair), one or two per chart, English only.
+func compactData(ctx context.Context, w world, n int, out string, seed int64) error {
+	if err := os.MkdirAll(filepath.Dir(out), 0o755); err != nil {
+		return err
+	}
+	fh, err := os.Create(out)
+	if err != nil {
+		return err
+	}
+	defer fh.Close()
+	enc := json.NewEncoder(fh)
+	r := rand.New(rand.NewSource(seed + 1))
+	count := 0
+	for _, s := range charts(seed, n) {
+		f, rules, cc, err := w.facts(ctx, s)
+		if err != nil {
+			return err
+		}
+		for k := 0; k < 2; k++ {
+			q := questions[r.Intn(len(questions))]
+			p, t, ok := w.svc.CompactPair(ctx, f, rules, q, cc)
+			if !ok {
+				continue
+			}
+			if err = enc.Encode(example{[]message{{"system", reading.CompactSystem}, {"user", p}, {"assistant", t}}, map[string]any{"task": "compact", "question": q, "chart": s.in}}); err != nil {
+				return err
+			}
+			count++
+		}
+	}
+	log.Printf("wrote %d compact examples from %d charts to %s", count, n, out)
 	return nil
 }
 
@@ -355,6 +392,30 @@ func main() {
 			*out = ".runtime/llm-data/eval-" + strings.ReplaceAll(*model, "/", "_") + ".json"
 		}
 		err = eval(ctx, w, *n, *base, *model, *out, 7, *perChart, *readings)
+	case "evalcompact":
+		if *n == 0 {
+			*n = 10
+		}
+		if *out == "" {
+			*out = ".runtime/llm-data/evalcompact-" + strings.ReplaceAll(*model, "/", "_") + ".json"
+		}
+		err = evalCompact(ctx, w, *n, *base, *model, *out, 7, *perChart)
+	case "evalbook":
+		if *n == 0 {
+			*n = 40
+		}
+		if *out == "" {
+			*out = ".runtime/llm-data/evalbook-" + strings.ReplaceAll(*model, "/", "_") + ".json"
+		}
+		err = evalBook(ctx, *n, *base, *model, *out)
+	case "compact":
+		if *n == 0 {
+			*n = 3000
+		}
+		if *out == "" {
+			*out = ".runtime/llm-data/compact.jsonl"
+		}
+		err = compactData(ctx, w, *n, *out, 3)
 	case "books":
 		if *out == "" {
 			*out = ".runtime/llm-data/books.jsonl"

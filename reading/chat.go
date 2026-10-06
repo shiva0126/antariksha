@@ -147,6 +147,9 @@ func (s *Service) Answer(ctx context.Context, facts engine.ChartFacts, rules []R
 	if s.LLM == nil || contains(ts, "safety") {
 		return ans, nil
 	}
+	if s.Compact {
+		return s.compactAnswer(ctx, in, facts, question, ts, cc, ans), nil
+	}
 	for _, rule := range cc.Related {
 		in.use(rule)
 	}
@@ -527,4 +530,32 @@ func strengthLine(cc ChatContext) string {
 		out += " Below their requirement: " + strings.Join(weak, "; ") + ". Strong grahas deliver their significations and dashas more fully; weaker ones need more conscious effort."
 	}
 	return out
+}
+
+var thinkBlock = regexp.MustCompile(`(?s)<think>.*?</think>`)
+
+// compactAnswer asks the local fine-tuned model, which reads compactChart
+// lines and answers in the plain format. Its answer is used only if it
+// passes the same checks the model was evaluated on; the grounded answer's
+// chart details are kept below it. Otherwise the grounded answer stands.
+func (s *Service) compactAnswer(ctx context.Context, in *insight, f engine.ChartFacts, question string, ts []string, cc ChatContext, grounded ChatAnswer) ChatAnswer {
+	cl, ok := s.LLM.(ChatLLM)
+	if !ok || (cc.Lang != "" && cc.Lang != "en") {
+		return grounded // the local model answers in English only
+	}
+	raw, err := cl.Chat(ctx, CompactSystem, "CHART\n"+compactChart(in, f, cc)+"\nQUESTION: "+question)
+	if err != nil {
+		return grounded
+	}
+	text := strings.TrimSpace(thinkBlock.ReplaceAllString(raw, ""))
+	if !strings.HasPrefix(text, headShort) || len(ScoreText(f, ts, text)) > 0 {
+		return grounded
+	}
+	if i := strings.Index(grounded.Answer, "\n\n"+headDetails+"\n"); i >= 0 {
+		details := strings.TrimSuffix(grounded.Answer[i:], "\n\nFor reflection, not certainty.")
+		text = strings.TrimSuffix(text, "For reflection, not certainty.")
+		text = strings.TrimSpace(text) + details + "\n\nFor reflection, not certainty."
+	}
+	grounded.Answer, grounded.Model = text, s.modelName()
+	return grounded
 }

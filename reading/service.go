@@ -35,6 +35,12 @@ type Corpus interface {
 type LLM interface {
 	Complete(context.Context, string) (string, error)
 }
+
+// ChatLLM takes a system instruction and returns plain text. The local
+// fine-tuned model answers this way, from compactChart lines.
+type ChatLLM interface {
+	Chat(ctx context.Context, system, user string) (string, error)
+}
 type Reading struct {
 	Summary      string `json:"summary"`
 	LagnaAndMoon string `json:"lagna_and_moon"`
@@ -103,7 +109,9 @@ const FallbackModel = "grounded-corpus"
 // composed deterministically from the facts and retrieved passages instead.
 func (s *Service) Generate(ctx context.Context, facts engine.ChartFacts, rules []Rule) (Reading, string, error) {
 	grounded := func() Reading { return fallback(newInsight(ctx, s.Corpus, facts, rules)) }
-	if s.LLM == nil {
+	// A small local model (Compact) answers chat questions only; a full
+	// reading is long structured JSON, beyond it on a CPU in time.
+	if s.LLM == nil || s.Compact {
 		return grounded(), FallbackModel, nil
 	}
 	prompt, e := promptFor(facts, rules, s.Compact)
@@ -279,7 +287,15 @@ type OpenAIClient struct {
 func (c OpenAIClient) ModelName() string { return c.Model }
 
 func (c OpenAIClient) Complete(ctx context.Context, prompt string) (string, error) {
-	body, _ := json.Marshal(map[string]any{"model": c.Model, "temperature": 0.2, "response_format": map[string]string{"type": "json_object"}, "messages": []map[string]string{{"role": "system", "content": "Return JSON only."}, {"role": "user", "content": prompt}}})
+	return c.send(ctx, map[string]any{"model": c.Model, "temperature": 0.2, "response_format": map[string]string{"type": "json_object"}, "messages": []map[string]string{{"role": "system", "content": "Return JSON only."}, {"role": "user", "content": prompt}}})
+}
+
+func (c OpenAIClient) Chat(ctx context.Context, system, user string) (string, error) {
+	return c.send(ctx, map[string]any{"model": c.Model, "temperature": 0.2, "max_tokens": 450, "messages": []map[string]string{{"role": "system", "content": system}, {"role": "user", "content": user}}})
+}
+
+func (c OpenAIClient) send(ctx context.Context, payload map[string]any) (string, error) {
+	body, _ := json.Marshal(payload)
 	req, e := http.NewRequestWithContext(ctx, http.MethodPost, strings.TrimRight(c.BaseURL, "/")+"/chat/completions", bytes.NewReader(body))
 	if e != nil {
 		return "", e
