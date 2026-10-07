@@ -57,7 +57,8 @@ export interface YoginiPeriod { yogini: string; lord: string; from: string; to: 
 export interface Koota { name: string; max: number; score: number; boy: string; girl: string; description: string }
 export interface MatchResponse {
 	explanation?: MatchExplanation;
-  match: { kootas: Koota[]; total: number; max: number; verdict: string; doshas: string[]; exceptions: string[]; boy_mangal_dosha: boolean; girl_mangal_dosha: boolean; mangal_note: string; boy_moon: string; girl_moon: string };
+  match: { kootas: Koota[]; total: number; max: number; verdict: string; doshas: string[]; exceptions: string[]; boy_mangal_dosha: boolean; girl_mangal_dosha: boolean; mangal_note: string; boy_moon: string; girl_moon: string;
+    poruthams: Porutham[]; porutham_good: number; boy_kuja: KujaReport; girl_kuja: KujaReport };
   boy: { lagna: string; moon_sign: string; nakshatra: string; pada: number; mars_house: number };
   girl: { lagna: string; moon_sign: string; nakshatra: string; pada: number; mars_house: number };
 }
@@ -130,3 +131,8 @@ export interface TransitsResponse {
   double_transit: number[];
   notes: Record<string, string>;
 }
+
+/** One of the ten South Indian poruthams. Rajju and Vedha are essential. */
+export interface Porutham { name: string; status: 'good' | 'medium' | 'bad'; essential: boolean; detail: string }
+/** Mangal (Kuja) dosha from the lagna, Moon and Venus, after cancellations. */
+export interface KujaReport { from_lagna: number; from_moon: number; from_venus: number; present: string[]; cancellations: string[]; effective: boolean }

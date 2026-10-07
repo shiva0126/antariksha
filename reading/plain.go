@@ -433,6 +433,30 @@ func matchPlain(mc MatchChatContext, boy, girl *insight, ts []string) plain {
 	var p plain
 	m := mc.Match
 	yesNo := map[bool]string{true: "yes", false: "no"}
+	poruthams := func() {
+		var failed, essential []string
+		for _, x := range m.Poruthams {
+			if x.Status == "bad" {
+				failed = append(failed, x.Name)
+				if x.Essential {
+					essential = append(essential, x.Name)
+				}
+			}
+		}
+		if len(m.Poruthams) == 0 {
+			return
+		}
+		line := fmt.Sprintf("In South Indian matching, %d of the 10 poruthams match", m.PoruthamGood)
+		if len(essential) > 0 {
+			line += fmt.Sprintf(", but %s, which families treat as essential, does not", joinAnd(essential))
+		} else {
+			line += ", and the two essential ones, Rajju and Vedha, are clear"
+		}
+		p.say(line + ".")
+		if len(failed) > 0 {
+			p.point("Poruthams that do not match: " + joinAnd(failed) + ". Ask about any of them by name.")
+		}
+	}
 	score := func() {
 		p.say(fmt.Sprintf("Your charts score %g out of %g in traditional eight-part matching (Ashtakoota), which is %s.", m.Total, m.Max, scoreBand(m.Total)))
 		var full, none []string
@@ -465,12 +489,23 @@ func matchPlain(mc MatchChatContext, boy, girl *insight, ts []string) plain {
 	}
 	for _, t := range ts {
 		switch t {
+		case "porutham":
+			poruthams()
 		case "score":
 			score()
+			poruthams()
 		case "dosha":
 			doshas()
 		case "mangal":
-			p.say(fmt.Sprintf("Mangal dosha: groom %s, bride %s.", yesNo[m.BoyMangal], yesNo[m.GirlMangal]))
+			p.say(fmt.Sprintf("Mangal dosha, checked from the lagna, Moon and Venus after the traditional cancellations: groom %s, bride %s.", yesNo[m.BoyMangal], yesNo[m.GirlMangal]))
+			for _, k := range []struct {
+				who string
+				r   engine.KujaReport
+			}{{"Groom", m.BoyKuja}, {"Bride", m.GirlKuja}} {
+				if len(k.r.Cancellations) > 0 {
+					p.point(k.who + ": Mars sits in a dosha house, but " + lowerFirst(k.r.Cancellations[0]))
+				}
+			}
 			if m.BoyMangal == m.GirlMangal {
 				p.point("When both or neither have it, the tradition treats the pair as balanced.")
 			}
@@ -503,6 +538,7 @@ func matchPlain(mc MatchChatContext, boy, girl *insight, ts []string) plain {
 	}
 	if len(p.short) == 0 {
 		score()
+		poruthams()
 		doshas()
 		p.point(fmt.Sprintf("Mangal dosha: groom %s, bride %s.", yesNo[m.BoyMangal], yesNo[m.GirlMangal]))
 	}

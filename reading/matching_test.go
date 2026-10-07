@@ -207,3 +207,55 @@ func TestReadingFactGuards(t *testing.T) {
 		})
 	}
 }
+
+func matchContextFor(t *testing.T, boyIn, girlIn engine.ChartInput) MatchChatContext {
+	t.Helper()
+	e := engine.New("../ephe")
+	person := func(in engine.ChartInput) (engine.Chart, MatchPerson) {
+		c, err := e.BirthChart(in)
+		if err != nil {
+			t.Fatal(err)
+		}
+		f, err := engine.Facts(c, time.Date(2026, 10, 1, 0, 0, 0, 0, time.UTC))
+		if err != nil {
+			t.Fatal(err)
+		}
+		return c, MatchPerson{Facts: f}
+	}
+	bc, bp := person(boyIn)
+	gc, gp := person(girlIn)
+	m, err := engine.MatchCharts(bc, gc)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return MatchChatContext{Match: m, Boy: bp, Girl: gp}
+}
+
+// Matching answers cover both systems: the guna score, the porutham count
+// with Rajju and Vedha, and Mangal dosha after cancellations.
+func TestMatchAnswersCoverPoruthamsAndKuja(t *testing.T) {
+	mc := matchContextFor(t,
+		engine.ChartInput{Date: "1992-03-14", Time: "07:20", Lat: 12.97, Lon: 77.59, TZ: "Asia/Kolkata"},
+		engine.ChartInput{Date: "1994-08-17", Time: "06:42", Lat: 13.34, Lon: 74.75, TZ: "Asia/Kolkata"})
+	if len(mc.Match.Poruthams) != 10 {
+		t.Fatalf("%d poruthams", len(mc.Match.Poruthams))
+	}
+	s := NewService(DefaultCorpus, nil)
+	for _, c := range []struct{ q, want string }{
+		{"Are we a good match?", "of the 10 poruthams match"},
+		{"Do we have Rajju dosha?", "Rajju"},
+		{"What about the poruthams?", "of the 10 poruthams match"},
+		{"Is either of us manglik?", "checked from the lagna, Moon and Venus"},
+	} {
+		a, err := s.AnswerMatch(context.Background(), mc, c.q, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !strings.Contains(a.Answer, c.want) {
+			t.Errorf("%q lacks %q:\n%s", c.q, c.want, a.Answer)
+		}
+		if forbidden.MatchString(a.Answer) {
+			t.Errorf("%q: forbidden wording", c.q)
+		}
+	}
+}

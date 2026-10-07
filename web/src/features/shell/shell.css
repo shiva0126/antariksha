@@ -44,3 +44,5 @@
   .page { padding-top: 16px; gap: var(--s-4); }
 }
 @media print { .shell-header, .shell-footer, .shell-tabbar { display: none !important; } .shell { padding: 0; } }
+/* Very narrow phones (320px) with the Admin link: tighten the header tools. */
+@media (max-width: 360px) { .shell-tools { gap: 4px; } .shell-admin { padding: 0 6px; } }

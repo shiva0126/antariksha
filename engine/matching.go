@@ -31,6 +31,12 @@ type Match struct {
 	MangalNote string   `json:"mangal_note"`
 	BoyMoon    string   `json:"boy_moon"`
 	GirlMoon   string   `json:"girl_moon"`
+	// South Indian matching: the ten poruthams and how many are good.
+	Poruthams    []Porutham `json:"poruthams"`
+	PoruthamGood int        `json:"porutham_good"`
+	// Kuja (Mangal) dosha read from the lagna, Moon and Venus with cancellations.
+	BoyKuja  KujaReport `json:"boy_kuja"`
+	GirlKuja KujaReport `json:"girl_kuja"`
 }
 
 var varnaNames = []string{"Shudra", "Vaishya", "Kshatriya", "Brahmin"}
@@ -238,16 +244,30 @@ func MatchCharts(boy, girl Chart) (Match, error) {
 		m.Doshas = append(m.Doshas, "Gana dosha")
 	}
 
-	m.BoyMangal, _ = MangalDosha(boy)
-	m.GirlMangal, _ = MangalDosha(girl)
+	m.Poruthams = Poruthams(bm, gm)
+	for _, p := range m.Poruthams {
+		if p.Status == "good" {
+			m.PoruthamGood++
+		}
+		if p.Essential && p.Status == "bad" {
+			m.Doshas = append(m.Doshas, p.Name+" dosha")
+		}
+	}
+
+	// Mangal (Kuja) dosha from the lagna, Moon and Venus, after the
+	// traditional cancellations; matched when both or neither have it.
+	m.BoyKuja, m.GirlKuja = KujaDosha(boy), KujaDosha(girl)
+	m.BoyMangal, m.GirlMangal = m.BoyKuja.Effective, m.GirlKuja.Effective
 	switch {
 	case m.BoyMangal && m.GirlMangal:
-		m.MangalNote = "Both charts have lagna-based Mangal dosha, which traditions treat as mutually cancelling."
+		m.MangalNote = "Both charts have Mangal dosha, which traditions treat as balancing each other."
 	case m.BoyMangal || m.GirlMangal:
-		m.MangalNote = "Only one chart has lagna-based Mangal dosha; traditions also check it from the Moon and Venus and for cancellations before concluding."
+		m.MangalNote = "Only one chart has Mangal dosha after the traditional cancellations; families often weigh this together with the rest of both charts."
 		m.Doshas = append(m.Doshas, "Mangal dosha (one chart)")
+	case len(m.BoyKuja.Present) > 0 || len(m.GirlKuja.Present) > 0:
+		m.MangalNote = "Mars sits in a Mangal dosha house in at least one chart, but a traditional cancellation applies, so the dosha is not counted."
 	default:
-		m.MangalNote = "Neither chart has lagna-based Mangal dosha."
+		m.MangalNote = "Neither chart has Mangal dosha from the lagna, Moon or Venus."
 	}
 
 	// Keep the legacy JSON field, but do not turn a table score into a verdict

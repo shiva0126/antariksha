@@ -4,7 +4,7 @@ import { Explanation } from './Explanation';
 import { MatchChat } from './MatchChat';
 import type { MatchResponse } from '../../api/types';
 import { useNames, useT } from '../../i18n';
-import { Button, Checkbox, PageHeader } from '../../ds';
+import { Button, Checkbox, Chip, PageHeader } from '../../ds';
 import { loadProfiles } from '../common/profiles';
 import { BirthFields, draftFrom, resolveDraft, type BirthDetails, type BirthDraft } from '../kundali/BirthForm';
 
@@ -94,11 +94,28 @@ export function MatchPage() {
               </table>
             </div>
           </div>
+          <article className="card porutham-card">
+            <h3>South Indian matching: {m.porutham_good} of 10 poruthams</h3>
+            <p className="muted small">Counted from the bride's birth star to the groom's. Rajju and Vedha are essential: when either fails, many families do not proceed whatever the count.</p>
+            <ul className="porutham-list">
+              {m.poruthams.map(p => (
+                <li key={p.name}>
+                  <Chip tone={p.status === 'good' ? 'success' : p.status === 'medium' ? 'neutral' : 'warning'}>{p.status === 'good' ? 'Matches' : p.status === 'medium' ? 'Partly' : 'Does not match'}</Chip>
+                  <b>{p.name}</b>{p.essential && <span className="muted small"> (essential)</span>}
+                  <span className="muted small block">{p.detail}</span>
+                </li>
+              ))}
+            </ul>
+          </article>
           <div className="grid-2">
             <article className="card"><h3>Mangal dosha</h3>
               <dl className="kv">
-                <div><dt>{t('Groom')}</dt><dd>{m.boy_mangal_dosha ? `Present: Mars in the ${result.boy.mars_house}${ord(result.boy.mars_house)} house` : `Not present: Mars in the ${result.boy.mars_house}${ord(result.boy.mars_house)} house`}</dd></div>
-                <div><dt>{t('Bride')}</dt><dd>{m.girl_mangal_dosha ? `Present: Mars in the ${result.girl.mars_house}${ord(result.girl.mars_house)} house` : `Not present: Mars in the ${result.girl.mars_house}${ord(result.girl.mars_house)} house`}</dd></div>
+                {([['Groom', m.boy_kuja], ['Bride', m.girl_kuja]] as const).map(([who, k]) => (
+                  <div key={who}><dt>{t(who)}</dt><dd>
+                    {k.effective ? 'Present' : k.present.length ? 'Cancelled' : 'Not present'}: Mars in the {k.from_lagna}{ord(k.from_lagna)} house from the lagna, {k.from_moon}{ord(k.from_moon)} from the Moon, {k.from_venus}{ord(k.from_venus)} from Venus
+                    {k.cancellations.map(c => <span key={c} className="muted small block">✓ {c}</span>)}
+                  </dd></div>
+                ))}
               </dl>
               <p className="muted small">{m.mangal_note}</p>
             </article>

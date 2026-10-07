@@ -33,6 +33,7 @@ var matchTopics = []topic{
 	{"score", words(`score|scores|guna|gunas|points?|total|overall|compatible|compatibility|good match|good pair|guna milan|milan|ashtakoota|verdict|result|results`)},
 	{"varna", words(`varna`)},
 	{"vashya", words(`vashya|vasya`)},
+	{"porutham", words(`porutham|poruthams|porutham?s|poruttam|rajju|vedha|mahendra|stree deergha|stree dirgha|south indian|rasyadhipati|10 porutham|ten porutham|thirumana porutham|jathaka porutham`)},
 	{"tara", words(`tara|dina`)},
 	{"yoni", words(`yoni|intimacy|physical`)},
 	{"graha_maitri", words(`graha maitri|maitri|friendship|communication|understanding|talk|talking|mental`)},
@@ -161,6 +162,10 @@ func composeMatch(mc MatchChatContext, boy, girl *insight, q string, history []C
 		switch t {
 		case "muhurta":
 			add("Kundali matching compares the two birth charts; it does not choose a wedding date. For that, open the Muhurta page, choose Marriage, and personalise it with either saved profile: it checks the nakshatra, tithi, weekday and the person's tara bala and chandra bala for each day.")
+		case "porutham":
+			for _, p := range m.Poruthams {
+				add(fmt.Sprintf("%s: %s. %s", p.Name, map[string]string{"good": "matches", "medium": "partly matches", "bad": "does not match"}[p.Status], p.Detail))
+			}
 		case "score":
 			add(scoreLine(m))
 		case "dosha":

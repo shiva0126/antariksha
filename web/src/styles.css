@@ -541,3 +541,7 @@ fieldset.birth-fields legend { font-family: var(--serif); color: #e8cf93; font-s
   .sb-tip { left: 0; white-space: normal; }
 }
 
+/* Matching: the ten poruthams */
+.porutham-list { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+.porutham-list li { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; }
+.porutham-list .block { display: block; flex-basis: 100%; }
