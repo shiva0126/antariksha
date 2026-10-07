@@ -118,3 +118,34 @@ func TestKujaDoshaReferencesAndCancellations(t *testing.T) {
 		t.Errorf("no dosha: %+v", k)
 	}
 }
+
+func TestPapaSamyaWeights(t *testing.T) {
+	// Mesha rising, Moon and Venus in Mesha too; Mars alone in the 7th (Tula)
+	// counts from all three references: 1 + 0.5 + 0.25. The other difficult
+	// planets sit in the 3rd (Mithuna), which does not count.
+	c := chartWith(0, map[string]int{"mars": 6, "moon": 0, "venus": 0, "saturn": 2, "rahu": 2, "ketu": 8, "sun": 2, "jupiter": 1})
+	// Ketu in Dhanu is the 9th: not counted either.
+	if p := PapaSamya(c); p.Points != 1.75 || len(p.Detail) != 3 {
+		t.Errorf("Mars in the 7th from all three: %+v", p)
+	}
+	// The Sun counts at half: Sun alone in the 1st from all three gives 0.875.
+	c = chartWith(0, map[string]int{"sun": 0, "moon": 0, "venus": 0, "mars": 2, "saturn": 2, "rahu": 2, "ketu": 8, "jupiter": 1})
+	if p := PapaSamya(c); p.Points != 0.875 {
+		t.Errorf("Sun in the 1st: %+v", p)
+	}
+}
+
+func TestMarriageIndicators(t *testing.T) {
+	// Mesha rising: Venus rules the 7th (Tula). Venus in Tula (own sign) in
+	// the 7th, and Jupiter in Mithuna aspecting Tula with its 5th-sign aspect.
+	m := MarriageIndicators(chartWith(0, map[string]int{"venus": 6, "jupiter": 2, "moon": 3, "mars": 9, "saturn": 10, "sun": 4, "mercury": 4, "rahu": 1, "ketu": 7}))
+	all := strings.Join(m.Strengths, " ")
+	if m.SeventhLord != "venus" || m.SeventhLordHouse != 7 || !strings.Contains(all, "is strong") || !strings.Contains(all, "Jupiter aspects the 7th house") {
+		t.Errorf("strong 7th: %+v", m)
+	}
+	// Venus in Kanya (debilitated) in the 6th: cautions.
+	m = MarriageIndicators(chartWith(0, map[string]int{"venus": 5, "jupiter": 1, "moon": 3, "mars": 9, "saturn": 10, "sun": 4, "mercury": 4, "rahu": 2, "ketu": 8}))
+	if len(m.Cautions) < 2 {
+		t.Errorf("weak 7th ruler in the 6th: %+v", m)
+	}
+}

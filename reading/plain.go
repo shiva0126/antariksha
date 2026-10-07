@@ -505,6 +505,10 @@ func matchPlain(mc MatchChatContext, boy, girl *insight, ts []string) plain {
 			poruthams()
 		case "dosha":
 			doshas()
+		case "papasamya":
+			p.say(m.PapaNote)
+			p.point(fmt.Sprintf("Groom: %s.", papaDetail(m.BoyPapa)))
+			p.point(fmt.Sprintf("Bride: %s.", papaDetail(m.GirlPapa)))
 		case "mangal":
 			p.say(fmt.Sprintf("Mangal dosha, checked from the lagna, Moon and Venus after the traditional cancellations: groom %s, bride %s.", yesNo[m.BoyMangal], yesNo[m.GirlMangal]))
 			for _, k := range []struct {
@@ -546,6 +550,8 @@ func matchPlain(mc MatchChatContext, boy, girl *insight, ts []string) plain {
 		}
 	}
 	if len(p.short) == 0 {
+		o := Overview(m, mc.Boy.Facts, mc.Girl.Facts, time.Now())
+		p.say(o.Summary)
 		score()
 		poruthams()
 		doshas()
@@ -581,4 +587,11 @@ func (s *Service) BookViews(ctx context.Context, keys []engine.CorpusKey) map[st
 		out[k] = BookView{Ref: r.Ref, Source: cite(r), Plain: strings.TrimSuffix(strings.TrimSpace(r.Body[i+len(corpus.PlainLabel):]), "]")}
 	}
 	return out
+}
+
+func papaDetail(r engine.PapaReport) string {
+	if len(r.Detail) == 0 {
+		return "no difficult planet in the counted houses"
+	}
+	return fmt.Sprintf("%g points (%s)", r.Points, strings.Join(r.Detail, "; "))
 }

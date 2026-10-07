@@ -34,6 +34,7 @@ var matchTopics = []topic{
 	{"varna", words(`varna`)},
 	{"vashya", words(`vashya|vasya`)},
 	{"porutham", words(`porutham|poruthams|porutham?s|poruttam|rajju|vedha|mahendra|stree deergha|stree dirgha|south indian|rasyadhipati|10 porutham|ten porutham|thirumana porutham|jathaka porutham`)},
+	{"papasamya", words(`papasamya|papa samya|paapa samya|papasamyam|malefic balance|papa points`)},
 	{"tara", words(`tara|dina`)},
 	{"yoni", words(`yoni|intimacy|physical`)},
 	{"graha_maitri", words(`graha maitri|maitri|friendship|communication|understanding|talk|talking|mental`)},

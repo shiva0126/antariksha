@@ -274,3 +274,32 @@ func TestMatchQuestionsInIndianLanguages(t *testing.T) {
 		}
 	}
 }
+
+func TestMatchOverviewAndDashaSandhi(t *testing.T) {
+	mc := matchContextFor(t,
+		engine.ChartInput{Date: "1992-03-14", Time: "07:20", Lat: 12.97, Lon: 77.59, TZ: "Asia/Kolkata"},
+		engine.ChartInput{Date: "1994-08-17", Time: "06:42", Lat: 13.34, Lon: 74.75, TZ: "Asia/Kolkata"})
+	o := Overview(mc.Match, mc.Boy.Facts, mc.Girl.Facts, time.Date(2026, 10, 1, 0, 0, 0, 0, time.UTC))
+	if len(o.Strengths)+len(o.Cautions) < 6 || !strings.Contains(o.Summary, "not a verdict on the two people") {
+		t.Errorf("overview %+v", o)
+	}
+	for _, x := range append(append([]string{o.Summary}, o.Strengths...), o.Cautions...) {
+		if forbidden.MatchString(x) || strings.Contains(strings.ToLower(x), "reject") || strings.Contains(strings.ToLower(x), "should not marry") {
+			t.Errorf("verdict wording: %q", x)
+		}
+	}
+	now := time.Date(2026, 10, 1, 0, 0, 0, 0, time.UTC)
+	f := engine.ChartFacts{Vimshottari: engine.Dasha{Current: engine.DashaPeriod{Maha: "venus"}, Sequence: []engine.DashaPeriod{{Lord: "venus", To: "2027-01-15"}, {Lord: "sun", To: "2033-01-15"}}}}
+	if s := dashaSandhi("groom", f, now); !strings.Contains(s, "from Venus to the Sun on 15 January 2027") {
+		t.Errorf("sandhi within a year: %q", s)
+	}
+	f.Vimshottari.Sequence[0].To = "2029-01-15"
+	if s := dashaSandhi("groom", f, now); s != "" {
+		t.Errorf("no sandhi expected: %q", s)
+	}
+	s := NewService(DefaultCorpus, nil)
+	a, _ := s.AnswerMatch(context.Background(), mc, "What about papasamya?", nil)
+	if !strings.Contains(a.Answer, "Papasamya is") {
+		t.Errorf("papasamya answer: %s", a.Answer)
+	}
+}

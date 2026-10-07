@@ -57,8 +57,10 @@ export interface YoginiPeriod { yogini: string; lord: string; from: string; to: 
 export interface Koota { name: string; max: number; score: number; boy: string; girl: string; description: string }
 export interface MatchResponse {
 	explanation?: MatchExplanation;
+  overview?: { summary: string; strengths: string[]; cautions: string[] } | null;
   match: { kootas: Koota[]; total: number; max: number; verdict: string; doshas: string[]; exceptions: string[]; boy_mangal_dosha: boolean; girl_mangal_dosha: boolean; mangal_note: string; boy_moon: string; girl_moon: string;
-    poruthams: Porutham[]; porutham_good: number; boy_kuja: KujaReport; girl_kuja: KujaReport };
+    poruthams: Porutham[]; porutham_good: number; boy_kuja: KujaReport; girl_kuja: KujaReport;
+    boy_papa: PapaReport; girl_papa: PapaReport; papa_note: string; boy_marriage: MarriageReport; girl_marriage: MarriageReport };
   boy: { lagna: string; moon_sign: string; nakshatra: string; pada: number; mars_house: number };
   girl: { lagna: string; moon_sign: string; nakshatra: string; pada: number; mars_house: number };
 }
@@ -136,3 +138,5 @@ export interface TransitsResponse {
 export interface Porutham { name: string; status: 'good' | 'medium' | 'bad'; essential: boolean; detail: string }
 /** Mangal (Kuja) dosha from the lagna, Moon and Venus, after cancellations. */
 export interface KujaReport { from_lagna: number; from_moon: number; from_venus: number; present: string[]; cancellations: string[]; effective: boolean }
+export interface PapaReport { points: number; detail: string[] }
+export interface MarriageReport { seventh_lord: string; seventh_lord_house: number; strengths: string[]; cautions: string[] }

@@ -545,3 +545,7 @@ fieldset.birth-fields legend { font-family: var(--serif); color: #e8cf93; font-s
 .porutham-list { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
 .porutham-list li { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; }
 .porutham-list .block { display: block; flex-basis: 100%; }
+.match-overview .grid-2 { margin-top: 8px; }
+.overview-list { margin: 4px 0 0; padding-left: 18px; display: grid; gap: 4px; }
+.indicator-block { margin-top: 10px; }
+.indicator-block .overview-list { list-style: none; padding-left: 0; }

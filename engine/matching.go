@@ -37,6 +37,14 @@ type Match struct {
 	// Kuja (Mangal) dosha read from the lagna, Moon and Venus with cancellations.
 	BoyKuja  KujaReport `json:"boy_kuja"`
 	GirlKuja KujaReport `json:"girl_kuja"`
+	// Papasamya: difficult planets weighed in both charts; balanced when the
+	// groom's points are at least the bride's.
+	BoyPapa  PapaReport `json:"boy_papa"`
+	GirlPapa PapaReport `json:"girl_papa"`
+	PapaNote string     `json:"papa_note"`
+	// Each partner's marriage indicators: 7th house, its ruler, Venus, D9.
+	BoyMarriage  MarriageReport `json:"boy_marriage"`
+	GirlMarriage MarriageReport `json:"girl_marriage"`
 }
 
 var varnaNames = []string{"Shudra", "Vaishya", "Kshatriya", "Brahmin"}
@@ -269,6 +277,14 @@ func MatchCharts(boy, girl Chart) (Match, error) {
 	default:
 		m.MangalNote = "Neither chart has Mangal dosha from the lagna, Moon or Venus."
 	}
+
+	m.BoyPapa, m.GirlPapa = PapaSamya(boy), PapaSamya(girl)
+	if m.BoyPapa.Points >= m.GirlPapa.Points {
+		m.PapaNote = fmt.Sprintf("Papasamya is balanced: the groom's %g points are at least the bride's %g (Kerala and Karnataka practice).", m.BoyPapa.Points, m.GirlPapa.Points)
+	} else {
+		m.PapaNote = fmt.Sprintf("Papasamya is not balanced: the bride's %g points exceed the groom's %g (Kerala and Karnataka practice; schools weigh this differently).", m.GirlPapa.Points, m.BoyPapa.Points)
+	}
+	m.BoyMarriage, m.GirlMarriage = MarriageIndicators(boy), MarriageIndicators(girl)
 
 	// Keep the legacy JSON field, but do not turn a table score into a verdict
 	// about people or a recommendation to marry or reject someone.

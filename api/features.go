@@ -293,7 +293,14 @@ func (s *Server) match(w http.ResponseWriter, r *http.Request) {
 	_, bh := engine.MangalDosha(boy)
 	_, gh := engine.MangalDosha(girl)
 	explanation := s.reading.ExplainMatch(r.Context(), reading.ChartMatchExplanation(m), req.UseAI)
-	writeJSON(w, 200, map[string]any{"match": m, "boy": summary(boy, bh), "girl": summary(girl, gh), "explanation": explanation})
+	now := time.Now()
+	bf, err1 := engine.Facts(boy, now)
+	gf, err2 := engine.Facts(girl, now)
+	var overview any
+	if err1 == nil && err2 == nil {
+		overview = reading.Overview(m, bf, gf, now)
+	}
+	writeJSON(w, 200, map[string]any{"match": m, "boy": summary(boy, bh), "girl": summary(girl, gh), "explanation": explanation, "overview": overview})
 }
 
 func summary(c engine.Chart, marsHouse int) map[string]any {

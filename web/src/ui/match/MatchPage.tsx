@@ -3,6 +3,7 @@ import { postMatch, postMatchChat } from '../../api/client';
 import { Explanation } from './Explanation';
 import { MatchChat } from './MatchChat';
 import type { MatchResponse } from '../../api/types';
+import { grahaEnglish } from '../../astro/format';
 import { useNames, useT } from '../../i18n';
 import { Button, Checkbox, Chip, PageHeader } from '../../ds';
 import { loadProfiles } from '../common/profiles';
@@ -70,6 +71,16 @@ export function MatchPage() {
 
       {m && result && (
         <section className="match-result" aria-label="Matching result">
+          {result.overview && (
+            <article className="card match-overview">
+              <h3>Overview</h3>
+              <p>{result.overview.summary}</p>
+              <div className="grid-2">
+                <div><p className="kicker">Strong points</p><ul className="overview-list">{result.overview.strengths.map(x => <li key={x}>{x}</li>)}</ul></div>
+                <div><p className="kicker">To discuss</p>{result.overview.cautions.length ? <ul className="overview-list">{result.overview.cautions.map(x => <li key={x}>{x}</li>)}</ul> : <p className="muted">Nothing stands out.</p>}</div>
+              </div>
+            </article>
+          )}
           {result.explanation&&<Explanation report={result.explanation}/>}
           <div className="card match-score">
             <div className="score-ring" style={{ '--pct': pct } as React.CSSProperties} role="img" aria-label={`${m.total} of ${m.max} gunas`}>
@@ -118,6 +129,19 @@ export function MatchPage() {
                 ))}
               </dl>
               <p className="muted small">{m.mangal_note}</p>
+            </article>
+            <article className="card"><h3>Marriage indicators</h3>
+              <p className="muted small">The 7th house, its ruler, Venus and the Navamsha (D9) in each chart.</p>
+              {([['Groom', m.boy_marriage], ['Bride', m.girl_marriage]] as const).map(([who, r]) => (
+                <div key={who} className="indicator-block">
+                  <b>{t(who)}</b> <span className="muted small">7th house ruler: {grahaEnglish(r.seventh_lord)}, in the {r.seventh_lord_house}{ord(r.seventh_lord_house)} house</span>
+                  <ul className="overview-list">
+                    {r.strengths.map(x => <li key={x}>✓ {x}</li>)}
+                    {r.cautions.map(x => <li key={x}>• {x}</li>)}
+                  </ul>
+                </div>
+              ))}
+              <p className="muted small">{m.papa_note}</p>
             </article>
             <article className="card"><h3>Charts</h3>
               <dl className="kv">
