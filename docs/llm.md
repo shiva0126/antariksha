@@ -175,3 +175,29 @@ free model when the member's language is not English:
   turns ":" into a visarga.
 - Browser tests use `scripts/fake-translate.py`, which tags text with its
   language instead of translating.
+
+
+## Prediction test set
+
+`llmdata predict -n 40` builds 302 timing and matching questions on charts
+no training data uses (seed 7777, "now" fixed at 1 October 2026), each with
+the facts a right answer must state: the running dasha and its end date,
+Sade Sati and its phase, Jupiter's and Saturn's next sign change (date, sign,
+house from the Moon, the classical verdict), the year lord, Muntha and the
+running Mudda period, the supportive windows for career and marriage, the
+guna total with Rajju and Vedha, each partner's Mangal dosha, and a refusal
+to predict death. The model gets the chart, `reading.TimingDigest` (or
+`reading.MatchDigest`) and the question. Checks are regular expressions,
+read sentence by sentence where an answer may mention several events.
+
+The app's grounded answers score 100% (written to
+`predict-test-reference.json`), so a model's shortfall is the model's.
+Building the set found two gaps in those answers, now fixed: sign changes
+did not name the sign, and "when does Saturn change sign?" got the forecast
+without Saturn's date.
+
+- `llmdata evalpredict [-n sample] -base … -model …` scores a model.
+- `llmdata predicttrain -n 400` writes about 3,000 examples of the same kinds
+  on other charts (seed 8888), each target passing its checks; the training
+  pack and the Colab notebook include them, and the notebook scores the
+  prediction test set with the same grader.

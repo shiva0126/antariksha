@@ -32,7 +32,7 @@ func areaIn(p Period, id string) (AreaForecast, bool) {
 	return AreaForecast{}, false
 }
 
-func forecastPlain(in *insight, ts []string, cc ChatContext) plain {
+func forecastPlain(in *insight, ts, gs []string, cc ChatContext) plain {
 	var p plain
 	if len(cc.Forecast) == 0 {
 		p.say("The forecast for the coming months is unavailable right now. You can see your running periods under Timing.")
@@ -98,7 +98,37 @@ func forecastPlain(in *insight, ts []string, cc ChatContext) plain {
 		return p
 	}
 	now := cc.Forecast[0]
-	p.say(fmt.Sprintf("Until %s: %s", now.To.Format("2 January 2006"), lowerFirst(now.Summary)))
+	moonSign := in.signIdx("moon")
+	ingress := func(ev engine.TransitEvent) string {
+		h := (engine.RashiIndex(ev.Rashi)-moonSign+12)%12 + 1
+		fav, _ := engine.GocharaFavourable(ev.Graha, h)
+		return fmt.Sprintf("On %s %s moves into %s, your %s house from the Moon, which the classical books count as %s for it.", ev.At.Format("2 January 2006"), theName(ev.Graha), ev.Rashi, ordinal(h), map[bool]string{true: "a good house", false: "a harder house"}[fav])
+	}
+	// A question about one slow planet ("when does Saturn change sign?")
+	// is answered with that planet's next sign change first.
+	asked := ""
+	for _, g := range gs {
+		if g == "jupiter" || g == "saturn" || g == "rahu" {
+			asked = g
+			break
+		}
+	}
+	if asked != "" {
+		found := false
+		for _, ev := range cc.Events {
+			if ev.Kind == "ingress" && ev.Graha == asked {
+				p.say(ingress(ev))
+				found = true
+				break
+			}
+		}
+		if !found {
+			p.say(fmt.Sprintf("%s does not change sign in the coming twelve months.", upper(theName(asked))))
+		}
+		p.point(fmt.Sprintf("Until %s: %s", now.To.Format("2 January 2006"), lowerFirst(now.Summary)))
+	} else {
+		p.say(fmt.Sprintf("Until %s: %s", now.To.Format("2 January 2006"), lowerFirst(now.Summary)))
+	}
 	if v := cc.Varsha; v != nil {
 		p.point(fmt.Sprintf("Your year since your birthday on %s (Varshaphal, the year chart): it is ruled by %s. %s", v.ReturnAt.Format("2 January 2006"), theName(v.YearLord), v.Muntha.Detail))
 		for _, m := range v.Mudda {
@@ -116,15 +146,12 @@ func forecastPlain(in *insight, ts []string, cc ChatContext) plain {
 	for _, per := range cc.Forecast[1:min(upto, len(cc.Forecast))] {
 		p.point(fmt.Sprintf("From %s: %s", per.From.Format("2 January 2006"), lowerFirst(per.Summary)))
 	}
-	moonSign := in.signIdx("moon")
 	shown := 0
 	for _, ev := range cc.Events {
-		if ev.Kind != "ingress" || (ev.Graha != "jupiter" && ev.Graha != "saturn") || shown == 2 {
+		if ev.Kind != "ingress" || (ev.Graha != "jupiter" && ev.Graha != "saturn") || ev.Graha == asked || shown == 2 {
 			continue
 		}
-		h := (engine.RashiIndex(ev.Rashi)-moonSign+12)%12 + 1
-		fav, _ := engine.GocharaFavourable(ev.Graha, h)
-		p.point(fmt.Sprintf("On %s %s moves into your %s house from the Moon, which the classical books count as %s for it.", ev.At.Format("2 January 2006"), theName(ev.Graha), ordinal(h), map[bool]string{true: "a good house", false: "a harder house"}[fav]))
+		p.point(ingress(ev))
 		shown++
 	}
 	p.point("These are tendencies for reflection, read from your periods and the slow planets; they are not events that will happen.")

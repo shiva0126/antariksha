@@ -7,6 +7,7 @@
 //	llmdata bookqa  (questions on every checked book rule, for fine-tuning)
 //	llmdata compact (short chart questions for small models trained on a CPU)
 //	llmdata evalcompact / evalbook (score a model on unseen charts / the book test)
+//	llmdata predict / evalpredict (the prediction test set; see predict.go)
 //
 // Charts are generated from a seeded random source (births 1950-2008 across
 // Indian and world cities), computed by the Swiss Ephemeris engine and paired
@@ -368,6 +369,7 @@ func main() {
 	readings := fs.Bool("readings", false, "also evaluate full natal readings (slow on CPU)")
 	compact := fs.Bool("compact", true, "use the compact prompt sent to local models")
 	ephe := fs.String("ephe", "ephe", "Swiss Ephemeris data directory")
+	set := fs.String("set", "", "prediction test set (evalpredict)")
 	_ = fs.Parse(os.Args[2:])
 	svc := reading.NewService(reading.DefaultCorpus, nil)
 	svc.Compact = *compact
@@ -416,6 +418,30 @@ func main() {
 			*out = ".runtime/llm-data/compact.jsonl"
 		}
 		err = compactData(ctx, w, *n, *out, 3)
+	case "predict":
+		if *n == 0 {
+			*n = 40
+		}
+		if *out == "" {
+			*out = ".runtime/llm-data/predict-test.jsonl"
+		}
+		err = predictSet(ctx, w, *n, *out, predictSeed, false)
+	case "predicttrain":
+		if *n == 0 {
+			*n = 400
+		}
+		if *out == "" {
+			*out = ".runtime/llm-data/predict-train.jsonl"
+		}
+		err = predictSet(ctx, w, *n, *out, predictTrainSeed, true)
+	case "evalpredict":
+		if *set == "" {
+			*set = ".runtime/llm-data/predict-test.jsonl"
+		}
+		if *out == "" {
+			*out = ".runtime/llm-data/evalpredict-" + strings.ReplaceAll(*model, "/", "_") + ".json"
+		}
+		err = evalPredict(ctx, *set, *base, *model, *out, *n)
 	case "books":
 		if *out == "" {
 			*out = ".runtime/llm-data/books.jsonl"

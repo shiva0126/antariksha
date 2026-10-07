@@ -234,3 +234,39 @@ func TestForecastUsesShadbalaAndYogini(t *testing.T) {
 		t.Log("the Yogini lord does not touch a shown area for this chart in these months")
 	}
 }
+
+// A question about one slow planet is answered with its own next sign
+// change first, naming the sign and the house from the Moon.
+func TestSlowPlanetQuestionNamesItsSignChange(t *testing.T) {
+	facts, rules, cc := forecastFor(t)
+	s := NewService(DefaultCorpus, nil)
+	a, err := s.Answer(context.Background(), facts, rules, "When does Saturn next change sign?", nil, cc)
+	if err != nil {
+		t.Fatal(err)
+	}
+	short := strings.SplitN(a.Answer, "What this means for you", 2)[0]
+	var saturn *engine.TransitEvent
+	for i, ev := range cc.Events {
+		if ev.Kind == "ingress" && ev.Graha == "saturn" {
+			saturn = &cc.Events[i]
+			break
+		}
+	}
+	if saturn == nil {
+		if !strings.Contains(short, "does not change sign") {
+			t.Fatalf("no Saturn ingress, answer:\n%s", a.Answer)
+		}
+		return
+	}
+	for _, w := range []string{"Saturn moves into " + saturn.Rashi, saturn.At.Format("2 January 2006"), "house from the Moon"} {
+		if !strings.Contains(short, w) {
+			t.Errorf("short answer lacks %q:\n%s", w, short)
+		}
+	}
+	d := TimingDigest(facts, cc, time.Date(2026, 10, 1, 0, 0, 0, 0, time.UTC))
+	for _, w := range []string{"Main period (mahadasha): Venus", "Sub-period (antardasha): Jupiter, until", "Next sub-period:", "Year chart (Varshaphal)", "Mudda dasha now:"} {
+		if !strings.Contains(d, w) {
+			t.Errorf("digest lacks %q:\n%s", w, d)
+		}
+	}
+}
