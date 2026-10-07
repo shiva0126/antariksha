@@ -22,13 +22,17 @@ import (
 
 // ChatMessage is one stored turn.
 type ChatMessage struct {
-	ID        int64          `json:"id"`
-	Role      string         `json:"role"`
-	Content   string         `json:"content"`
-	Topics    []string       `json:"topics"`
-	Sources   []reading.Rule `json:"sources"`
-	Model     string         `json:"model,omitempty"`
-	CreatedAt time.Time      `json:"created_at"`
+	ID      int64          `json:"id"`
+	Role    string         `json:"role"`
+	Content string         `json:"content"`
+	Topics  []string       `json:"topics"`
+	Sources []reading.Rule `json:"sources"`
+	Model   string         `json:"model,omitempty"`
+	// Original is the English answer when Content is a machine translation
+	// into Lang.
+	Original  string    `json:"original,omitempty"`
+	Lang      string    `json:"lang,omitempty"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
 // ChatStore persists conversations. Sessions are bound to one birth chart.
@@ -128,8 +132,8 @@ func (p PostgresChatStore) Append(ctx context.Context, sid string, m ChatMessage
 	if m.Topics == nil {
 		m.Topics = []string{}
 	}
-	err := p.Pool.QueryRow(ctx, `INSERT INTO chat_messages(session_id,role,content,topics,sources,model) VALUES($1,$2,$3,$4,$5,$6) RETURNING id,created_at`,
-		sid, m.Role, m.Content, m.Topics, src, m.Model).Scan(&m.ID, &m.CreatedAt)
+	err := p.Pool.QueryRow(ctx, `INSERT INTO chat_messages(session_id,role,content,topics,sources,model,original,lang) VALUES($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id,created_at`,
+		sid, m.Role, m.Content, m.Topics, src, m.Model, m.Original, m.Lang).Scan(&m.ID, &m.CreatedAt)
 	if err == nil {
 		_, _ = p.Pool.Exec(ctx, `UPDATE chat_sessions SET updated_at=now() WHERE id=$1`, sid)
 	}
@@ -142,7 +146,7 @@ func (p PostgresChatStore) Delete(ctx context.Context, sid string) error {
 }
 
 func (p PostgresChatStore) History(ctx context.Context, sid string, limit int) ([]ChatMessage, error) {
-	rows, err := p.Pool.Query(ctx, `SELECT id,role,content,topics,sources,model,created_at FROM (SELECT * FROM chat_messages WHERE session_id=$1 ORDER BY id DESC LIMIT $2) t ORDER BY id`, sid, limit)
+	rows, err := p.Pool.Query(ctx, `SELECT id,role,content,topics,sources,model,original,lang,created_at FROM (SELECT * FROM chat_messages WHERE session_id=$1 ORDER BY id DESC LIMIT $2) t ORDER BY id`, sid, limit)
 	if err != nil {
 		return nil, err
 	}
@@ -151,7 +155,7 @@ func (p PostgresChatStore) History(ctx context.Context, sid string, limit int) (
 	for rows.Next() {
 		var m ChatMessage
 		var src []byte
-		if err = rows.Scan(&m.ID, &m.Role, &m.Content, &m.Topics, &src, &m.Model, &m.CreatedAt); err != nil {
+		if err = rows.Scan(&m.ID, &m.Role, &m.Content, &m.Topics, &src, &m.Model, &m.Original, &m.Lang, &m.CreatedAt); err != nil {
 			return nil, err
 		}
 		_ = json.Unmarshal(src, &m.Sources)
@@ -250,7 +254,11 @@ func (s *Server) chat(w http.ResponseWriter, r *http.Request) {
 		problem(w, 500, err)
 		return
 	}
-	a, err := s.chats.Append(r.Context(), sid, ChatMessage{Role: "assistant", Content: ans.Answer, Topics: ans.Topics, Sources: ans.Sources, Model: ans.Model})
+	reply := ChatMessage{Role: "assistant", Content: ans.Answer, Topics: ans.Topics, Sources: ans.Sources, Model: ans.Model}
+	if t, ok := s.localize(r.Context(), ans.Answer, req.Lang); ok {
+		reply.Content, reply.Original, reply.Lang = t, ans.Answer, req.Lang
+	}
+	a, err := s.chats.Append(r.Context(), sid, reply)
 	if err != nil {
 		problem(w, 500, err)
 		return

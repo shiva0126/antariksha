@@ -611,7 +611,7 @@ func (s *Server) matrimonyCompareChat(w http.ResponseWriter, r *http.Request, id
 		problem(w, 400, err)
 		return
 	}
-	writeJSON(w, 200, ans)
+	writeJSON(w, 200, s.localizedAnswer(r.Context(), ans, req.Lang))
 }
 
 // ---- selfie verification ---------------------------------------------------

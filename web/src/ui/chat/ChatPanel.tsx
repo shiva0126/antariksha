@@ -27,7 +27,7 @@ const save = (k: string, v?: string) => { try { v ? localStorage.setItem(k, v) :
 function Answer({ m }: { m: ChatMessage }) {
   return (
     <>
-      <AnswerText text={m.content} />
+      <AnswerText text={m.content} original={m.original} />
       {m.sources.length > 0 && (
         <details className="sources">
           <summary>{m.sources.length} source{m.sources.length > 1 ? 's' : ''} · {m.model === 'grounded-corpus' ? 'grounded answer' : m.model}</summary>
@@ -106,7 +106,7 @@ export function ChatPanel({ birth, name }: { birth: ChartInput; name?: string })
             <div className="chat-welcome">
               <p className="kicker">Ask Astrisk</p>
               <h2>Questions about {name ? `${name}'s` : 'your'} chart</h2>
-              <p className="muted">Answers come from your computed chart and the Astrisk corpus of classical and interpretive texts. They describe tendencies for reflection, not certainties.{lang !== 'en' ? ' Answers are in English until an AI model is configured on the server.' : ''}</p>
+              <p className="muted">Answers come from your computed chart and the Astrisk corpus of classical and interpretive texts. They describe tendencies for reflection, not certainties.{lang !== 'en' ? ' Answers are machine-translated from English when the translation service is running; technical chart details stay in English.' : ''}</p>
               <div className="chips">{suggestions.map(s => <button key={s} className="chip" onClick={() => ask(s)}>{s}</button>)}</div>
             </div>
           )}

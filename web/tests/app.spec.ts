@@ -1,4 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
+import { KEYS, UI } from '../src/i18n/strings';
+
+const kn = (k: (typeof KEYS)[number]) => UI.kn[KEYS.indexOf(k)];
 
 let suiteCookies: Awaited<ReturnType<ReturnType<Page['context']>['cookies']>> = [];
 test.beforeEach(async ({ page, baseURL }) => {
@@ -190,6 +193,26 @@ test('place search finds towns by old names', async ({ page }) => {
   await expect(page.locator('.place-list').getByRole('option').first()).toContainText('Mumbai');
   await page.locator('.place-list').getByRole('option').first().click();
   await expect(page.locator('.place-search small')).toContainText('Asia/Kolkata');
+});
+
+test('chat answers are machine-translated with the English original kept', async ({ page }) => {
+  await openChart(page);
+  await setting(page, 'Language', 'kn');
+  await page.getByRole('tab', { name: kn('Ask Astrisk') }).click();
+  await page.getByRole('textbox', { name: 'Your question' }).fill('What does my Moon sign say?');
+  await page.getByRole('textbox', { name: 'Your question' }).press('Enter');
+  const answer = page.locator('.msg-assistant:not(:has(.typing))').last();
+  // The browser suite's stand-in translator tags each sentence "[kn]".
+  await expect(answer.locator('.answer-short')).toContainText('[kn] ');
+  await expect(answer.locator('.answer-label').first()).toHaveText(kn('In short'));
+  await expect(answer.locator('.answer-details')).not.toContainText('[kn]');
+  await answer.getByRole('button', { name: kn('Show English') }).click();
+  await expect(answer.locator('.answer-short')).not.toContainText('[kn]');
+  await expect(answer.locator('.answer-label').first()).toHaveText('In short');
+  // History keeps both versions.
+  await page.reload();
+  await expect(page.locator('.msg-assistant').last().locator('.answer-short')).toContainText('[kn] ');
+  await setting(page, 'Language', 'en');
 });
 
 test('hindi interface and purnimanta months', async ({ page }) => {

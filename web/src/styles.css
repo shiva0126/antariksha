@@ -254,6 +254,8 @@ main { flex: 1; }
 .answer-details[open] summary { margin-bottom: 8px; }
 .msg-bubble .answer-details p { font-size: 13px; color: var(--c-text-muted); }
 .msg-bubble .answer-closing { margin-top: 4px; font-size: 12px; color: var(--c-text-muted); font-style: italic; }
+.answer-translated { margin-top: 8px; }
+.answer-translated .linklike { background: none; border: 0; padding: 0; color: var(--accent, inherit); text-decoration: underline; cursor: pointer; font: inherit; }
 .sources { margin-top: 10px; font-size: 12px; color: var(--muted); }
 .sources summary { cursor: pointer; }
 .sources ul { margin: 8px 0 0; padding-left: 16px; }

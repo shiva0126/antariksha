@@ -53,6 +53,12 @@ func main() {
 	readings := reading.NewService(corpus, llm)
 	readings.Compact = os.Getenv("LLM_BASE_URL") != ""
 	server := api.NewServerWithReading(e, cache, nil, readings)
+	if u := os.Getenv("TRANSLATE_URL"); u != "" {
+		// The local translation service (astrisk-translate.service): free, no
+		// key. On timeout the English answer is served.
+		timeout, _ := time.ParseDuration(env("TRANSLATE_TIMEOUT", "45s"))
+		server.SetTranslator(api.NewTranslator(u, &http.Client{Timeout: timeout}))
+	}
 	go server.RunAlerts(context.Background())
 	handler := server.Handler()
 	if dir := os.Getenv("WEB_DIST"); dir != "" {

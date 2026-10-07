@@ -16,10 +16,14 @@ DB_URL="$(bash "$ROOT/scripts/test-db.sh" | tail -1)"
 # Build into dist-test: web/dist is what the live site serves.
 (cd "$ROOT/web" && npx tsc -b && npx vite build --outDir dist-test --emptyOutDir >/dev/null)
 log="$(mktemp)"
-env -u OPENAI_API_KEY -u SMTP_HOST -u COOKIE_SECURE RATE_LIMIT_SCALE=50 DATABASE_URL="$DB_URL" EPHE_PATH="$ROOT/ephe" WEB_DIST="$ROOT/web/dist-test" \
+# A stand-in translator that tags text with its language (no model needed).
+TPORT=$((PORT + 1))
+python3 "$ROOT/scripts/fake-translate.py" "$TPORT" &
+fake=$!
+env -u OPENAI_API_KEY -u SMTP_HOST -u COOKIE_SECURE TRANSLATE_URL="http://127.0.0.1:$TPORT" RATE_LIMIT_SCALE=50 DATABASE_URL="$DB_URL" EPHE_PATH="$ROOT/ephe" WEB_DIST="$ROOT/web/dist-test" \
   HTTP_ADDR="127.0.0.1:$PORT" RAG_SEMANTIC_ENABLED=true EMBEDDING_PROVIDER=local "$ROOT/bin/panchang-api-test" >"$log" 2>&1 &
 api=$!
-trap 'kill $api 2>/dev/null; rm -f "$log"' EXIT
+trap 'kill $api $fake 2>/dev/null; rm -f "$log"' EXIT
 for _ in $(seq 1 50); do curl -fsS "http://127.0.0.1:$PORT/healthz" >/dev/null 2>&1 && break; sleep 0.2; done
 cd "$ROOT/web"
 PLAYWRIGHT_BASE_URL="http://127.0.0.1:$PORT" npx playwright test "$@"

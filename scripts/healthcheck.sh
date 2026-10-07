@@ -20,6 +20,10 @@ if systemctl --user is-enabled --quiet astrisk-embedding.service && ! ok http://
   restart astrisk-embedding.service 20
   ok http://127.0.0.1:18091/healthz && alert "Embedding model was down and has been restarted." || alert "Embedding model is down; chat still works without library search."
 fi
+if systemctl --user is-enabled --quiet astrisk-translate.service && ! ok http://127.0.0.1:18093/healthz; then
+  restart astrisk-translate.service 60
+  ok http://127.0.0.1:18093/healthz && alert "Translation model was down and has been restarted." || alert "Translation model is down; chat answers fall back to English."
+fi
 if systemctl --user is-enabled --quiet astrisk-cloudflare.service && ! ok "$PUBLIC_URL"; then
   sleep 20
   if ! ok "$PUBLIC_URL"; then

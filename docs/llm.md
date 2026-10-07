@@ -146,3 +146,28 @@ books, stage 2 on the answers, a book-benchmark check, and export to `astrisk-qw
 4. **Fine-tune** (needs a GPU: free Colab/Kaggle for ≤4B, or a rented GPU for 7–8B): LoRA on the
    filtered pairs, export to GGUF, serve with the same llama.cpp service, compare on the eval set.
 5. **Opt-in user feedback** (thumbs up/down on answers) as a preference signal for later rounds.
+
+
+## Answers in the member's language
+
+Chat answers are composed in English, then machine-translated by a local,
+free model when the member's language is not English:
+
+- **Model:** AI4Bharat IndicTrans2, distilled 200M English-to-Indic (MIT
+  licence), int8 on the CPU, served by `scripts/translate-server.py` on
+  loopback port 18093 (`astrisk-translate.service`). Covers Hindi, Marathi,
+  Kannada, Tamil, Telugu, Malayalam, Gujarati and Bengali.
+- **What is translated:** "In short" and "What this means for you", sentence
+  by sentence (cached in memory). Headings and the closing line stay English
+  in the stored text as markers and the app shows them in the member's
+  language; the technical "Chart details" stay English.
+- **The original is kept:** `chat_messages.original` and `lang` (migration
+  22); the app shows "Machine translation from English · Show English".
+- **Fallback:** without `TRANSLATE_URL`, or when the service fails or takes
+  longer than `TRANSLATE_TIMEOUT` (45 s), the English answer is served.
+- **Install:** Hugging Face serves IndicTrans2 only to a signed-in account
+  that has accepted its terms (free, approved automatically). Accept at
+  https://huggingface.co/ai4bharat/indictrans2-en-indic-dist-200M, log in
+  once on this machine, then run `scripts/install-local-translation.sh`.
+- Browser tests use `scripts/fake-translate.py`, which tags text with its
+  language instead of translating.

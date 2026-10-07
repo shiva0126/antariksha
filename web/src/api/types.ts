@@ -48,9 +48,11 @@ export interface ReadingResponse {
 export interface ChatMessage {
   id: number; role: 'user' | 'assistant'; content: string; topics: string[];
   sources: Source[]; model?: string; created_at: string;
+  /** The English answer when content is a machine translation into lang. */
+  original?: string; lang?: string;
 }
 
-export interface ChatAnswer { answer: string; topics: string[]; sources: Source[]; model: string }
+export interface ChatAnswer { answer: string; topics: string[]; sources: Source[]; model: string; original?: string; lang?: string }
 
 export interface YoginiPeriod { yogini: string; lord: string; from: string; to: string }
 

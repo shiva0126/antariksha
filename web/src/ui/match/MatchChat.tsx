@@ -14,7 +14,7 @@ const suggestions = [
   'Which dashas are we each running?',
 ];
 
-type Turn = { id: number; role: 'user' | 'assistant'; content: string; sources?: Source[]; model?: string };
+type Turn = { id: number; role: 'user' | 'assistant'; content: string; original?: string; sources?: Source[]; model?: string };
 export type History = { role: 'user' | 'assistant'; content: string }[];
 export type AskFn = (question: string, history: History, lang: string) => Promise<ChatAnswer>;
 
@@ -34,11 +34,11 @@ export function MatchChat({ ask: send, intro }: { ask: AskFn; intro?: string }) 
     const question = q.trim();
     if (!question || pending) return;
     setDraft(''); setError(''); setPending(true);
-    const history = turns.slice(-6).map(({ role, content }) => ({ role, content }));
+    const history = turns.slice(-6).map(({ role, content, original }) => ({ role, content: original ?? content }));
     setTurns(t => [...t, { id: Date.now(), role: 'user', content: question }]);
     try {
       const a = await send(question, history, lang);
-      setTurns(t => [...t, { id: Date.now() + 1, role: 'assistant', content: a.answer, sources: a.sources, model: a.model }]);
+      setTurns(t => [...t, { id: Date.now() + 1, role: 'assistant', content: a.answer, original: a.original, sources: a.sources, model: a.model }]);
     } catch (e) {
       setTurns(t => t.slice(0, -1));
       setDraft(question);
@@ -55,14 +55,14 @@ export function MatchChat({ ask: send, intro }: { ask: AskFn; intro?: string }) 
           <div className="chat-welcome">
             <p className="kicker">Ask Astrisk</p>
             <h2>Questions about this match</h2>
-            <p className="muted">{intro ?? "Answers use both computed charts, the eight koota tables and both people's numerology. This conversation is not saved; it disappears when you leave or change the details."}{lang !== 'en' ? ' Answers are in English until an AI model is configured on the server.' : ''}</p>
+            <p className="muted">{intro ?? "Answers use both computed charts, the eight koota tables and both people's numerology. This conversation is not saved; it disappears when you leave or change the details."}{lang !== 'en' ? ' Answers are machine-translated from English when the translation service is running; technical chart details stay in English.' : ''}</p>
             <div className="chips">{suggestions.map(s => <button key={s} type="button" className="chip" onClick={() => ask(s)}>{s}</button>)}</div>
           </div>
         )}
         {turns.map(m => (
           <div key={m.id} className={'msg msg-' + m.role}>
             <div className="msg-bubble">
-              {m.role === 'assistant' ? <AnswerText text={m.content} /> : <p>{m.content}</p>}
+              {m.role === 'assistant' ? <AnswerText text={m.content} original={m.original} /> : <p>{m.content}</p>}
               {m.sources && m.sources.length > 0 && (
                 <details className="sources">
                   <summary>{m.sources.length} source{m.sources.length > 1 ? 's' : ''} · {m.model === 'grounded-corpus' ? 'grounded answer' : m.model}</summary>

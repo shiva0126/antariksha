@@ -27,11 +27,15 @@ type Server struct {
 	logger         *slog.Logger
 	reading        *reading.Service
 	chats          ChatStore
+	translator     *Translator
 	mailer         EmailSender
 	matchBudget    *rateLimiter
 	adminBudget    *rateLimiter
 	securityBudget *rateLimiter
 }
+
+// SetTranslator enables machine translation of chat answers.
+func (s *Server) SetTranslator(t *Translator) { s.translator = t }
 
 func NewServer(e Calculator, c Cache, l *slog.Logger) *Server {
 	return NewServerWithReading(e, c, l, reading.NewService(reading.DefaultCorpus, nil))

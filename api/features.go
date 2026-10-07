@@ -250,7 +250,7 @@ func (s *Server) matchChat(w http.ResponseWriter, r *http.Request) {
 		problem(w, 400, err)
 		return
 	}
-	writeJSON(w, 200, ans)
+	writeJSON(w, 200, s.localizedAnswer(r.Context(), ans, req.Lang))
 }
 
 type matchRequest struct {
