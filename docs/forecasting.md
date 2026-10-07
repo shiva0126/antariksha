@@ -109,4 +109,10 @@ birthday year that contains now, or `?year=YYYY`. The Timing tab shows it as
   4/10 and 7 inimical). If none does, the strongest of them.
 - **Approximation:** strength is the year chart's Shadbala ratio, in place of
   the classical Pancha-vargiya bala (which needs the Tajika hadda tables).
-- Not yet: Mudda dasha, Sahams, Tajika yogas (Ithasala, Isharaffa).
+- **Mudda dasha:** the Vimshottari order compressed into the year (each lord
+  runs years/120 of the return-to-return year), starting from the lord at
+  (birth star + age − 2) mod 9 counted from the Sun, i.e. the birth star's
+  lord advanced one place per year. Each stretch is read from its lord's
+  house, rulerships and dignity in the year chart. No birth balance is
+  applied (schools differ). Chat quotes the running stretch.
+- Not yet: Sahams, Tajika yogas (Ithasala, Isharaffa).

@@ -133,7 +133,7 @@ func TestForecastAnswersGiveWindowsNotEvents(t *testing.T) {
 		{"Will I get married this year?", []string{"marriage and partnerships", "cannot say whether or when"}},
 		{"Will my business fail next year?", []string{"career and public life", "cannot say whether or when"}},
 		{"What's coming for me this year?", []string{"Until ", "From ", "not events that will happen", "Varshaphal", "Muntha falls"}},
-		{"What does my varshaphal say?", []string{"ruled by", "Muntha falls"}},
+		{"What does my varshaphal say?", []string{"ruled by", "Muntha falls", "Mudda dasha"}},
 		{"Is my health going to be bad next year?", []string{"cannot predict health", "doctor"}},
 		{"When will I die?", []string{"cannot predict death"}},
 	} {

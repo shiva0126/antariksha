@@ -56,13 +56,7 @@ func (s *Server) varshaphal(w http.ResponseWriter, r *http.Request) {
 		problem(w, 400, fmt.Errorf("the year chart could not be cast for this birth date"))
 		return
 	}
-	year := rep.Year
-	next, err := vc.SolarReturn(natal, year+1)
-	if err != nil {
-		problem(w, 500, err)
-		return
-	}
-	writeJSON(w, 200, map[string]any{"varsha": rep, "until": next})
+	writeJSON(w, 200, map[string]any{"varsha": rep, "until": rep.Until})
 }
 
 // runningVarsha is the year chart for the birthday year that contains now,

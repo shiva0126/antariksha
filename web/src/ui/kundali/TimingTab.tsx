@@ -91,6 +91,8 @@ function LookingBack({ periods }: { periods: TransitsResponse['periods'] }) {
     </Card>
   );
 }
+const localDay = (iso: string, zone: string) => longDate(new Date(iso).toLocaleDateString('en-CA', { timeZone: zone }));
+
 const munthaChip = { good: 'success', mixed: 'neutral', hard: 'warning' } as const;
 
 /** The Tajika year chart from one birthday to the next (Varshaphal). */
@@ -110,20 +112,36 @@ function YearCard({ birth }: { birth: ChartInput }) {
   const zone = birth.tz;
   const when = (iso: string) => new Date(iso).toLocaleString('en-IN', { timeZone: zone, day: 'numeric', month: 'long', year: 'numeric', hour: 'numeric', minute: '2-digit' });
   return (
-    <Card title={`Your year: ${day(new Date(v.return_at).toLocaleDateString('en-CA', { timeZone: zone }))} to ${day(new Date(data.until).toLocaleDateString('en-CA', { timeZone: zone }))}`}
+    <Card title={`Your year: ${localDay(v.return_at, zone)} to ${localDay(data.until, zone)}`}
       sub={`Varshaphal: the chart for the moment the Sun returns to its birth position (${when(v.return_at)}), read for the year that follows. Age ${v.age}.`}>
       <div className="varsha">
         <p><b>The year is ruled by {the(v.year_lord)}.</b> {v.year_lord_reason}</p>
         <p><Chip tone={munthaChip[v.muntha.tone]}>Muntha in {v.muntha.rashi}</Chip> {v.muntha.detail}</p>
         {v.strengths.length > 0 && <><b className="small">Working for you</b><ul className="forecast-reasons">{v.strengths.map(x => <li key={x}>{x}</li>)}</ul></>}
         {v.cautions.length > 0 && <><b className="small">Go carefully</b><ul className="forecast-reasons">{v.cautions.map(x => <li key={x}>{x}</li>)}</ul></>}
+        <b className="small">The year, stretch by stretch (Mudda dasha)</b>
+        <ol className="forecast mudda">
+          {v.mudda.map(m => {
+            const current = Date.now() >= Date.parse(m.from) && Date.now() < Date.parse(m.to);
+            return (
+              <li key={m.from} className={'forecast-period' + (current ? ' forecast-period--now' : '')}>
+                <div className="forecast-when">
+                  <Chip tone={toneChip[m.tone]}>{toneWord[m.tone]}</Chip>
+                  <b>{grahaEnglish(m.lord)}</b>
+                  <span className="muted small">{current ? 'Now, until ' + localDay(m.to, zone) : localDay(m.from, zone) + ' to ' + localDay(m.to, zone)}</span>
+                </div>
+                <span className="small">{m.detail}</span>
+              </li>
+            );
+          })}
+        </ol>
         <details>
           <summary>Chart details</summary>
           <p className="small">Year lagna {v.chart.ascendant.rashi} {v.chart.ascendant.degree.toFixed(1)}°, a {v.day_chart ? 'day' : 'night'} chart. The five office-holders:</p>
           <ul className="forecast-reasons">
             {v.offices.map(o => <li key={o.role}>{o.role}: {grahaEnglish(o.graha)}, {ord(o.house)} house, strength {o.strength.toFixed(2)}{o.aspect === 'conjunct' ? ', in the lagna' : o.aspect ? `, ${o.aspect} aspect to the lagna` : ', no aspect to the lagna'}</li>)}
           </ul>
-          <p className="muted small">{v.method}</p>
+          <p className="muted small">{v.method} Mudda dasha: the Vimshottari order compressed into the year, starting from the birth star's lord advanced one place per year of age.</p>
         </details>
         <div className="ds-row">
           <Button size="sm" variant="ghost" disabled={v.age <= 1} onClick={() => setYear(v.year - 1)}>Previous year</Button>

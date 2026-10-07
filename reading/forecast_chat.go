@@ -101,8 +101,19 @@ func forecastPlain(in *insight, ts []string, cc ChatContext) plain {
 	p.say(fmt.Sprintf("Until %s: %s", now.To.Format("2 January 2006"), lowerFirst(now.Summary)))
 	if v := cc.Varsha; v != nil {
 		p.point(fmt.Sprintf("Your year since your birthday on %s (Varshaphal, the year chart): it is ruled by %s. %s", v.ReturnAt.Format("2 January 2006"), theName(v.YearLord), v.Muntha.Detail))
+		for _, m := range v.Mudda {
+			if !now.From.Before(m.From) && now.From.Before(m.To) {
+				p.point(fmt.Sprintf("Within the year, %s's stretch (Mudda dasha) runs until %s. %s", theName(m.Lord), m.To.Format("2 January 2006"), m.Detail))
+			}
+		}
 	}
-	for _, per := range cc.Forecast[1:min(3, len(cc.Forecast))] {
+	// Answers keep at most six points; with the year chart's two lines, one
+	// coming period is shown so the closing caution always fits.
+	upto := 3
+	if cc.Varsha != nil {
+		upto = 2
+	}
+	for _, per := range cc.Forecast[1:min(upto, len(cc.Forecast))] {
 		p.point(fmt.Sprintf("From %s: %s", per.From.Format("2 January 2006"), lowerFirst(per.Summary)))
 	}
 	moonSign := in.signIdx("moon")

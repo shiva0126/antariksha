@@ -134,6 +134,7 @@ test('new kundali tabs: today, transits, divisional charts, timing, ashtakavarga
   const year = page.locator('.varsha');
   await expect(year).toContainText('The year is ruled by');
   await expect(year).toContainText('Muntha in');
+  await expect(year.locator('.mudda > li')).toHaveCount(9);
   const before = await page.getByRole('heading', { name: /^Your year:/ }).textContent();
   await year.getByRole('button', { name: 'Next year' }).click();
   await expect(page.getByRole('heading', { name: /^Your year:/ })).not.toHaveText(before ?? '');

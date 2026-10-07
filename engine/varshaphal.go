@@ -3,6 +3,7 @@ package engine
 import (
 	"fmt"
 	"math"
+	"strings"
 	"time"
 
 	"github.com/example/panchang/engine/swe"
@@ -36,6 +37,17 @@ type YearOffice struct {
 	Strength float64 `json:"strength"`         // Shadbala ratio in the year chart
 }
 
+// MuddaSpan is one period of the Mudda dasha, read in the year chart.
+type MuddaSpan struct {
+	Lord   string    `json:"lord"`
+	From   time.Time `json:"from"`
+	To     time.Time `json:"to"`
+	House  int       `json:"house"` // in the year chart
+	Rules  []int     `json:"rules"` // houses it rules in the year chart
+	Tone   string    `json:"tone"`  // supportive | mixed | challenging
+	Detail string    `json:"detail"`
+}
+
 type Muntha struct {
 	Rashi  string `json:"rashi"`
 	House  int    `json:"house"` // from the year lagna
@@ -53,6 +65,8 @@ type VarshaReport struct {
 	Muntha     Muntha       `json:"muntha"`
 	Offices    []YearOffice `json:"offices"`
 	YearLord   string       `json:"year_lord"`
+	Until      time.Time    `json:"until"` // the next return
+	Mudda      []MuddaSpan  `json:"mudda"`
 	LordReason string       `json:"year_lord_reason"`
 	Strengths  []string     `json:"strengths"`
 	Cautions   []string     `json:"cautions"`
@@ -129,7 +143,101 @@ func (e *Engine) Varshaphal(natal Chart, year int) (VarshaReport, error) {
 	if err != nil {
 		return VarshaReport{}, err
 	}
-	return readVarsha(natal, vc, year, age, at, sb), nil
+	next, err := e.SolarReturn(natal, year+1)
+	if err != nil {
+		return VarshaReport{}, err
+	}
+	rep := readVarsha(natal, vc, year, age, at, sb)
+	rep.Until = next
+	var moon float64
+	for _, g := range natal.Grahas {
+		if g.ID == "moon" {
+			moon = g.Longitude
+		}
+	}
+	rep.Mudda = muddaDasha(vc, moon, age, at, next)
+	return rep, nil
+}
+
+// muddaDasha is the Vimshottari sequence compressed into one year: each
+// lord runs years/120 of the year, starting at the return. The first lord
+// is the birth star's lord advanced one place per completed year, the
+// common Tajika rule ((birth star + age - 2) mod 9, counted from the Sun).
+// Each period is read from its lord's house, rulership and dignity in the
+// year chart.
+func muddaDasha(vc Chart, natalMoon float64, age int, from, to time.Time) []MuddaSpan {
+	g := chartMap(vc)
+	asc := vc.Ascendant.Longitude
+	dig := Dignities(vc)
+	start := (nakIndex(natalMoon) + age) % 9
+	total := to.Sub(from)
+	out := make([]MuddaSpan, 0, 9)
+	t := from
+	for i := 0; i < 9; i++ {
+		lord := dashaOrder[(start+i)%9]
+		end := t.Add(time.Duration(float64(total) * dashaYears[lord] / 120))
+		if i == 8 {
+			end = to
+		}
+		h := houseOf(g[lord].Longitude, asc)
+		var rules []int
+		for k := 1; k <= 12; k++ {
+			if HouseLord(vc, k) == lord {
+				rules = append(rules, k)
+			}
+		}
+		score := 0.0
+		for _, k := range rules {
+			score += varshaHouseTone(k)
+		}
+		score += varshaHouseTone(h)
+		switch {
+		case dig[lord].State == "exalted" || dig[lord].State == "own":
+			score++
+		case dig[lord].State == "debilitated" && !dig[lord].NeechaBhanga:
+			score--
+		}
+		sp := MuddaSpan{Lord: lord, From: t, To: end, House: h, Rules: rules}
+		where := fmt.Sprintf("%s sits in the %s house of the year chart (%s)", GrahaEnglish(lord), ordinal(h), varshaHouse[h])
+		if len(rules) > 0 {
+			names := make([]string, len(rules))
+			for j, k := range rules {
+				names[j] = fmt.Sprintf("%s (%s)", ordinal(k), varshaHouse[k])
+			}
+			where += " and rules the " + joinWords(names)
+		}
+		switch {
+		case score >= 1.5:
+			sp.Tone, sp.Detail = "supportive", where+": a supportive stretch for these areas."
+		case score <= -1:
+			sp.Tone, sp.Detail = "challenging", where+": a stretch that asks for patience in these areas."
+		default:
+			sp.Tone, sp.Detail = "mixed", where+": a mixed stretch for these areas."
+		}
+		out = append(out, sp)
+		t = end
+	}
+	return out
+}
+
+func varshaHouseTone(h int) float64 {
+	switch {
+	case inSet(h, 1, 4, 5, 7, 9, 10, 11):
+		return 1
+	case inSet(h, 6, 8, 12):
+		return -1
+	}
+	return 0
+}
+
+func joinWords(xs []string) string {
+	switch len(xs) {
+	case 0:
+		return ""
+	case 1:
+		return xs[0]
+	}
+	return strings.Join(xs[:len(xs)-1], ", ") + " and " + xs[len(xs)-1]
 }
 
 func readVarsha(natal, vc Chart, year, age int, at time.Time, sb Shadbala) VarshaReport {

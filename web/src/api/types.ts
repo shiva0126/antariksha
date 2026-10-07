@@ -147,7 +147,8 @@ export interface VarshaphalResponse {
     year: number; age: number; return_at: string; day_chart: boolean;
     chart: { ascendant: { rashi: string; degree: number } };
     muntha: { rashi: string; house: number; lord: string; tone: 'good' | 'mixed' | 'hard'; detail: string };
-    offices: YearOffice[]; year_lord: string; year_lord_reason: string;
+    offices: YearOffice[]; year_lord: string; year_lord_reason: string; until: string;
+    mudda: { lord: string; from: string; to: string; house: number; rules: number[] | null; tone: 'supportive' | 'mixed' | 'challenging'; detail: string }[];
     strengths: string[]; cautions: string[]; method: string;
   };
   until: string;

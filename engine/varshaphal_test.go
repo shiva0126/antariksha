@@ -59,3 +59,46 @@ func TestYearLordMustAspectTheYearLagna(t *testing.T) {
 		t.Fatalf("year lord %s, offices %+v", rep.YearLord, rep.Offices)
 	}
 }
+
+func TestMuddaDashaFillsTheYear(t *testing.T) {
+	e := New("../ephe")
+	natal, err := e.BirthChart(ChartInput{Date: "1990-05-15", Time: "10:30", Lat: 12.97, Lon: 77.59, TZ: "Asia/Kolkata"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	rep, err := e.Varshaphal(natal, 2026)
+	if err != nil {
+		t.Fatal(err)
+	}
+	m := rep.Mudda
+	if len(m) != 9 || !m[0].From.Equal(rep.ReturnAt) || !m[8].To.Equal(rep.Until) {
+		t.Fatalf("%d periods, %v..%v", len(m), m[0].From, m[len(m)-1].To)
+	}
+	var moon float64
+	for _, g := range natal.Grahas {
+		if g.ID == "moon" {
+			moon = g.Longitude
+		}
+	}
+	// (birth star number + age - 2) mod 9, counted from the Sun (0 = Venus).
+	fromSun := []string{"venus", "sun", "moon", "mars", "rahu", "jupiter", "saturn", "mercury", "ketu"}
+	if want := fromSun[(nakIndex(moon)+1+36-2)%9]; m[0].Lord != want {
+		t.Fatalf("first lord %s, want %s", m[0].Lord, want)
+	}
+	year := rep.Until.Sub(rep.ReturnAt).Hours() / 24
+	for i, p := range m {
+		if i > 0 && !p.From.Equal(m[i-1].To) {
+			t.Fatalf("gap before %s", p.Lord)
+		}
+		if days := p.To.Sub(p.From).Hours() / 24; math.Abs(days-year*dashaYears[p.Lord]/120) > 0.01 {
+			t.Fatalf("%s runs %.2f days", p.Lord, days)
+		}
+		if p.Detail == "" || p.Tone == "" {
+			t.Fatalf("%+v", p)
+		}
+	}
+	// At age 0 the sequence would start with the birth star's own lord.
+	if dashaOrder[(nakIndex(moon)+0)%9] != nakLords[nakIndex(moon)%9] {
+		t.Fatal("age-0 start is not the birth star lord")
+	}
+}
