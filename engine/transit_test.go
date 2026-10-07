@@ -1,8 +1,11 @@
 package engine
 
 import (
+	"math"
 	"testing"
 	"time"
+
+	"github.com/example/panchang/engine/swe"
 )
 
 // Brihat Samhita 104.4, read off the verse: benefic houses from the natal
@@ -128,5 +131,32 @@ func TestTransitsReadFromTheMoon(t *testing.T) {
 	on, phase := SadeSati(natal, sky)
 	if on != rep.SadeSati || phase != rep.SadeSatiPhase {
 		t.Errorf("sade sati %v %d vs %v %d", rep.SadeSati, rep.SadeSatiPhase, on, phase)
+	}
+}
+
+// Saturn crossing a natal Moon at 20 degrees Meena (350 deg): in 2025-2026
+// Saturn moves through Meena with a retrograde loop, so it passes more
+// than once; at every pass Saturn sits on that degree.
+func TestExactPassesOverTheNatalMoon(t *testing.T) {
+	e := New("../ephe")
+	natal := Chart{Ascendant: Point{Longitude: 100}, Grahas: []Graha{{ID: "moon", Longitude: 350}, {ID: "sun", Longitude: 200}}}
+	ev, err := e.ExactPasses(natal, time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC), time.Date(2028, 1, 1, 0, 0, 0, 0, time.UTC))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer e.begin()()
+	passes := 0
+	for _, x := range ev {
+		if x.Graha != "saturn" || x.Target != "moon" {
+			continue
+		}
+		passes++
+		lon := lonAt(t, x.At, swe.Saturn)
+		if d := math.Abs(math.Mod(lon-350+540, 360) - 180); d > 0.01 {
+			t.Errorf("Saturn at %s is %.3f deg from the natal Moon", x.At, d)
+		}
+	}
+	if passes == 0 || passes%2 == 0 {
+		t.Errorf("Saturn over 20 Meena: %d passes (expected 1 or 3)", passes)
 	}
 }

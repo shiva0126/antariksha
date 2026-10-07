@@ -119,7 +119,7 @@ test('new kundali tabs: today, transits, divisional charts, timing, ashtakavarga
   await expect(page.locator('.today')).toContainText('Tara bala');
   await expect(page.locator('.today .planet-table tbody tr')).toHaveCount(9);
   // The planets read from the Moon, with the book's view (Brihat Samhita 104).
-  await expect(page.locator('.transit-now li')).toHaveCount(6);
+  await expect(page.locator('.transit-now li')).toHaveCount(7);
   await expect(page.locator('.transit-now')).toContainText('from the Moon');
   await expect(page.locator('.transit-now')).toContainText('Brihat Samhita 104.');
   await page.getByRole('tab', { name: 'Chart', exact: true }).click();

@@ -38,6 +38,12 @@ function eventText(e: TransitEvent): string {
       return `${who[0].toUpperCase() + who.slice(1)} turns retrograde in ${e.rashi}: its themes slow down and turn inward.`;
     case 'direct':
       return `${who[0].toUpperCase() + who.slice(1)} turns direct in ${e.rashi}: its themes move forward again.`;
+    case 'exact': {
+      const point = e.target === 'lagna' ? 'rising degree (lagna)' : `natal ${e.target === 'sun' ? 'Sun' : 'Moon'}`;
+      const meaning = e.graha === 'saturn' ? (e.target === 'moon' ? ' This is the heart of Sade Sati: a time for patience and steady effort.' : ' A time to slow down and build carefully.')
+        : e.graha === 'jupiter' ? ' Traditionally a supportive, expanding moment.' : ' A time of change and new directions.';
+      return `${who[0].toUpperCase() + who.slice(1)} passes exactly over your ${point} at ${e.degree.toFixed(1)}° ${e.rashi}.${meaning}`;
+    }
     default: {
       const kind = e.kind === 'solar_eclipse' ? 'Solar eclipse' : 'Lunar eclipse';
       const where = e.on_moon_sign ? ' in your Moon sign' : e.on_lagna_sign ? ' in your rising sign' : '';
@@ -105,7 +111,7 @@ export function TimingTab({ birth }: { birth: ChartInput }) {
   }, [birth]);
   if (error) return <Notice tone="danger">Timing unavailable: {error}</Notice>;
   if (!data) return <Card title="The coming months"><Skeleton lines={6} /></Card>;
-  const events = data.events.filter(e => (slow.has(e.graha) && e.graha !== 'ketu') || e.kind.endsWith('eclipse'));
+  const events = data.events.filter(e => (slow.has(e.graha) && e.graha !== 'ketu') || e.kind.endsWith('eclipse') || e.kind === 'exact');
   return (
     <div className="timing">
       <Card title="The coming months" sub="Your running dasha read with the slow planets: Jupiter, Saturn, Rahu and Ketu">
@@ -132,7 +138,7 @@ export function TimingTab({ birth }: { birth: ChartInput }) {
         {data.periods.length > 4 && <Button variant="ghost" size="sm" onClick={() => setAllPeriods(v => !v)}>{allPeriods ? 'Show fewer periods' : `Show all ${data.periods.length} periods`}</Button>}
       </Card>
       {own && data.past_periods && <LookingBack periods={data.past_periods} />}
-      <Card title="Sign changes and eclipses" sub="The slow planets and the eclipses of the next two years">
+      <Card title="Sign changes, exact passes and eclipses" sub="The slow planets and the eclipses of the next two years, including when they cross your natal Moon, Sun and rising degree">
         <ul className="timing-events">
           {(allEvents ? events : events.slice(0, 10)).map(e => (
             <li key={e.graha + e.kind + e.at}>

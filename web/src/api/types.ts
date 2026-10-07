@@ -110,7 +110,7 @@ export interface TransitPlanet {
 }
 
 export interface TransitEvent {
-  graha: string; kind: 'ingress' | 'retrograde' | 'direct' | 'solar_eclipse' | 'lunar_eclipse';
+  graha: string; kind: 'ingress' | 'retrograde' | 'direct' | 'solar_eclipse' | 'lunar_eclipse' | 'exact'; target?: 'moon' | 'sun' | 'lagna';
   at: string; from?: string; rashi: string; degree: number;
   from_moon?: number; from_lagna?: number; favourable?: boolean;
   on_moon_sign?: boolean; on_lagna_sign?: boolean; degrees_to_moon?: number;

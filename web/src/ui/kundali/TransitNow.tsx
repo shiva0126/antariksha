@@ -5,7 +5,7 @@ import { grahaEnglish } from '../../astro/format';
 import { Card, Chip, Notice, Skeleton } from '../../ds';
 
 const ord = (n: number) => n + (n % 100 >= 11 && n % 100 <= 13 ? 'th' : n % 10 === 1 ? 'st' : n % 10 === 2 ? 'nd' : n % 10 === 3 ? 'rd' : 'th');
-const order = ['jupiter', 'saturn', 'sun', 'mars', 'mercury', 'venus'];
+const order = ['moon', 'jupiter', 'saturn', 'sun', 'mars', 'mercury', 'venus'];
 const weakWords: Record<string, string> = { debilitated: 'in its weakest sign', enemy: 'in an unfriendly sign', combust: 'too close to the Sun' };
 
 /** The planets now, read from the natal Moon with Brihat Samhita 104, in plain words. */
@@ -24,13 +24,13 @@ export function TransitNow({ birth }: { birth: ChartInput }) {
     : data.kantaka_shani ? 'Saturn is in the 4th house from your Moon (Kantaka Shani): traditionally a time to look after home life and peace of mind.'
       : data.ashtama_shani ? 'Saturn is in the 8th house from your Moon (Ashtama Shani): traditionally a time for caution and patience.' : '';
   return (
-    <Card title="The planets for you now" sub="Read from your Moon sign, as the classical books do. Slow planets shape the year, fast ones the month.">
+    <Card title="The planets for you now" sub="Read from your Moon sign, as the classical books do. The Moon sets the tone of the day, the fast planets the month, the slow ones the year.">
       {saturn && <Notice tone="warning">{saturn}</Notice>}
       <ul className="transit-now">
         {planets.map(p => (
           <li key={p.graha}>
             <div className="transit-now-head">
-              <b>{grahaEnglish(p.graha)}</b>
+              <b>{p.graha === 'moon' ? 'Today: the Moon' : grahaEnglish(p.graha)}</b>
               <span className="muted small">in {p.rashi} · your {ord(p.from_moon)} house from the Moon</span>
               {p.favourable !== undefined && <Chip tone={p.favourable ? 'success' : 'warning'}>{p.favourable ? 'Good house' : 'Harder house'}</Chip>}
             </div>

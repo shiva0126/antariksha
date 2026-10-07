@@ -97,7 +97,7 @@ func forecastFor(t *testing.T) (engine.ChartFacts, []Rule, ChatContext) {
 		mid := from.Add(to.Sub(from) / 2)
 		sky, _ := e.BirthChart(engine.ChartInput{Date: mid.Format("2006-01-02"), Time: "12:00", Lat: 12.97, Lon: 77.59, TZ: "UTC"})
 		f, _ := engine.Facts(natal, mid)
-		periods = append(periods, PeriodInput{From: from, To: to, Sky: sky, Dasha: f.Vimshottari.Current})
+		periods = append(periods, PeriodInput{From: from, To: to, Sky: sky, Dasha: f.Vimshottari.Current, Yogini: f.Yogini.Current.Lord})
 	}
 	events, err := e.TransitEvents(start, start.AddDate(1, 0, 0))
 	if err != nil {
@@ -108,7 +108,11 @@ func forecastFor(t *testing.T) (engine.ChartFacts, []Rule, ChatContext) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	return facts, rules, ChatContext{Forecast: s.Forecast(context.Background(), natal, periods), Events: events}
+	sb, err := e.Shadbala(natal)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return facts, rules, ChatContext{Forecast: s.Forecast(context.Background(), natal, periods, ForecastOption{Shadbala: &sb}), Events: events}
 }
 
 // Timing questions get windows, never events: each says a chart cannot tell
@@ -203,5 +207,25 @@ func TestQuestionsInIndianLanguages(t *testing.T) {
 		if q == "what is my lagna" && contains(got, "marriage") {
 			t.Errorf("lagna read as marriage: %v", got)
 		}
+	}
+}
+
+// Shadbala and the Yogini dasha feed the reasons when they apply.
+func TestForecastUsesShadbalaAndYogini(t *testing.T) {
+	_, _, cc := forecastFor(t)
+	var shadbala, yogini bool
+	for _, p := range cc.Forecast {
+		for _, a := range p.Areas {
+			for _, r := range a.Reasons {
+				shadbala = shadbala || strings.Contains(r.Text, "Shadbala")
+				yogini = yogini || r.Source == "Yogini dasha"
+			}
+		}
+	}
+	if !shadbala {
+		t.Error("no reason mentions Shadbala")
+	}
+	if !yogini {
+		t.Log("the Yogini lord does not touch a shown area for this chart in these months")
 	}
 }

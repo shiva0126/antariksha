@@ -189,6 +189,8 @@ type TransitEvent struct {
 	From   string    `json:"from,omitempty"` // previous sign, for ingresses
 	Rashi  string    `json:"rashi"`
 	Degree float64   `json:"degree"` // longitude within the sign at the event
+	// Target is the natal point an "exact" pass crosses: moon, sun or lagna.
+	Target string `json:"target,omitempty"`
 }
 
 var eventBodies = []struct {
@@ -333,3 +335,62 @@ var swePosition3D = swe.Position3D
 // AspectedSigns returns the signs (0 = Mesha) a graha in sign s occupies or
 // aspects by classical graha drishti.
 func AspectedSigns(id string, s int) []int { return aspectedSigns(id, s) }
+
+// ExactPasses finds when Jupiter, Saturn and Rahu cross the exact degree of
+// the natal Moon, Sun and lagna between from and to (kind "exact"). A
+// retrograde loop can make up to three passes; each is found to the minute.
+func (e *Engine) ExactPasses(natal Chart, from, to time.Time) ([]TransitEvent, error) {
+	if !to.After(from) || to.Sub(from) > 5*366*24*time.Hour {
+		return nil, fmt.Errorf("choose a range of up to five years")
+	}
+	targets := map[string]float64{"lagna": natal.Ascendant.Longitude}
+	for _, g := range natal.Grahas {
+		if g.ID == "moon" || g.ID == "sun" {
+			targets[g.ID] = g.Longitude
+		}
+	}
+	defer e.begin()()
+	j0, j1 := jdOf(from), jdOf(to)
+	var out []TransitEvent
+	for _, b := range []struct {
+		id   string
+		body int
+	}{{"jupiter", swe.Jupiter}, {"saturn", swe.Saturn}, {"rahu", swe.TrueNode}} {
+		for _, target := range []string{"moon", "sun", "lagna"} {
+			t := targets[target]
+			diff := func(jd float64) (float64, error) {
+				lon, _, _, _, err := swe.Position3D(jd, b.body)
+				return math.Mod(normalize(lon)-t+540, 360) - 180, err
+			}
+			d0, err := diff(j0)
+			if err != nil {
+				return nil, err
+			}
+			for jd := j0; jd < j1; {
+				next := math.Min(jd+1, j1)
+				d1, err := diff(next)
+				if err != nil {
+					return nil, err
+				}
+				// A crossing: the sign of the separation flips while it is small
+				// (a flip near 180 degrees is the opposite point, not a pass).
+				if (d0 < 0) != (d1 < 0) && math.Abs(d0) < 10 && math.Abs(d1) < 10 {
+					a, z := jd, next
+					for z-a > 1.0/1440/2 {
+						mid := (a + z) / 2
+						dm, _ := diff(mid)
+						if (dm < 0) == (d0 < 0) {
+							a = mid
+						} else {
+							z = mid
+						}
+					}
+					out = append(out, TransitEvent{Graha: b.id, Kind: "exact", At: timeOfJD(z), Rashi: rashiNames[int(t/30)], Degree: math.Mod(t, 30), Target: target})
+				}
+				jd, d0 = next, d1
+			}
+		}
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i].At.Before(out[j].At) })
+	return out, nil
+}

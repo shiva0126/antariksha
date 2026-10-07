@@ -86,10 +86,27 @@ type PeriodInput struct {
 	From, To time.Time
 	Sky      engine.Chart
 	Dasha    engine.DashaPeriod
+	// Yogini is the lord of the running Yogini dasha, a second timing
+	// system used as confirmation.
+	Yogini string
+}
+
+// ForecastOption adds natal data the engine computes separately.
+type ForecastOption struct {
+	// Shadbala weighs the dasha lords by the classical six-part strength.
+	Shadbala *engine.Shadbala
 }
 
 // Forecast reads each period against the natal chart.
-func (s *Service) Forecast(ctx context.Context, natal engine.Chart, periods []PeriodInput) []Period {
+func (s *Service) Forecast(ctx context.Context, natal engine.Chart, periods []PeriodInput, opts ...ForecastOption) []Period {
+	strength := map[string]float64{}
+	for _, o := range opts {
+		if o.Shadbala != nil {
+			for _, r := range o.Shadbala.Rows {
+				strength[r.Graha] = r.Ratio
+			}
+		}
+	}
 	nat := map[string]engine.Graha{}
 	for _, g := range natal.Grahas {
 		nat[g.ID] = g
@@ -170,6 +187,7 @@ func (s *Service) Forecast(ctx context.Context, natal engine.Chart, periods []Pe
 				}
 				dashaTouches = true
 				sign, why := lordTone(l.id, placed, dig[l.id], comb[l.id], !inInts(placed, a.Houses))
+				sign, why = withStrength(sign, why, strength[l.id])
 				link := fmt.Sprintf("sits in your %s house", ordinal(placed))
 				if len(rules) > 0 {
 					link = fmt.Sprintf("rules your %s house", ordinalList(rules))
@@ -196,6 +214,7 @@ func (s *Service) Forecast(ctx context.Context, natal engine.Chart, periods []Pe
 				}
 				dashaTouches = true
 				sign, why := lordTone(l.id, engine.HouseOf(nat[l.id].Longitude, asc), dig[l.id], comb[l.id], true)
+				sign, why = withStrength(sign, why, strength[l.id])
 				af.Reasons = append(af.Reasons, Reason{
 					Text:   fmt.Sprintf("Your %s belongs to %s, the natural significator (karaka) of %s, so it brings this area forward%s.", l.label, theName(l.id), a.Name, why),
 					Source: "karaka (natural significator)", Sign: 0.5 * sign,
@@ -214,6 +233,22 @@ func (s *Service) Forecast(ctx context.Context, natal engine.Chart, periods []Pe
 					if p.Dasha.Antara == p.Dasha.Maha {
 						break
 					}
+				}
+			}
+			// 1d. The Yogini dasha as confirmation: its lord also rules, sits in
+			// or signifies this area.
+			if y := p.Yogini; y != "" {
+				placed := engine.HouseOf(nat[y].Longitude, asc)
+				ruled := false
+				for _, h := range a.Houses {
+					ruled = ruled || engine.HouseLord(natal, h) == y
+				}
+				if dashaTouches && (ruled || inInts(placed, a.Houses) || contains(karakas[a.ID], y)) {
+					sign, _ := lordTone(y, placed, dig[y], comb[y], true)
+					af.Reasons = append(af.Reasons, Reason{
+						Text:   fmt.Sprintf("Your Yogini dasha, a second timing system, is also run by %s, which is linked to %s: the two systems agree on this area.", theName(y), a.Name),
+						Source: "Yogini dasha", Sign: 0.3 * sign,
+					})
 				}
 			}
 			// 2. Slow transits occupying or aspecting the area's houses.
@@ -391,4 +426,16 @@ func ordinalList(hs []int) string {
 		s[i] = ordinal(h)
 	}
 	return joinAnd(s)
+}
+
+// withStrength adds the Shadbala verdict (the classical six-part strength,
+// as a ratio to the required minimum) to a dasha lord's tone.
+func withStrength(sign float64, why string, ratio float64) (float64, string) {
+	switch {
+	case ratio >= 1.2:
+		return sign + 0.5, why + ", and strong by Shadbala (six-fold strength)"
+	case ratio > 0 && ratio < 0.9:
+		return sign - 0.5, why + ", and below its required Shadbala (six-fold strength)"
+	}
+	return sign, why
 }

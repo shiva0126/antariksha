@@ -18,6 +18,11 @@ type TransitCalculator interface {
 	TransitEvents(from, to time.Time) ([]engine.TransitEvent, error)
 }
 
+// ExactPassCalculator finds slow planets crossing natal points.
+type ExactPassCalculator interface {
+	ExactPasses(natal engine.Chart, from, to time.Time) ([]engine.TransitEvent, error)
+}
+
 type personalEvent struct {
 	engine.TransitEvent
 	// For sign changes: the new sign counted from the natal Moon and lagna,
@@ -77,6 +82,12 @@ func (s *Server) transits(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		problem(w, 500, err)
 		return
+	}
+	if xc, ok := s.engine.(ExactPassCalculator); ok {
+		if passes, e := xc.ExactPasses(natal, now, now.AddDate(0, months, 0)); e == nil {
+			events = append(events, passes...)
+			sort.SliceStable(events, func(i, j int) bool { return events[i].At.Before(events[j].At) })
+		}
 	}
 	var moonLon float64
 	for _, g := range natal.Grahas {
@@ -142,14 +153,14 @@ func (s *Server) transits(w http.ResponseWriter, r *http.Request) {
 			start := now.AddDate(0, -n, 0)
 			if pev, e := tc.TransitEvents(start, now); e == nil {
 				if pp, e := s.forecastPeriods(natal, in, pev, start, now); e == nil {
-					past = s.reading.Forecast(r.Context(), natal, pp)
+					past = s.reading.Forecast(r.Context(), natal, pp, s.forecastOption(natal))
 				}
 			}
 		}
 	}
 	writeJSON(w, 200, map[string]any{
 		"now": now.Format(time.RFC3339), "months": months,
-		"periods": s.reading.Forecast(r.Context(), natal, periods), "past_periods": past,
+		"periods": s.reading.Forecast(r.Context(), natal, periods, s.forecastOption(natal)), "past_periods": past,
 		"planets": planets, "sade_sati": report.SadeSati, "sade_sati_phase": report.SadeSatiPhase,
 		"kantaka_shani": report.KantakaShani, "ashtama_shani": report.AshtamaShani,
 		"double_transit": report.DoubleTransit, "events": out,
@@ -200,7 +211,7 @@ func (s *Server) forecastPeriods(natal engine.Chart, in engine.ChartInput, event
 		if err != nil {
 			return nil, err
 		}
-		out = append(out, reading.PeriodInput{From: a, To: b, Sky: sky, Dasha: f.Vimshottari.Current})
+		out = append(out, reading.PeriodInput{From: a, To: b, Sky: sky, Dasha: f.Vimshottari.Current, Yogini: f.Yogini.Current.Lord})
 	}
 	return out, nil
 }
@@ -222,5 +233,15 @@ func (s *Server) forecastContext(ctx context.Context, natal engine.Chart, in eng
 	if err != nil {
 		return nil, nil
 	}
-	return s.reading.Forecast(ctx, natal, periods), events
+	return s.reading.Forecast(ctx, natal, periods, s.forecastOption(natal)), events
+}
+
+// forecastOption carries the natal Shadbala when the engine computes it.
+func (s *Server) forecastOption(natal engine.Chart) reading.ForecastOption {
+	if sc, ok := s.engine.(ShadbalaCalculator); ok {
+		if sb, err := sc.Shadbala(natal); err == nil {
+			return reading.ForecastOption{Shadbala: &sb}
+		}
+	}
+	return reading.ForecastOption{}
 }
