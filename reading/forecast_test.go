@@ -174,3 +174,34 @@ func TestForecastUsesKarakasAndDashaThemes(t *testing.T) {
 		t.Errorf("period themes: %q", th)
 	}
 }
+
+// Questions in Hinglish and Indian scripts reach the same topics as English;
+// "lagna" stays the ascendant (it means marriage only in Marathi).
+func TestQuestionsInIndianLanguages(t *testing.T) {
+	for q, want := range map[string][]string{
+		"shaadi kab hogi?":                {"marriage", "forecast"},
+		"naukri kab milegi":               {"career", "forecast"},
+		"मेरी शादी कब होगी?":              {"marriage", "forecast"},
+		"ನನ್ನ ಮದುವೆ ಯಾವಾಗ?":               {"marriage", "forecast"},
+		"என் திருமணம் எப்போது?":           {"marriage", "forecast"},
+		"పెళ్లి ఎప్పుడు?":                 {"marriage", "forecast"},
+		"is 2027 good for buying a house": {"property", "forecast"},
+		"kya main manglik hoon":           {"mangal_dosha"},
+		"शनि की साढ़ेसाती":                {"sade_sati"},
+		"मेरी मृत्यु कब होगी":             {"safety"},
+		"what is my lagna":                {"lagna"},
+	} {
+		got := Topics(q)
+		for _, w := range want {
+			if !contains(got, w) {
+				t.Errorf("%q: topics %v lack %s", q, got, w)
+			}
+		}
+		if contains(got, "safety") && got[0] != "safety" {
+			t.Errorf("%q: safety must lead: %v", q, got)
+		}
+		if q == "what is my lagna" && contains(got, "marriage") {
+			t.Errorf("lagna read as marriage: %v", got)
+		}
+	}
+}

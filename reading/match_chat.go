@@ -53,10 +53,24 @@ var kootaTopic = map[string]string{"varna": "Varna", "vashya": "Vashya", "tara":
 
 var matchHousePattern = regexp.MustCompile(`(?i)\b(1[0-2]|[1-9])(st|nd|rd|th)? house\b`)
 
+// nativeMatchTopics recognise matching questions in Hinglish and Indian
+// scripts (substring matches; regexp word boundaries are ASCII-only).
+var nativeMatchTopics = []topic{
+	{"score", regexp.MustCompile(`(?i)\b(kundli milan|kundali milan|gun milan|gunn milan|milan)\b|गुण मिलान|कुंडली मिलान|गुण|ಗುಣ|ಜಾತಕ ಹೊಂದಾಣಿಕೆ|ஜாதகப் பொருத்தம்|గుణ|జాతక పొంతన|गुण मेलन|ജാതകപ്പൊരുത്തം|ગુણ મિલાન|কুষ্ঠি মিলন`)},
+	{"porutham", regexp.MustCompile(`பொருத்தம்|ಹೊಂದಾಣಿಕೆ|పొంతన|പൊരുത്തം|ரஜ்ஜு|ರಜ್ಜು|రజ్జు|രജ്ജു|ವೇಧ|வேதை|వేధ`)},
+	{"mangal", regexp.MustCompile(`(?i)\b(manglik|mangalik|mangal dosh)\b|मांगलिक|मंगल दोष|ಕುಜ ದೋಷ|செவ்வாய் தோஷம்|కుజ దోషం|मंगळ दोष|ചൊവ്വാ ദോഷം|મંગળ દોષ|মাঙ্গলিক`)},
+	{"nadi", regexp.MustCompile(`नाड़ी|नाडी|ನಾಡಿ|நாடி|నాడి|നാഡി|નાડી|নাড়ি`)},
+}
+
 func classifyMatch(q string) []string {
 	var ts []string
 	for _, t := range matchTopics {
 		if t.words.MatchString(q) {
+			ts = append(ts, t.name)
+		}
+	}
+	for _, t := range nativeMatchTopics {
+		if !contains(ts, t.name) && t.words.MatchString(q) {
 			ts = append(ts, t.name)
 		}
 	}

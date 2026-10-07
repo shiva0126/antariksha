@@ -76,7 +76,7 @@ var topics = []topic{
 	{"sade_sati", words(`sade ?sati|shani dasha|shani transit|saturn transit`)},
 	{"travel", words(`travel|travels|travelling|traveling|abroad|foreign|overseas|relocate|relocation|immigrate|immigration|visa|journey|journeys|pilgrimage`)},
 	{"siblings", words(`sibling|siblings|brother|brothers|sister|sisters`)},
-	{"property", words(`property|properties|land|plot|real estate|vehicle|vehicles|car|bike|buy a house|own a house|home loan`)},
+	{"property", words(`property|properties|land|plot|real estate|vehicle|vehicles|car|bike|buy a house|own a house|home loan|(?:buy|buying|purchase|purchasing|build|building) (?:a |my |our )?(?:house|home|flat|apartment|land)`)},
 	{"spirituality", words(`spiritual|spirituality|moksha|meditation|god|devotion|liberation|retreat`)},
 	{"numerology", words(`numerology|numerological|numbers?|life path|mulank|moolank|bhagyank|bhagyaank|destiny number|root number|psychic number|lucky numbers?|personal year|ank jyotish`)},
 	{"forecast", words(`when|this year|next year|coming months?|coming year|next few months|future|forecast|predict|prediction|predictions|upcoming|what'?s coming|will i|transit|transits|gochar|gochara|good time|right time|best time`)},
@@ -103,12 +103,42 @@ var grahaWords = map[string]*regexp.Regexp{
 
 var houseWord = regexp.MustCompile(`(?i)\b(1[0-2]|[1-9])(st|nd|rd|th)? house\b`)
 
+// nativeTopics recognise the main topics in Hinglish and in the app's
+// Indian-script languages (Hindi, Marathi, Kannada, Tamil, Telugu,
+// Malayalam, Gujarati, Bengali). Indian scripts are matched as substrings:
+// regexp word boundaries are ASCII-only.
+var nativeTopics = []topic{
+	{"safety", regexp.MustCompile(`(?i)\b(maut|marunga|marenge)\b|मृत्यु|मौत|मरण|ಸಾವು|ಮರಣ|மரணம்|சாவு|మరణం|చావు|मृत्यू|മരണം|મૃત્યુ|মৃত্যু`)},
+	{"career", regexp.MustCompile(`(?i)\b(naukri|naukari|kaam|vyapar|vyavsay|business|karobar)\b|नौकरी|करियर|कैरियर|व्यवसाय|व्यापार|ಉದ್ಯೋಗ|ಕೆಲಸ|ವೃತ್ತಿ|வேலை|தொழில்|ఉద్యోగం|ఉద్యోగ|వృత్తి|नोकरी|व्यवसाय|ജോലി|തൊഴിൽ|નોકરી|ધંધો|চাকরি|ব্যবসা`)},
+	{"marriage", regexp.MustCompile(`(?i)\b(shaadi|shadi|vivah|vivaah|byah|biyah|rishta|patni|pati)\b|शादी|विवाह|ब्याह|रिश्ता|पत्नी|पति|ಮದುವೆ|ವಿವಾಹ|திருமணம்|கல்யாணம்|పెళ్లి|వివాహం|വിവാഹം|കല്യാണം|લગ્ન|বিয়ে|বিবাহ`)},
+	{"wealth", regexp.MustCompile(`(?i)\b(paisa|paise|dhan|daulat|kamai)\b|पैसा|पैसे|धन|दौलत|कमाई|ಹಣ|ಸಂಪತ್ತು|பணம்|செல்வம்|డబ్బు|ధనం|संपत्ती|പണം|സമ്പത്ത്|પૈસા|ધન|টাকা|অর্থ|সম্পদ`)},
+	{"health", regexp.MustCompile(`(?i)\b(sehat|swasthya|bimari|beemari)\b|स्वास्थ्य|सेहत|बीमारी|ಆರೋಗ್ಯ|ஆரோக்கியம்|உடல்நலம்|ఆరోగ్యం|आरोग्य|ആരോഗ്യം|આરોગ્ય|স্বাস্থ্য`)},
+	{"education", regexp.MustCompile(`(?i)\b(padhai|pariksha|shiksha)\b|पढ़ाई|पढाई|शिक्षा|परीक्षा|ಶಿಕ್ಷಣ|ಓದು|ಪರೀಕ್ಷೆ|படிப்பு|கல்வி|தேர்வு|చదువు|విద్య|పరీక్ష|शिक्षण|अभ्यास|പഠനം|പരീക്ഷ|ભણતર|શિક્ષણ|પરીક્ષા|পড়াশোনা|শিক্ষা|পরীক্ষা`)},
+	{"children", regexp.MustCompile(`(?i)\b(bachche|bacche|santan|aulad|beta|beti)\b|संतान|बच्चे|बच्चा|औलाद|ಮಕ್ಕಳು|ಸಂತಾನ|குழந்தை|பிள்ளை|పిల్లలు|సంతానం|मुले|മക്കൾ|കുട്ടി|બાળક|સંતાન|সন্তান|বাচ্চা`)},
+	{"property", regexp.MustCompile(`(?i)\b(ghar|makaan|makan|zameen|jameen|flat)\b|घर|मकान|ज़मीन|जमीन|ಮನೆ|ಆಸ್ತಿ|வீடு|சொத்து|ఇల్లు|ఆస్తి|मालमत्ता|വീട്|സ്വത്ത്|ઘર|મિલકત|বাড়ি|সম্পত্তি`)},
+	{"travel", regexp.MustCompile(`(?i)\b(videsh|bahar|abroad|pardes)\b|विदेश|परदेश|ವಿದೇಶ|வெளிநாடு|విదేశం|विदेशात|വിദേശ|વિદેશ|বিদেশ`)},
+	{"mangal_dosha", regexp.MustCompile(`(?i)\b(manglik|mangalik|mangal dosh)\b|मांगलिक|मंगल दोष|ಕುಜ ದೋಷ|ಮಾಂಗಲಿಕ|செவ்வாய் தோஷம்|కుజ దోషం|मंगळ दोष|ചൊവ്വാ ദോഷം|મંગળ દોષ|মাঙ্গলিক`)},
+	{"sade_sati", regexp.MustCompile(`(?i)\b(sadhe ?sati|sade ?saati|shani ki sadhe)\b|साढ़ेसाती|साढ़े साती|साडेसाती|ಸಾಡೇಸಾತಿ|ஏழரை சனி|ఏలినాటి శని|ഏഴര ശനി|સાડાસાતી|সাড়ে সাতি`)},
+	{"remedy", regexp.MustCompile(`(?i)\b(upay|upaay|totka)\b|उपाय|ಪರಿಹಾರ|பரிகாரம்|పరిహారం|उपाय|പരിഹാരം|ઉપાય|প্রতিকার`)},
+	{"dasha", regexp.MustCompile(`दशा|ದಶೆ|ದಶಾ|தசை|దశ|ദശ|દશા|দশা`)},
+	{"forecast", regexp.MustCompile(`(?i)\b(kab|kabhi|is saal|agle saal|aane wala|aage kya|bhavishya|bhavishyafal|yaavaga|eppo|eppodhu|eppudu|kevha)\b|कब|इस साल|अगले साल|भविष्य|आने वाले|ಯಾವಾಗ|ಈ ವರ್ಷ|ಮುಂದಿನ ವರ್ಷ|ಭವಿಷ್ಯ|எப்போது|இந்த ஆண்டு|அடுத்த ஆண்டு|எதிர்காலம்|ఎప్పుడు|ఈ సంవత్సరం|వచ్చే సంవత్సరం|భవిష్యత్తు|केव्हा|या वर्षी|पुढच्या वर्षी|എപ്പോൾ|ഈ വർഷം|അടുത്ത വർഷം|ഭാവി|ક્યારે|આ વર્ષે|આવતા વર્ષે|ભવિષ્ય|কবে|এই বছর|আগামী বছর|ভবিষ্যৎ|\b20[2-9][0-9]\b`)},
+}
+
 func classify(q string) ([]string, []string, int) {
 	var ts []string
 	for _, t := range topics {
 		if t.words.MatchString(q) {
 			ts = append(ts, t.name)
 		}
+	}
+	for _, t := range nativeTopics {
+		if !contains(ts, t.name) && t.words.MatchString(q) {
+			ts = append(ts, t.name)
+		}
+	}
+	// A safety topic must lead, as in the English list.
+	if contains(ts, "safety") && ts[0] != "safety" {
+		ts = append([]string{"safety"}, removeString(ts, "safety")...)
 	}
 	var gs []string
 	for _, id := range engine.GrahaIDs {
@@ -569,4 +599,14 @@ func (s *Service) compactAnswer(ctx context.Context, in *insight, f engine.Chart
 	}
 	grounded.Answer, grounded.Model = text, s.modelName()
 	return grounded
+}
+
+func removeString(xs []string, x string) []string {
+	var out []string
+	for _, y := range xs {
+		if y != x {
+			out = append(out, y)
+		}
+	}
+	return out
 }
