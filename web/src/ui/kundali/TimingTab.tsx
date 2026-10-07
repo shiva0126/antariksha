@@ -119,7 +119,7 @@ function YearCard({ birth }: { birth: ChartInput }) {
         <p><Chip tone={munthaChip[v.muntha.tone]}>Muntha in {v.muntha.rashi}</Chip> {v.muntha.detail}</p>
         {v.strengths.length > 0 && <><b className="small">Working for you</b><ul className="forecast-reasons">{v.strengths.map(x => <li key={x}>{x}</li>)}</ul></>}
         {v.cautions.length > 0 && <><b className="small">Go carefully</b><ul className="forecast-reasons">{v.cautions.map(x => <li key={x}>{x}</li>)}</ul></>}
-        <b className="small">The year, stretch by stretch (Mudda dasha)</b>
+        <b className="small">The year, period by period (Mudda dasha)</b>
         <ol className="forecast mudda">
           {v.mudda.map(m => {
             const current = Date.now() >= Date.parse(m.from) && Date.now() < Date.parse(m.to);

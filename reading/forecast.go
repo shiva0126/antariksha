@@ -401,7 +401,7 @@ func lordTone(id string, house int, d engine.Dignity, combust, sayHouse bool) (f
 
 func periodSummary(p Period) string {
 	if len(p.Areas) == 0 {
-		return fmt.Sprintf("A quieter stretch in %s's period: no area of life stands out.", theName(p.Maha))
+		return fmt.Sprintf("A quieter time in %s's period: no area of life stands out.", theName(p.Maha))
 	}
 	var parts []string
 	for _, a := range p.Areas[:min(2, len(p.Areas))] {

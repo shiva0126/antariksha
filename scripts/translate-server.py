@@ -8,6 +8,7 @@ Malayalam, Gujarati and Bengali with AI4Bharat IndicTrans2 (the distilled
 The Go API calls it through TRANSLATE_URL and falls back to English when it
 is missing or slow.
 """
+import gc
 import json
 import os
 import sys
@@ -18,7 +19,10 @@ import torch
 from IndicTransToolkit import IndicProcessor
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 
-MODEL = os.environ.get("TRANSLATE_MODEL", "ai4bharat/indictrans2-en-indic-dist-200M")
+# A local directory holding the official AI4Bharat files (see
+# scripts/install-local-translation.sh, which verifies them), or a Hugging
+# Face model id.
+MODEL = os.environ.get("TRANSLATE_MODEL", os.path.join(os.path.dirname(__file__), "..", ".runtime", "translate-models", "indictrans2-en-indic-dist-200M"))
 CACHE = os.environ.get("TRANSLATE_CACHE", os.path.join(os.path.dirname(__file__), "..", ".runtime", "translate-models"))
 HOST = os.environ.get("TRANSLATE_HOST", "127.0.0.1")
 PORT = int(os.environ.get("TRANSLATE_PORT", "18093"))
@@ -34,11 +38,30 @@ torch.set_num_threads(int(os.environ.get("TRANSLATE_THREADS", "2")))
 tokenizer = AutoTokenizer.from_pretrained(MODEL, trust_remote_code=True, cache_dir=CACHE)
 model = AutoModelForSeq2SeqLM.from_pretrained(MODEL, trust_remote_code=True, cache_dir=CACHE).eval()
 model = torch.quantization.quantize_dynamic(model, {torch.nn.Linear}, dtype=torch.qint8)
+gc.collect()
 processor = IndicProcessor(inference=True)
 lock = threading.Lock()  # one generation at a time keeps memory flat
 
 
 def translate(texts, lang):
+    # The model renders ":" as a visarga, so each text is split at ": " and
+    # the pieces are translated separately and joined with a real colon.
+    pieces, counts = [], []
+    for t in texts:
+        parts = t.split(": ")
+        pieces.extend(parts)
+        counts.append(len(parts))
+    done = translate_pieces(pieces, lang)
+    out, i = [], 0
+    for n in counts:
+        # The model ends each piece as a sentence; only the last keeps it.
+        parts = [p.rstrip().rstrip(".।") for p in done[i:i + n - 1]] + done[i + n - 1:i + n]
+        out.append(": ".join(parts))
+        i += n
+    return out
+
+
+def translate_pieces(texts, lang):
     tag = LANGS[lang]
     out = []
     for i in range(0, len(texts), BATCH):

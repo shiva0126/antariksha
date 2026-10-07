@@ -208,11 +208,11 @@ func muddaDasha(vc Chart, natalMoon float64, age int, from, to time.Time) []Mudd
 		}
 		switch {
 		case score >= 1.5:
-			sp.Tone, sp.Detail = "supportive", where+": a supportive stretch for these areas."
+			sp.Tone, sp.Detail = "supportive", where+": a supportive time for these areas."
 		case score <= -1:
-			sp.Tone, sp.Detail = "challenging", where+": a stretch that asks for patience in these areas."
+			sp.Tone, sp.Detail = "challenging", where+": a time that asks for patience in these areas."
 		default:
-			sp.Tone, sp.Detail = "mixed", where+": a mixed stretch for these areas."
+			sp.Tone, sp.Detail = "mixed", where+": a mixed time for these areas."
 		}
 		out = append(out, sp)
 		t = end

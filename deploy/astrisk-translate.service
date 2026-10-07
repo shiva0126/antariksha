@@ -14,7 +14,7 @@ RestartSec=5
 NoNewPrivileges=true
 PrivateTmp=true
 UMask=0077
-MemoryMax=1500M
+MemoryMax=2G
 
 [Install]
 WantedBy=default.target

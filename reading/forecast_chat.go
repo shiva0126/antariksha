@@ -82,9 +82,9 @@ func forecastPlain(in *insight, ts []string, cc ChatContext) plain {
 		}
 		switch {
 		case len(good) > 0:
-			p.say(fmt.Sprintf("For %s, the most supportive stretch in the coming months is %s.", name, strings.SplitN(good[0], " (", 2)[0]))
+			p.say(fmt.Sprintf("For %s, the most supportive period in the coming months is %s.", name, strings.SplitN(good[0], " (", 2)[0]))
 		case len(hard) > 0:
-			p.say(fmt.Sprintf("No stretch in the coming months stands out as clearly supportive for %s; some ask for patience.", name))
+			p.say(fmt.Sprintf("No period in the coming months stands out as clearly supportive for %s; some ask for patience.", name))
 		default:
 			p.say(fmt.Sprintf("%s is not strongly marked in the coming months: neither your periods nor the slow planets single it out.", upper(name)))
 		}
@@ -103,7 +103,7 @@ func forecastPlain(in *insight, ts []string, cc ChatContext) plain {
 		p.point(fmt.Sprintf("Your year since your birthday on %s (Varshaphal, the year chart): it is ruled by %s. %s", v.ReturnAt.Format("2 January 2006"), theName(v.YearLord), v.Muntha.Detail))
 		for _, m := range v.Mudda {
 			if !now.From.Before(m.From) && now.From.Before(m.To) {
-				p.point(fmt.Sprintf("Within the year, %s's stretch (Mudda dasha) runs until %s. %s", theName(m.Lord), m.To.Format("2 January 2006"), m.Detail))
+				p.point(fmt.Sprintf("Within the year, the %s period (Mudda dasha) runs until %s. %s", engine.GrahaEnglish(m.Lord), m.To.Format("2 January 2006"), m.Detail))
 			}
 		}
 	}

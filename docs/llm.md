@@ -165,9 +165,13 @@ free model when the member's language is not English:
   22); the app shows "Machine translation from English · Show English".
 - **Fallback:** without `TRANSLATE_URL`, or when the service fails or takes
   longer than `TRANSLATE_TIMEOUT` (45 s), the English answer is served.
-- **Install:** Hugging Face serves IndicTrans2 only to a signed-in account
-  that has accepted its terms (free, approved automatically). Accept at
-  https://huggingface.co/ai4bharat/indictrans2-en-indic-dist-200M, log in
-  once on this machine, then run `scripts/install-local-translation.sh`.
+- **Install:** `scripts/install-local-translation.sh`. AI4Bharat's own repo
+  needs a signed-in Hugging Face account, so the script downloads a public
+  copy and verifies every file against the checksums the official repo
+  publishes (git blob SHA-1, or LFS SHA-256 for the weights); any mismatch
+  stops the install. The weights are loaded from safetensors.
+- **Cost on this machine:** about 1.5 GB of RAM (cap 2 GB), roughly 0.5–1 s
+  per sentence on 2 threads; colons are translated around, since the model
+  turns ":" into a visarga.
 - Browser tests use `scripts/fake-translate.py`, which tags text with its
   language instead of translating.
