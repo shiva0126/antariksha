@@ -135,9 +135,21 @@ func (s *Server) transits(w http.ResponseWriter, r *http.Request) {
 		problem(w, 500, err)
 		return
 	}
+	// Recent past periods, for "did this feel true?" feedback.
+	past := []reading.Period{}
+	if v := r.URL.Query().Get("past"); v != "" {
+		if n, e := strconv.Atoi(v); e == nil && n >= 1 && n <= 12 {
+			start := now.AddDate(0, -n, 0)
+			if pev, e := tc.TransitEvents(start, now); e == nil {
+				if pp, e := s.forecastPeriods(natal, in, pev, start, now); e == nil {
+					past = s.reading.Forecast(r.Context(), natal, pp)
+				}
+			}
+		}
+	}
 	writeJSON(w, 200, map[string]any{
 		"now": now.Format(time.RFC3339), "months": months,
-		"periods": s.reading.Forecast(r.Context(), natal, periods),
+		"periods": s.reading.Forecast(r.Context(), natal, periods), "past_periods": past,
 		"planets": planets, "sade_sati": report.SadeSati, "sade_sati_phase": report.SadeSatiPhase,
 		"kantaka_shani": report.KantakaShani, "ashtama_shani": report.AshtamaShani,
 		"double_transit": report.DoubleTransit, "events": out,

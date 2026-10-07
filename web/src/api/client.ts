@@ -64,8 +64,8 @@ export function getMuhurta(event: string, from: string, days: number, place: { l
 export const getToday = (input: ChartInput, signal?: AbortSignal) => request<TodayResponse>(`/api/today?${query(input)}`, { signal });
 
 /** Today's transits read against the birth chart, the coming sign changes and eclipses, and forecast periods. */
-export const getTransits = (input: ChartInput, months = 24, signal?: AbortSignal) =>
-  request<TransitsResponse>(`/api/transits?${query(input, { months: String(months) })}`, { signal });
+export const getTransits = (input: ChartInput, months = 24, signal?: AbortSignal, past = 0) =>
+  request<TransitsResponse>(`/api/transits?${query(input, { months: String(months), ...(past ? { past: String(past) } : {}) })}`, { signal });
 
 export const calendarURL = (year: number, place: { lat: number; lon: number; tz: string }, vrat = true) =>
   `/api/calendar.ics?${new URLSearchParams({ year: String(year), lat: String(place.lat), lon: String(place.lon), tz: place.tz, vrat: vrat ? '1' : '0' })}`;

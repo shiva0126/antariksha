@@ -3,6 +3,7 @@ import { getTransits } from '../../api/client';
 import type { AreaForecast, ChartInput, TransitEvent, TransitsResponse } from '../../api/types';
 import { grahaEnglish, longDate } from '../../astro/format';
 import { Button, Card, Chip, Notice, Skeleton } from '../../ds';
+import { api } from '../../lib/api';
 
 const ord = (n: number) => n + (n % 100 >= 11 && n % 100 <= 13 ? 'th' : n % 10 === 1 ? 'st' : n % 10 === 2 ? 'nd' : n % 10 === 3 ? 'rd' : 'th');
 const the = (id: string) => (id === 'sun' || id === 'moon' ? 'the ' : '') + grahaEnglish(id);
@@ -46,10 +47,52 @@ function eventText(e: TransitEvent): string {
 }
 
 const slow = new Set(['jupiter', 'saturn', 'rahu', 'ketu']);
+
+type Answer = 'yes' | 'partly' | 'no';
+
+/** Past periods of the member's own chart: "did this feel true?" (opt-in). */
+function LookingBack({ periods }: { periods: TransitsResponse['periods'] }) {
+  const [answers, setAnswers] = useState<Record<string, Answer>>({});
+  useEffect(() => {
+    api<{ period_from: string; area: string; response: Answer }[]>('/api/me/forecast-feedback')
+      .then(rows => setAnswers(Object.fromEntries(rows.map(r => [r.period_from + '|' + r.area, r.response])))).catch(() => undefined);
+  }, []);
+  const asked = periods.filter(p => p.areas.length > 0).slice(-4).reverse();
+  if (asked.length === 0) return null;
+  async function answer(p: TransitsResponse['periods'][number], response: Answer) {
+    const a = p.areas[0], key = p.from.slice(0, 10) + '|' + a.area.id;
+    await api('/api/me/forecast-feedback', 'PUT', { period_from: p.from.slice(0, 10), period_to: p.to.slice(0, 10), area: a.area.id, tone: a.tone, response });
+    setAnswers(old => ({ ...old, [key]: response }));
+  }
+  return (
+    <Card title="Looking back" sub="Optional: tell us whether recent periods felt as described. Only your answer, the period and the area are kept, to measure and improve these readings.">
+      <ul className="forecast">
+        {asked.map(p => {
+          const a = p.areas[0], key = p.from.slice(0, 10) + '|' + a.area.id;
+          return (
+            <li key={key} className="forecast-period">
+              <span className="muted small">{day(p.from)} to {day(p.to)}</span>
+              <span>{cap(a.area.name)} was read as <b>{toneWord[a.tone].toLowerCase()}</b>. Did it feel that way?</span>
+              <div className="ds-row">
+                {(['yes', 'partly', 'no'] as const).map(r => (
+                  <Button key={r} size="sm" variant={answers[key] === r ? 'primary' : 'ghost'} aria-pressed={answers[key] === r} onClick={() => void answer(p, r)}>{r === 'yes' ? 'Yes' : r === 'partly' ? 'Partly' : 'No'}</Button>
+                ))}
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </Card>
+  );
+}
 const day = (iso: string) => longDate(iso.slice(0, 10));
 const cap = (s: string) => s[0].toUpperCase() + s.slice(1);
 
 export function TimingTab({ birth }: { birth: ChartInput }) {
+  const [own, setOwn] = useState(false);
+  useEffect(() => {
+    api<{ birth_date?: string; birth_time?: string }>('/api/me').then(me => setOwn(me.birth_date === birth.date && (me.birth_time ?? '').slice(0, 5) === birth.time)).catch(() => setOwn(false));
+  }, [birth]);
   const [data, setData] = useState<TransitsResponse>();
   const [error, setError] = useState('');
   const [allPeriods, setAllPeriods] = useState(false);
@@ -57,7 +100,7 @@ export function TimingTab({ birth }: { birth: ChartInput }) {
   useEffect(() => {
     const ctrl = new AbortController();
     setData(undefined); setError('');
-    getTransits(birth, 24, ctrl.signal).then(setData).catch(e => { if (e.name !== 'AbortError') setError(e.message); });
+    getTransits(birth, 24, ctrl.signal, 6).then(setData).catch(e => { if (e.name !== 'AbortError') setError(e.message); });
     return () => ctrl.abort();
   }, [birth]);
   if (error) return <Notice tone="danger">Timing unavailable: {error}</Notice>;
@@ -88,6 +131,7 @@ export function TimingTab({ birth }: { birth: ChartInput }) {
         </ol>
         {data.periods.length > 4 && <Button variant="ghost" size="sm" onClick={() => setAllPeriods(v => !v)}>{allPeriods ? 'Show fewer periods' : `Show all ${data.periods.length} periods`}</Button>}
       </Card>
+      {own && data.past_periods && <LookingBack periods={data.past_periods} />}
       <Card title="Sign changes and eclipses" sub="The slow planets and the eclipses of the next two years">
         <ul className="timing-events">
           {(allEvents ? events : events.slice(0, 10)).map(e => (

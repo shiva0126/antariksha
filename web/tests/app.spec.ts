@@ -130,6 +130,15 @@ test('new kundali tabs: today, transits, divisional charts, timing, ashtakavarga
   await expect(page.locator('.forecast-period').first()).toContainText('Now');
   await expect(page.locator('.forecast-summary').first()).not.toBeEmpty();
   await expect(page.locator('.timing-events li').first()).toBeVisible();
+  // The member's own chart offers optional feedback on recent periods.
+  const back = page.locator('section').filter({ has: page.getByRole('heading', { name: 'Looking back' }) });
+  await expect(back).toBeVisible();
+  await back.getByRole('button', { name: 'Yes' }).first().click();
+  await expect(back.getByRole('button', { name: 'Yes' }).first()).toHaveAttribute('aria-pressed', 'true');
+  // The answer is saved: it is still shown after reopening the tab.
+  await page.getByRole('tab', { name: 'Planets' }).click();
+  await page.getByRole('tab', { name: 'Timing' }).click();
+  await expect(back.getByRole('button', { name: 'Yes' }).first()).toHaveAttribute('aria-pressed', 'true');
   await expect(page.locator('.dasha')).toContainText('Pratyantardashas');
   await expect(page.locator('.dasha')).toContainText('Yogini dasha');
   await page.getByRole('tab', { name: 'Planets' }).click();

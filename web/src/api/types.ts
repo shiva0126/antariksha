@@ -128,7 +128,7 @@ export interface ForecastPeriod { from: string; to: string; maha: string; antara
 
 export interface TransitsResponse {
   now: string; months: number;
-  planets: TransitPlanet[]; events: TransitEvent[]; periods: ForecastPeriod[];
+  planets: TransitPlanet[]; events: TransitEvent[]; periods: ForecastPeriod[]; past_periods?: ForecastPeriod[];
   sade_sati: boolean; sade_sati_phase: number; kantaka_shani: boolean; ashtama_shani: boolean;
   double_transit: number[];
   notes: Record<string, string>;
