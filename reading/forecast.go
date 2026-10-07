@@ -65,7 +65,21 @@ type Period struct {
 	Areas   []AreaForecast `json:"areas"`
 	// Book is the classical result of the main period (Brihat Jataka 8).
 	Book *BookView `json:"book,omitempty"`
+	// Themes reads the main and sub-period lords for this chart: the houses
+	// they rule and occupy, their strength, and how they stand together.
+	Themes []string `json:"themes"`
 }
+
+// karakas are each area's natural significators: their periods bring the
+// area forward even when they do not rule it in this chart.
+var karakas = map[string][]string{
+	"career": {"sun", "saturn"}, "money": {"jupiter"}, "partnership": {"venus"}, "home": {"moon", "mars"},
+	"learning": {"jupiter", "mercury"}, "effort": {"mars"}, "wellbeing": {"sun"}, "change": {"saturn"}, "travel": {"rahu", "jupiter"},
+}
+
+// areaVarga is the divisional chart read for an area's dasha lords: the
+// Navamsha (D9) for partnership, the Dashamsha (D10) for career.
+var areaVarga = map[string]int{"partnership": 9, "career": 10}
 
 // PeriodInput is one period's sky (taken at its middle) and running dasha.
 type PeriodInput struct {
@@ -98,6 +112,17 @@ func (s *Service) Forecast(ctx context.Context, natal engine.Chart, periods []Pe
 		}
 	}
 	views := s.BookViews(ctx, keys)
+	vargaDig := map[int]map[string]engine.Dignity{}
+	for _, n := range areaVarga {
+		if v, err := engine.VargaChart(natal, n); err == nil {
+			vargaDig[n] = engine.Dignities(v)
+		}
+	}
+	facts, err := engine.Facts(natal, time.Now())
+	if err != nil {
+		return nil
+	}
+	natalIn := newInsight(ctx, nil, facts, nil)
 
 	out := make([]Period, 0, len(periods))
 	for _, p := range periods {
@@ -107,7 +132,18 @@ func (s *Service) Forecast(ctx context.Context, natal engine.Chart, periods []Pe
 		}
 		skyDig := engine.Dignities(p.Sky)
 		skyComb := engine.CombustionFlags(p.Sky)
-		per := Period{From: p.From, To: p.To, Maha: p.Dasha.Maha, Antara: p.Dasha.Antara}
+		per := Period{From: p.From, To: p.To, Maha: p.Dasha.Maha, Antara: p.Dasha.Antara, Themes: []string{}}
+		if story, _ := natalIn.dashaStory(p.Dasha.Maha); story != "" {
+			per.Themes = append(per.Themes, story)
+		}
+		if p.Dasha.Antara != p.Dasha.Maha {
+			if story, _ := natalIn.dashaStory(p.Dasha.Antara); story != "" {
+				per.Themes = append(per.Themes, "Sub-period: "+story)
+			}
+		}
+		if h := natalIn.dashaHarmony(p.Dasha.Maha, p.Dasha.Antara); h != "" {
+			per.Themes = append(per.Themes, h)
+		}
 		if v, ok := views[engine.DocDasha+":dasha_"+p.Dasha.Maha]; ok {
 			per.Book = &v
 		}
@@ -145,6 +181,40 @@ func (s *Service) Forecast(ctx context.Context, natal engine.Chart, periods []Pe
 					Text:   fmt.Sprintf("Your %s belongs to %s, which %s%s.", l.label, theName(l.id), link, why),
 					Source: "Vimshottari dasha", Sign: sign * l.weight,
 				})
+			}
+			// 1b. Natural significators running a period.
+			for _, l := range []struct{ id, label string }{{p.Dasha.Maha, "main period"}, {p.Dasha.Antara, "sub-period"}} {
+				if l.id == "" || !contains(karakas[a.ID], l.id) || (l.label == "sub-period" && l.id == p.Dasha.Maha) {
+					continue
+				}
+				already := false
+				for _, r := range af.Reasons {
+					already = already || strings.Contains(r.Text, "belongs to "+theName(l.id)+",")
+				}
+				if already {
+					continue
+				}
+				dashaTouches = true
+				sign, why := lordTone(l.id, engine.HouseOf(nat[l.id].Longitude, asc), dig[l.id], comb[l.id], true)
+				af.Reasons = append(af.Reasons, Reason{
+					Text:   fmt.Sprintf("Your %s belongs to %s, the natural significator (karaka) of %s, so it brings this area forward%s.", l.label, theName(l.id), a.Name, why),
+					Source: "karaka (natural significator)", Sign: 0.5 * sign,
+				})
+			}
+			// 1c. The dasha lords' strength in the area's divisional chart.
+			if n, ok := areaVarga[a.ID]; ok && dashaTouches && vargaDig[n] != nil {
+				name := map[int]string{9: "Navamsha (D9), the chart read for marriage", 10: "Dashamsha (D10), the chart read for career"}[n]
+				for _, l := range []string{p.Dasha.Maha, p.Dasha.Antara} {
+					switch vargaDig[n][l].State {
+					case "exalted", "own":
+						af.Reasons = append(af.Reasons, Reason{Text: fmt.Sprintf("%s is strong in your %s.", upper(theName(l)), name), Source: fmt.Sprintf("D%d", n), Sign: 0.5})
+					case "debilitated":
+						af.Reasons = append(af.Reasons, Reason{Text: fmt.Sprintf("%s is weak in your %s.", upper(theName(l)), name), Source: fmt.Sprintf("D%d", n), Sign: -0.5})
+					}
+					if p.Dasha.Antara == p.Dasha.Maha {
+						break
+					}
+				}
 			}
 			// 2. Slow transits occupying or aspecting the area's houses.
 			touched := map[string]bool{}

@@ -75,6 +75,12 @@ export function TimingTab({ birth }: { birth: ChartInput }) {
                 <span className="muted small">until {day(p.to)} · {grahaEnglish(p.maha)} period, {grahaEnglish(p.antara)} sub-period</span>
               </div>
               <p className="forecast-summary">{p.summary}</p>
+              {(i === 0 || data.periods[i - 1]?.antara !== p.antara) && p.themes.length > 0 && (
+                <details className="forecast-themes">
+                  <summary>What this period is about in your chart</summary>
+                  <ul className="forecast-reasons">{p.themes.map(x => <li key={x}>{x}</li>)}</ul>
+                </details>
+              )}
               {p.book && (i === 0 || data.periods[i - 1]?.maha !== p.maha) && <p className="muted small">The book on a {grahaEnglish(p.maha)} period ({p.book.source.replace(/, tr\..*$/, '')} {p.book.ref}): {p.book.plain}</p>}
               {p.areas.length > 0 && <ul className="forecast-areas">{p.areas.slice(0, 2).map(a => <Area key={a.area.id} a={a} />)}</ul>}
             </li>

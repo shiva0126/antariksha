@@ -324,8 +324,17 @@ func plainFor(in *insight, ts, gs []string, house int, cc ChatContext) plain {
 			if a := f.Vimshottari.Current.Antara; a != "" && a != f.Vimshottari.Current.Maha {
 				p.point(fmt.Sprintf("Inside it, a shorter %s phase runs until %s, adding %s.", gname(a), day(f.Vimshottari.Current.To), grahaGist[a]))
 			}
-			p.point(in.where(f.Vimshottari.Current.Maha))
-			p.bookPoint(in.book(engine.DocDasha, "dasha_"+f.Vimshottari.Current.Maha))
+			cur := f.Vimshottari.Current
+			if story, _ := in.dashaStory(cur.Maha); story != "" {
+				p.point(story)
+			}
+			if cur.Antara != cur.Maha {
+				if story, _ := in.dashaStory(cur.Antara); story != "" {
+					p.point("Sub-period: " + story)
+				}
+				p.point(in.dashaHarmony(cur.Maha, cur.Antara))
+			}
+			p.bookPoint(in.book(engine.DocDasha, "dasha_"+cur.Maha))
 			if u := f.Vimshottari.Upcoming; u.Lord != "" {
 				p.point(fmt.Sprintf("Next comes %s's main period, from %s.", theName(u.Lord), day(u.From)))
 			}

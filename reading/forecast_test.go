@@ -150,3 +150,27 @@ func TestForecastAnswersGiveWindowsNotEvents(t *testing.T) {
 		t.Errorf("no forecast: %s", a.Answer)
 	}
 }
+
+// In a Venus main period, partnership is read with Venus as its natural
+// significator, and periods carry the dasha lords' chart-specific themes.
+func TestForecastUsesKarakasAndDashaThemes(t *testing.T) {
+	_, _, cc := forecastFor(t)
+	if cc.Forecast[0].Maha != "venus" {
+		t.Skipf("reference chart now runs %s", cc.Forecast[0].Maha)
+	}
+	karaka := false
+	for _, p := range cc.Forecast {
+		if a, ok := areaIn(p, "partnership"); ok {
+			for _, r := range a.Reasons {
+				karaka = karaka || strings.HasPrefix(r.Source, "karaka")
+			}
+		}
+	}
+	if !karaka {
+		t.Error("no karaka reason for partnership in a Venus period")
+	}
+	th := strings.Join(cc.Forecast[0].Themes, " ")
+	if !strings.Contains(th, "Venus rules your") || !strings.Contains(th, "Sub-period: Jupiter") {
+		t.Errorf("period themes: %q", th)
+	}
+}

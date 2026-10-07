@@ -35,3 +35,4 @@
 .transit-now { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
 .transit-now p { margin: 4px 0 0; }
 .transit-now-head { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; }
+.forecast-themes summary { cursor: pointer; font-size: 13px; color: var(--c-text-muted); }

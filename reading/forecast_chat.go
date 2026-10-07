@@ -58,9 +58,17 @@ func forecastPlain(in *insight, ts []string, cc ChatContext) plain {
 			if !ok {
 				continue
 			}
+			// Quote the factor that weighs most in this area's tone.
 			why := ""
-			if len(a.Reasons) > 0 {
-				why = ": " + firstSentence(a.Reasons[len(a.Reasons)-1].Text, 140)
+			best := -1.0
+			for _, r := range a.Reasons {
+				w := r.Sign
+				if a.Tone == "challenging" {
+					w = -w
+				}
+				if w > best {
+					best, why = w, ": "+firstSentence(r.Text, 160)
+				}
 			}
 			switch a.Tone {
 			case "supportive":
