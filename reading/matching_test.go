@@ -262,12 +262,12 @@ func TestMatchAnswersCoverPoruthamsAndKuja(t *testing.T) {
 
 func TestMatchQuestionsInIndianLanguages(t *testing.T) {
 	for q, want := range map[string]string{
-		"kundli milan kaisa hai?":     "score",
-		"गुण मिलान कितना है?":         "score",
-		"ரஜ்ஜு பொருத்தம் உள்ளதா?":     "porutham",
-		"ಜಾತಕ ಹೊಂದಾಣಿಕೆ ಹೇಗಿದೆ?":      "score",
-		"kya ladka manglik hai":       "mangal",
-		"नाड़ी दोष है क्या?":          "nadi",
+		"kundli milan kaisa hai?": "score",
+		"गुण मिलान कितना है?":     "score",
+		"ரஜ்ஜு பொருத்தம் உள்ளதா?": "porutham",
+		"ಜಾತಕ ಹೊಂದಾಣಿಕೆ ಹೇಗಿದೆ?":  "score",
+		"kya ladka manglik hai":   "mangal",
+		"नाड़ी दोष है क्या?":      "nadi",
 	} {
 		if got := classifyMatch(q); !contains(got, want) {
 			t.Errorf("%q: %v lacks %s", q, got, want)

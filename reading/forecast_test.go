@@ -179,8 +179,8 @@ func TestForecastUsesKarakasAndDashaThemes(t *testing.T) {
 // "lagna" stays the ascendant (it means marriage only in Marathi).
 func TestQuestionsInIndianLanguages(t *testing.T) {
 	for q, want := range map[string][]string{
-		"shaadi kab hogi?":                {"marriage", "forecast"},
-		"naukri kab milegi":               {"career", "forecast"},
+		"shaadi kab hogi?":  {"marriage", "forecast"},
+		"naukri kab milegi": {"career", "forecast"},
 		"मेरी शादी कब होगी?":              {"marriage", "forecast"},
 		"ನನ್ನ ಮದುವೆ ಯಾವಾಗ?":               {"marriage", "forecast"},
 		"என் திருமணம் எப்போது?":           {"marriage", "forecast"},
