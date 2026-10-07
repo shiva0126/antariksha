@@ -83,7 +83,7 @@ var topics = []topic{
 	{"numerology", words(`numerology|numerological|numbers?|life path|mulank|moolank|bhagyank|bhagyaank|destiny number|root number|psychic number|lucky numbers?|personal year|ank jyotish`)},
 	{"forecast", words(`when|this year|next year|coming months?|coming year|next few months|future|forecast|predict|prediction|predictions|upcoming|what'?s coming|will i|transit|transits|gochar|gochara|good time|right time|best time|varshaphal|varsha ?phal|varshphal|annual chart|year chart|solar return|my year|birthday year|muntha|year lord`)},
 	{"dasha", words(`dasha|dashas|dasa|mahadasha|antardasha|period|periods|timing`)},
-	{"yoga", words(`yoga|yogas|raja yoga|gajakesari|combination|combinations`)},
+	{"yoga", words(`yoga|yogas|raja yoga|gajakesari|kemadruma|kemdrum|kemadrum|adhi yoga|combination|combinations`)},
 	{"nakshatra", words(`nakshatra|nakshatras|star|birth star|janma nakshatra|pada`)},
 	{"lagna", words(`lagna|ascendant|rising|personality|nature|who am i|temperament`)},
 	{"moon_sign", words(`rashi|moon sign|mind|emotions?|emotional`)},

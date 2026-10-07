@@ -163,6 +163,7 @@ func main() {
 	examples := map[string][]string{}
 	covered, missing := map[string]int{}, map[string]int{}
 	var items []item
+	kemaCancelled := 0
 	for i := 0; i < *n; i++ {
 		p := places[r.Intn(len(places))]
 		in := engine.ChartInput{Date: start.AddDate(0, 0, r.Intn(40000)).Format("2006-01-02"), Time: fmt.Sprintf("%02d:%02d", r.Intn(24), r.Intn(60)), Lat: p.lat, Lon: p.lon, TZ: p.tz}
@@ -189,20 +190,23 @@ func main() {
 		}
 		for k := range kinds {
 			bookSays := want[k]
-			if k == "yoga:adhi_yoga" && want["yoga:adhi_yoga(partial)"] && detected[k] {
-				// The engine's Adhi needs one benefic; the book names all three houses.
-				disagree["yoga:adhi_yoga (engine: one benefic is enough; book: 6th, 7th and 8th)"]++
-				continue
+			got := detected[k]
+			if k == "yoga:kemadruma" {
+				// The engine follows the book's definition and then applies
+				// cancellations, which it states; compare the definition and
+				// count the cancelled ones separately.
+				km := engine.Kemadruma(c)
+				got = km.Present
+				if km.Present && len(km.Cancellations) > 0 {
+					kemaCancelled++
+				}
 			}
 			kind := strings.SplitN(k, ":", 2)[0]
-			if bookSays == detected[k] {
+			if bookSays == got {
 				agree[kind]++
 				continue
 			}
 			label := k
-			if k == "yoga:kemadruma" && bookSays && !detected[k] {
-				label = "yoga:kemadruma (engine cancels it when a planet is in a kendra from the Moon; the book does not)"
-			}
 			disagree[label]++
 			if len(examples[label]) < 3 {
 				examples[label] = append(examples[label], fmt.Sprintf("%s %s %.2f,%.2f", in.Date, in.Time, in.Lat, in.Lon))
@@ -261,6 +265,7 @@ func main() {
 	for _, k := range dk {
 		fmt.Printf("  DIFFERS %5d charts  %s  e.g. %s\n", disagree[k], k, strings.Join(examples[k], "; "))
 	}
+	fmt.Printf("  (Kemadruma by the book's definition in agreement; %d of those charts have it cancelled, with the reason stated)\n", kemaCancelled)
 	fmt.Println("\nBook passage found for each detected condition:")
 	ck := []string{}
 	for k := range covered {

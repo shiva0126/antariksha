@@ -1,6 +1,9 @@
 package engine
 
-import "strconv"
+import (
+	"fmt"
+	"strconv"
+)
 
 func yoga(name, typ string, planets []string, houses []string, strength string, geometry map[string]any) Yoga {
 	return Yoga{name, typ, planets, houses, strength, geometry}
@@ -69,7 +72,7 @@ func DetectYogas(c Chart, d map[string]Dignity) []Yoga {
 		out = append(out, y)
 	}
 	if kemadruma(c, gs) {
-		out = append(out, yoga("Kemadruma", "caution", nil, []string{"from_moon"}, "caution", map[string]any{"exception_checks": []string{"no_planets_2nd_or_12th", "no_kendra_from_moon"}}))
+		out = append(out, yoga("Kemadruma", "caution", nil, []string{"from_moon"}, "caution", map[string]any{"rule": "Brihat Jataka 13.3", "cancellations_checked": []string{"moon_in_kendra_from_lagna", "planet_with_moon", "planet_in_kendra_from_moon"}}))
 	}
 	for _, id := range GrahaIDs {
 		dg := d[id]
@@ -164,15 +167,22 @@ func vipreet(c Chart, gs map[string]Graha) Yoga {
 	}
 	return Yoga{}
 }
+
+// adhi follows Brihat Jataka 13.2: natural benefics (Mercury, Jupiter,
+// Venus) occupying the 6th, 7th and 8th from the Moon, all three houses.
+// (Later texts grade a partial Adhi with one or two of them; Astrisk
+// follows the book and does not claim the yoga for those.)
 func adhi(c Chart, gs map[string]Graha) Yoga {
 	moon := signOf(gs["moon"])
 	found := []string{}
+	houses := map[int]bool{}
 	for _, id := range []string{"jupiter", "venus", "mercury"} {
-		if inSet((signOf(gs[id])-moon+12)%12, 5, 6, 7) {
+		if d := (signOf(gs[id]) - moon + 12) % 12; inSet(d, 5, 6, 7) {
 			found = append(found, id)
+			houses[d] = true
 		}
 	}
-	if len(found) > 0 {
+	if len(houses) == 3 {
 		return yoga("Adhi Yoga", "raja", found, []string{"6_7_8_from_moon"}, strength(c, found...), map[string]any{"benefics": found})
 	}
 	return Yoga{}
@@ -198,23 +208,50 @@ func moonPattern(c Chart, gs map[string]Graha, name string, offset int) Yoga {
 	}
 	return yoga(name, "chandra", nil, []string{"from_moon"}, "moderate", map[string]any{"planets_in_2nd": left, "planets_in_12th": right})
 }
-func kemadruma(c Chart, gs map[string]Graha) bool {
+
+// KemadrumaReport is Kemadruma as Brihat Jataka 13.3 defines it (no
+// planet but the Sun in the 2nd or 12th from the Moon; the nodes are not
+// counted) with the cancellations Astrisk applies.
+type KemadrumaReport struct {
+	Present       bool     `json:"present"`
+	Cancellations []string `json:"cancellations"`
+}
+
+// Kemadruma reads the yoga from the book and lists its cancellations: the
+// one the book cites from Garga (the Moon in a kendra from the lagna, or
+// joined by a planet) and the later Parashari rule (a planet in a kendra
+// from the Moon). The yoga stands only when none applies.
+func Kemadruma(c Chart) KemadrumaReport {
+	gs := chartMap(c)
 	m := signOf(gs["moon"])
-	hasAdjacent := false
-	hasKendra := false
-	for _, g := range gs {
-		if g.ID == "sun" || g.ID == "moon" || g.ID == "rahu" || g.ID == "ketu" {
-			continue
-		}
-		d := (signOf(g) - m + 12) % 12
-		if d == 1 || d == 11 {
-			hasAdjacent = true
-		}
-		if inSet(d, 0, 3, 6, 9) {
-			hasKendra = true
+	rep := KemadrumaReport{Cancellations: []string{}}
+	joined, kendra := "", ""
+	for _, id := range []string{"mars", "mercury", "jupiter", "venus", "saturn"} {
+		switch d := (signOf(gs[id]) - m + 12) % 12; {
+		case d == 1 || d == 11:
+			return rep
+		case d == 0 && joined == "":
+			joined = GrahaEnglish(id)
+		case inSet(d, 3, 6, 9) && kendra == "":
+			kendra = GrahaEnglish(id)
 		}
 	}
-	return !hasAdjacent && !hasKendra
+	rep.Present = true
+	if h := houseOf(gs["moon"].Longitude, c.Ascendant.Longitude); inSet(h, 1, 4, 7, 10) {
+		rep.Cancellations = append(rep.Cancellations, fmt.Sprintf("the Moon is in the %s house, a kendra from the lagna (Garga, cited in Brihat Jataka 13.3)", ordinal(h)))
+	}
+	if joined != "" {
+		rep.Cancellations = append(rep.Cancellations, fmt.Sprintf("%s is with the Moon (Garga, cited in Brihat Jataka 13.3)", joined))
+	}
+	if kendra != "" {
+		rep.Cancellations = append(rep.Cancellations, fmt.Sprintf("%s is in a kendra from the Moon (later Parashari rule)", kendra))
+	}
+	return rep
+}
+
+func kemadruma(c Chart, gs map[string]Graha) bool {
+	k := Kemadruma(c)
+	return k.Present && len(k.Cancellations) == 0
 }
 
 // kalaSarpa: all seven planets strictly on one side of the Rahu–Ketu axis

@@ -348,6 +348,11 @@ func plainFor(in *insight, ts, gs []string, house int, cc ChatContext) plain {
 					p.bookPoint(in.book(engine.DocYoga, engine.Slug(y.Name)))
 				}
 			}
+			// The book's Kemadruma is named even when cancelled, so a member
+			// who reads of it elsewhere knows why Astrisk does not list it.
+			if k := engine.Kemadruma(f.Chart); k.Present && len(k.Cancellations) > 0 {
+				p.say(fmt.Sprintf("Kemadruma (no planet beside the Moon, Brihat Jataka 13.3) forms in your chart but is cancelled, because %s.", k.Cancellations[0]))
+			}
 		case "nakshatra":
 			moon := in.grahas["moon"]
 			p.say(fmt.Sprintf("Your birth star (nakshatra) is %s, part %d of 4. It is the star the Moon was in when you were born.", moon.Nakshatra, moon.NakshatraPada))

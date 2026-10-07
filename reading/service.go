@@ -80,7 +80,7 @@ func ChartHash(in engine.ChartInput, language string) string {
 	b, _ := json.Marshal(struct {
 		engine.ChartInput
 		Ayanamsa, Language, ReadingVersion string
-	}{in, "lahiri", language, "fact-checked-v3"})
+	}{in, "lahiri", language, "fact-checked-v4"})
 	h := sha256.Sum256(b)
 	return hex.EncodeToString(h[:])
 }

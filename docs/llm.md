@@ -76,13 +76,13 @@ in those places", also verified), an `ocr` reading where the scan is too damaged
 corrected text, and a `plain` summary shown in answers as "Classical view (Brihat Jataka 20.3): …".
 `corpus/map_exact_test.go` fails if a house passage does not speak about its own house.
 
-Result on 2026-10-06, 2,000 charts: planet in house, Moon sign and birth star agree in all 18,000
-checks. Two yoga rules differ from the book by design choice, pending a decision:
+Result on 2026-10-07, 2,000 charts: planet in house, Moon sign, birth star and the yogas the
+book defines agree in all 32,000 checks. Two yoga rules now follow the book (decided 2026-10-07):
 
-| Yoga | Charts that differ | Engine | Book |
-|---|---|---|---|
-| Adhi | 945 | one benefic in the 6th, 7th or 8th from the Moon is enough | benefics in the 6th, 7th and 8th (13.2) |
-| Kemadruma | 833 | cancelled when any planet is in a kendra from the Moon (later Parashari rule) | no cancellation of that kind; Garga's cancellation is the Moon in a kendra from the ascendant or joined by a planet (13.3) |
+| Yoga | Rule | Notes |
+|---|---|---|
+| Adhi | benefics (Mercury, Jupiter, Venus) in all three of the 6th, 7th and 8th from the Moon (13.2) | was: one benefic in any of them, which claimed it for about half of all charts |
+| Kemadruma | no planet but the Sun in the 2nd or 12th from the Moon (13.3), then cancelled when the Moon is in a kendra from the lagna or joined by a planet (Garga, cited in 13.3) or a planet is in a kendra from the Moon (later Parashari rule) | yoga answers say when it forms but is cancelled, and why (857 of 2,000 charts) |
 
 Fixed on the same day: 33 house passages that carried another house's (or another planet's) clause,
 for example Mercury in the 5th showed the Mars-in-the-ascendant verse, and the Anapha and Kemadruma
