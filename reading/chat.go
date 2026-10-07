@@ -38,6 +38,8 @@ type ChatContext struct {
 	// periods (see Forecast) and the slow planets' sign changes.
 	Forecast []Period
 	Events   []engine.TransitEvent
+	// Varsha is the Tajika year chart for the running birthday year.
+	Varsha *engine.VarshaReport
 }
 
 // LanguageNames maps the app's language codes to names an LLM understands.
@@ -79,7 +81,7 @@ var topics = []topic{
 	{"property", words(`property|properties|land|plot|real estate|vehicle|vehicles|car|bike|buy a house|own a house|home loan|(?:buy|buying|purchase|purchasing|build|building) (?:a |my |our )?(?:house|home|flat|apartment|land)`)},
 	{"spirituality", words(`spiritual|spirituality|moksha|meditation|god|devotion|liberation|retreat`)},
 	{"numerology", words(`numerology|numerological|numbers?|life path|mulank|moolank|bhagyank|bhagyaank|destiny number|root number|psychic number|lucky numbers?|personal year|ank jyotish`)},
-	{"forecast", words(`when|this year|next year|coming months?|coming year|next few months|future|forecast|predict|prediction|predictions|upcoming|what'?s coming|will i|transit|transits|gochar|gochara|good time|right time|best time`)},
+	{"forecast", words(`when|this year|next year|coming months?|coming year|next few months|future|forecast|predict|prediction|predictions|upcoming|what'?s coming|will i|transit|transits|gochar|gochara|good time|right time|best time|varshaphal|varsha ?phal|varshphal|annual chart|year chart|solar return|my year|birthday year|muntha|year lord`)},
 	{"dasha", words(`dasha|dashas|dasa|mahadasha|antardasha|period|periods|timing`)},
 	{"yoga", words(`yoga|yogas|raja yoga|gajakesari|combination|combinations`)},
 	{"nakshatra", words(`nakshatra|nakshatras|star|birth star|janma nakshatra|pada`)},

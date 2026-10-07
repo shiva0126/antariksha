@@ -140,3 +140,15 @@ export interface Porutham { name: string; status: 'good' | 'medium' | 'bad'; ess
 export interface KujaReport { from_lagna: number; from_moon: number; from_venus: number; present: string[]; cancellations: string[]; effective: boolean }
 export interface PapaReport { points: number; detail: string[] }
 export interface MarriageReport { seventh_lord: string; seventh_lord_house: number; strengths: string[]; cautions: string[] }
+
+export interface YearOffice { role: string; graha: string; house: number; aspect?: 'conjunct' | 'friendly' | 'inimical'; strength: number }
+export interface VarshaphalResponse {
+  varsha: {
+    year: number; age: number; return_at: string; day_chart: boolean;
+    chart: { ascendant: { rashi: string; degree: number } };
+    muntha: { rashi: string; house: number; lord: string; tone: 'good' | 'mixed' | 'hard'; detail: string };
+    offices: YearOffice[]; year_lord: string; year_lord_reason: string;
+    strengths: string[]; cautions: string[]; method: string;
+  };
+  until: string;
+}

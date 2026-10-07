@@ -91,3 +91,22 @@ opt-in, once-only queueing, the text, the listing and that turning alerts off hi
 
 Future predictions are windows and themes, never events. The book warns of illness, prison and the
 like; plain summaries say what the book warns of and frame it as a time for care.
+
+## The year chart (Varshaphal)
+
+`GET /api/varshaphal` (sign-in required) casts the Tajika year chart for the
+birthday year that contains now, or `?year=YYYY`. The Timing tab shows it as
+"Your year", with previous and next year; timing questions in chat quote it.
+
+- **Return moment:** Newton iteration on the sidereal Sun until it is within
+  1e-7 degrees of the natal Sun (tested to 1″). The chart is cast at the birth
+  place; many astrologers use the place of residence instead.
+- **Muntha:** natal lagna sign plus completed years. Read from the year lagna:
+  9th–11th good; 1st, 2nd, 3rd, 5th fair; 4th, 6th, 7th, 8th, 12th harder.
+- **Year lord:** the strongest of the five office-holders (Muntha lord, birth
+  lagna lord, year lagna lord, tri-rashi lord, day/night lord) that joins or
+  aspects the year lagna by Tajika aspect (conjunction; 3/11 and 5/9 friendly;
+  4/10 and 7 inimical). If none does, the strongest of them.
+- **Approximation:** strength is the year chart's Shadbala ratio, in place of
+  the classical Pancha-vargiya bala (which needs the Tajika hadda tables).
+- Not yet: Mudda dasha, Sahams, Tajika yogas (Ithasala, Isharaffa).

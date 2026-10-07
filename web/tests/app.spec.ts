@@ -130,6 +130,13 @@ test('new kundali tabs: today, transits, divisional charts, timing, ashtakavarga
   await expect(page.locator('.forecast-period').first()).toContainText('Now');
   await expect(page.locator('.forecast-summary').first()).not.toBeEmpty();
   await expect(page.locator('.timing-events li').first()).toBeVisible();
+  // The year chart (Varshaphal) names a year lord and steps between years.
+  const year = page.locator('.varsha');
+  await expect(year).toContainText('The year is ruled by');
+  await expect(year).toContainText('Muntha in');
+  const before = await page.getByRole('heading', { name: /^Your year:/ }).textContent();
+  await year.getByRole('button', { name: 'Next year' }).click();
+  await expect(page.getByRole('heading', { name: /^Your year:/ })).not.toHaveText(before ?? '');
   // The member's own chart offers optional feedback on recent periods.
   const back = page.locator('section').filter({ has: page.getByRole('heading', { name: 'Looking back' }) });
   await expect(back).toBeVisible();

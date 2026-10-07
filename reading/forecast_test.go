@@ -112,7 +112,11 @@ func forecastFor(t *testing.T) (engine.ChartFacts, []Rule, ChatContext) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	return facts, rules, ChatContext{Forecast: s.Forecast(context.Background(), natal, periods, ForecastOption{Shadbala: &sb}), Events: events}
+	v, err := e.Varshaphal(natal, 2026)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return facts, rules, ChatContext{Forecast: s.Forecast(context.Background(), natal, periods, ForecastOption{Shadbala: &sb}), Events: events, Varsha: &v}
 }
 
 // Timing questions get windows, never events: each says a chart cannot tell
@@ -128,7 +132,8 @@ func TestForecastAnswersGiveWindowsNotEvents(t *testing.T) {
 		{"When is a good time for my career?", []string{"In short", "career and public life", "cannot say whether or when"}},
 		{"Will I get married this year?", []string{"marriage and partnerships", "cannot say whether or when"}},
 		{"Will my business fail next year?", []string{"career and public life", "cannot say whether or when"}},
-		{"What's coming for me this year?", []string{"Until ", "From ", "not events that will happen"}},
+		{"What's coming for me this year?", []string{"Until ", "From ", "not events that will happen", "Varshaphal", "Muntha falls"}},
+		{"What does my varshaphal say?", []string{"ruled by", "Muntha falls"}},
 		{"Is my health going to be bad next year?", []string{"cannot predict health", "doctor"}},
 		{"When will I die?", []string{"cannot predict death"}},
 	} {

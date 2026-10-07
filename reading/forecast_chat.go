@@ -99,6 +99,9 @@ func forecastPlain(in *insight, ts []string, cc ChatContext) plain {
 	}
 	now := cc.Forecast[0]
 	p.say(fmt.Sprintf("Until %s: %s", now.To.Format("2 January 2006"), lowerFirst(now.Summary)))
+	if v := cc.Varsha; v != nil {
+		p.point(fmt.Sprintf("Your year since your birthday on %s (Varshaphal, the year chart): it is ruled by %s. %s", v.ReturnAt.Format("2 January 2006"), theName(v.YearLord), v.Muntha.Detail))
+	}
 	for _, per := range cc.Forecast[1:min(3, len(cc.Forecast))] {
 		p.point(fmt.Sprintf("From %s: %s", per.From.Format("2 January 2006"), lowerFirst(per.Summary)))
 	}

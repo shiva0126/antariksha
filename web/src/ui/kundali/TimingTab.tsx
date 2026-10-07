@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { getTransits } from '../../api/client';
-import type { AreaForecast, ChartInput, TransitEvent, TransitsResponse } from '../../api/types';
+import { getTransits, getVarshaphal } from '../../api/client';
+import type { AreaForecast, ChartInput, TransitEvent, TransitsResponse, VarshaphalResponse } from '../../api/types';
 import { grahaEnglish, longDate } from '../../astro/format';
 import { Button, Card, Chip, Notice, Skeleton } from '../../ds';
 import { api } from '../../lib/api';
@@ -91,8 +91,50 @@ function LookingBack({ periods }: { periods: TransitsResponse['periods'] }) {
     </Card>
   );
 }
-const day = (iso: string) => longDate(iso.slice(0, 10));
+const munthaChip = { good: 'success', mixed: 'neutral', hard: 'warning' } as const;
+
+/** The Tajika year chart from one birthday to the next (Varshaphal). */
+function YearCard({ birth }: { birth: ChartInput }) {
+  const [year, setYear] = useState<number>();
+  const [data, setData] = useState<VarshaphalResponse>();
+  const [error, setError] = useState('');
+  useEffect(() => {
+    const ctrl = new AbortController();
+    setError('');
+    getVarshaphal(birth, year, ctrl.signal).then(setData).catch(e => { if (e.name !== 'AbortError') setError(e.message); });
+    return () => ctrl.abort();
+  }, [birth, year]);
+  if (error) return <Notice tone="danger">Year chart unavailable: {error}</Notice>;
+  if (!data) return <Card title="Your year"><Skeleton lines={4} /></Card>;
+  const v = data.varsha;
+  const zone = birth.tz;
+  const when = (iso: string) => new Date(iso).toLocaleString('en-IN', { timeZone: zone, day: 'numeric', month: 'long', year: 'numeric', hour: 'numeric', minute: '2-digit' });
+  return (
+    <Card title={`Your year: ${day(new Date(v.return_at).toLocaleDateString('en-CA', { timeZone: zone }))} to ${day(new Date(data.until).toLocaleDateString('en-CA', { timeZone: zone }))}`}
+      sub={`Varshaphal: the chart for the moment the Sun returns to its birth position (${when(v.return_at)}), read for the year that follows. Age ${v.age}.`}>
+      <div className="varsha">
+        <p><b>The year is ruled by {the(v.year_lord)}.</b> {v.year_lord_reason}</p>
+        <p><Chip tone={munthaChip[v.muntha.tone]}>Muntha in {v.muntha.rashi}</Chip> {v.muntha.detail}</p>
+        {v.strengths.length > 0 && <><b className="small">Working for you</b><ul className="forecast-reasons">{v.strengths.map(x => <li key={x}>{x}</li>)}</ul></>}
+        {v.cautions.length > 0 && <><b className="small">Go carefully</b><ul className="forecast-reasons">{v.cautions.map(x => <li key={x}>{x}</li>)}</ul></>}
+        <details>
+          <summary>Chart details</summary>
+          <p className="small">Year lagna {v.chart.ascendant.rashi} {v.chart.ascendant.degree.toFixed(1)}°, a {v.day_chart ? 'day' : 'night'} chart. The five office-holders:</p>
+          <ul className="forecast-reasons">
+            {v.offices.map(o => <li key={o.role}>{o.role}: {grahaEnglish(o.graha)}, {ord(o.house)} house, strength {o.strength.toFixed(2)}{o.aspect === 'conjunct' ? ', in the lagna' : o.aspect ? `, ${o.aspect} aspect to the lagna` : ', no aspect to the lagna'}</li>)}
+          </ul>
+          <p className="muted small">{v.method}</p>
+        </details>
+        <div className="ds-row">
+          <Button size="sm" variant="ghost" disabled={v.age <= 1} onClick={() => setYear(v.year - 1)}>Previous year</Button>
+          <Button size="sm" variant="ghost" onClick={() => setYear(v.year + 1)}>Next year</Button>
+        </div>
+      </div>
+    </Card>
+  );
+}
 const cap = (s: string) => s[0].toUpperCase() + s.slice(1);
+const day = (iso: string) => longDate(iso.slice(0, 10));
 
 export function TimingTab({ birth }: { birth: ChartInput }) {
   const [own, setOwn] = useState(false);
@@ -137,6 +179,7 @@ export function TimingTab({ birth }: { birth: ChartInput }) {
         </ol>
         {data.periods.length > 4 && <Button variant="ghost" size="sm" onClick={() => setAllPeriods(v => !v)}>{allPeriods ? 'Show fewer periods' : `Show all ${data.periods.length} periods`}</Button>}
       </Card>
+      <YearCard birth={birth} />
       {own && data.past_periods && <LookingBack periods={data.past_periods} />}
       <Card title="Sign changes, exact passes and eclipses" sub="The slow planets and the eclipses of the next two years, including when they cross your natal Moon, Sun and rising degree">
         <ul className="timing-events">

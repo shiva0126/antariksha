@@ -1,4 +1,4 @@
-import type { ChartInput, ChartResponse, ChatAnswer, ChatMessage, MatchResponse, MuhurtaEvent, MuhurtaResponse, PlaceHit, ReadingResponse, ShadbalaResponse, TodayResponse, TransitsResponse, VargaResponse } from './types';
+import type { ChartInput, ChartResponse, ChatAnswer, ChatMessage, MatchResponse, MuhurtaEvent, MuhurtaResponse, PlaceHit, ReadingResponse, ShadbalaResponse, TodayResponse, TransitsResponse, VargaResponse, VarshaphalResponse } from './types';
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const r = await fetch(path, init);
@@ -66,6 +66,10 @@ export const getToday = (input: ChartInput, signal?: AbortSignal) => request<Tod
 /** Today's transits read against the birth chart, the coming sign changes and eclipses, and forecast periods. */
 export const getTransits = (input: ChartInput, months = 24, signal?: AbortSignal, past = 0) =>
   request<TransitsResponse>(`/api/transits?${query(input, { months: String(months), ...(past ? { past: String(past) } : {}) })}`, { signal });
+
+/** The Tajika year chart (Varshaphal) for the running birthday year, or a given year. */
+export const getVarshaphal = (input: ChartInput, year?: number, signal?: AbortSignal) =>
+  request<VarshaphalResponse>(`/api/varshaphal?${query(input, year ? { year: String(year) } : {})}`, { signal });
 
 export const calendarURL = (year: number, place: { lat: number; lon: number; tz: string }, vrat = true) =>
   `/api/calendar.ics?${new URLSearchParams({ year: String(year), lat: String(place.lat), lon: String(place.lon), tz: place.tz, vrat: vrat ? '1' : '0' })}`;

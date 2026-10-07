@@ -238,6 +238,7 @@ func (s *Server) chat(w http.ResponseWriter, r *http.Request) {
 	}
 	if slices.Contains(reading.Topics(req.Question), "forecast") {
 		cc.Forecast, cc.Events = s.forecastContext(r.Context(), c, req.Birth, now, 12)
+		cc.Varsha = s.runningVarsha(c, now)
 	}
 	ans, err := s.reading.Answer(r.Context(), facts, rules, req.Question, turns, cc)
 	if err != nil {
