@@ -6,7 +6,9 @@ After=network-online.target panchang.service
 [Service]
 Type=simple
 WorkingDirectory=%h/panchang
-ExecStart=%h/panchang/.runtime/cloudflared/cloudflared --no-autoupdate tunnel --config %h/panchang/.runtime/cloudflared/config.yml run
+# Mobile carriers may aggressively expire idle UDP/QUIC flows.  HTTP/2 keeps
+# the outbound tunnel on TCP/TLS while preserving Cloudflare Tunnel security.
+ExecStart=%h/panchang/.runtime/cloudflared/cloudflared --no-autoupdate tunnel --protocol http2 --config %h/panchang/.runtime/cloudflared/config.yml run
 Restart=always
 RestartSec=5
 NoNewPrivileges=true
