@@ -2,6 +2,9 @@
 Description=Astrisk Cloudflare Tunnel
 Wants=network-online.target panchang.service
 After=network-online.target panchang.service
+# Keep retrying after an extended mobile-hotspot outage instead of rate-limiting
+# restarts after several consecutive failed connection attempts.
+StartLimitIntervalSec=0
 
 [Service]
 Type=simple
