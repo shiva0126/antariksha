@@ -102,6 +102,10 @@ type memberCredentials struct {
 	Email     string `json:"email"`
 	BirthDate string `json:"birth_date"`
 	BirthTime string `json:"birth_time"`
+	// BirthTimeAccuracy records whether lagna-dependent results can be treated
+	// as precise.  It defaults to exact for existing and newly registered
+	// accounts, but can be corrected later from the private profile.
+	BirthTimeAccuracy string `json:"birth_time_accuracy"`
 	Password  string `json:"password"`
 	Code      string `json:"code"`
 	Consent   bool   `json:"consent"`
@@ -164,8 +168,15 @@ func (s *Server) registerMember(w http.ResponseWriter, r *http.Request) {
 	address, addressErr := mail.ParseAddress(in.Email)
 	dob, dateErr := time.Parse("2006-01-02", in.BirthDate)
 	bt, timeErr := time.Parse("15:04", in.BirthTime)
+	if in.BirthTimeAccuracy == "" {
+		in.BirthTimeAccuracy = "exact"
+	}
 	if !in.Consent || addressErr != nil || address.Address != in.Email || len(in.Email) > 254 || dateErr != nil || timeErr != nil || dob.Year() < 1900 || dob.After(time.Now()) || len(in.Password) < 12 || len(in.Password) > 72 {
 		problem(w, 400, fmt.Errorf("enter a valid email, date of birth, birth time and a 12–72 byte password"))
+		return
+	}
+	if !validBirthTimeAccuracy(in.BirthTimeAccuracy) {
+		problem(w, 400, fmt.Errorf("choose whether the birth time is exact, approximate or unknown"))
 		return
 	}
 	in.Name = strings.TrimSpace(in.Name)
@@ -198,7 +209,7 @@ func (s *Server) registerMember(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer tx.Rollback(r.Context())
-	_, err = tx.Exec(r.Context(), `INSERT INTO member_accounts(id,handle,password_hash,consent_version,email,birth_date,birth_time,birth_place,profile) VALUES($1,$2,$3,'private-profile-v2',$4,$5,$6,$7,$8)`, id, in.Handle, string(hash), in.Email, dob, bt.Format("15:04"), placeRaw, profileRaw)
+	_, err = tx.Exec(r.Context(), `INSERT INTO member_accounts(id,handle,password_hash,consent_version,email,birth_date,birth_time,birth_time_accuracy,birth_place,profile) VALUES($1,$2,$3,'private-profile-v2',$4,$5,$6,$7,$8,$9)`, id, in.Handle, string(hash), in.Email, dob, bt.Format("15:04"), in.BirthTimeAccuracy, placeRaw, profileRaw)
 	if err != nil {
 		var pe *pgconn.PgError
 		if errors.As(err, &pe) && pe.Code == "23505" {
@@ -272,10 +283,10 @@ func (s *Server) getMember(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var handle string
-	var email, date, birthTime string
+	var email, date, birthTime, birthTimeAccuracy string
 	var raw, place []byte
 	var verified bool
-	err = s.cache.(PostgresCache).Pool.QueryRow(r.Context(), `SELECT handle,profile,COALESCE(email,''),COALESCE(to_char(birth_date,'YYYY-MM-DD'),''),COALESCE(to_char(birth_time,'HH24:MI'),'') FROM member_accounts WHERE id=$1`, id).Scan(&handle, &raw, &email, &date, &birthTime)
+	err = s.cache.(PostgresCache).Pool.QueryRow(r.Context(), `SELECT handle,profile,COALESCE(email,''),COALESCE(to_char(birth_date,'YYYY-MM-DD'),''),COALESCE(to_char(birth_time,'HH24:MI'),''),birth_time_accuracy FROM member_accounts WHERE id=$1`, id).Scan(&handle, &raw, &email, &date, &birthTime, &birthTimeAccuracy)
 	if err != nil {
 		problem(w, 500, fmt.Errorf("profile unavailable"))
 		return
@@ -284,7 +295,11 @@ func (s *Server) getMember(w http.ResponseWriter, r *http.Request) {
 		problem(w, 500, fmt.Errorf("profile unavailable"))
 		return
 	}
-	writeJSON(w, 200, map[string]any{"id": id, "handle": handle, "email": email, "birth_date": date, "birth_time": birthTime, "profile": json.RawMessage(raw), "visibility": "private", "phone_verification_available": phoneReady(), "email_verified": verified, "email_delivery_available": s.mailer != nil, "role": s.accountRole(r, id), "birth_place": json.RawMessage(nullJSON(place))})
+	writeJSON(w, 200, map[string]any{"id": id, "handle": handle, "email": email, "birth_date": date, "birth_time": birthTime, "birth_time_accuracy": birthTimeAccuracy, "profile": json.RawMessage(raw), "visibility": "private", "phone_verification_available": phoneReady(), "email_verified": verified, "email_delivery_available": s.mailer != nil, "role": s.accountRole(r, id), "birth_place": json.RawMessage(nullJSON(place))})
+}
+
+func validBirthTimeAccuracy(v string) bool {
+	return v == "exact" || v == "approximate" || v == "unknown"
 }
 func (s *Server) updateMember(w http.ResponseWriter, r *http.Request) {
 	id, err := s.memberID(r)

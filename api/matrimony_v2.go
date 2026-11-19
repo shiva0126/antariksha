@@ -24,6 +24,7 @@ import (
 
 func (s *Server) matrimonyV2Routes() {
 	s.memberRoute("PUT /api/me/birth-place", s.saveBirthPlace)
+	s.memberRoute("PUT /api/me/birth-time-accuracy", s.saveBirthTimeAccuracy)
 	s.memberRoute("PUT /api/me/alerts", s.saveAlertPreference)
 	s.memberRoute("GET /api/matrimony/discover", s.discoverV2)
 	s.memberRoute("PUT /api/matrimony/search", s.saveMatrimonySearch)
@@ -72,6 +73,21 @@ func (s *Server) saveBirthPlace(w http.ResponseWriter, r *http.Request, id strin
 	s.forgetChart(id)
 }
 
+func (s *Server) saveBirthTimeAccuracy(w http.ResponseWriter, r *http.Request, id string) {
+	var in struct {
+		Accuracy string `json:"accuracy"`
+	}
+	if !memberInput(w, r, &in) {
+		return
+	}
+	if !validBirthTimeAccuracy(in.Accuracy) {
+		problem(w, 400, fmt.Errorf("choose exact, approximate or unknown"))
+		return
+	}
+	s.memberExec(w, r, `UPDATE member_accounts SET birth_time_accuracy=$2 WHERE id=$1`, id, in.Accuracy)
+	s.forgetChart(id)
+}
+
 func (s *Server) saveAlertPreference(w http.ResponseWriter, r *http.Request, id string) {
 	var in struct {
 		Email bool `json:"email"`
@@ -87,7 +103,7 @@ func (s *Server) saveAlertPreference(w http.ResponseWriter, r *http.Request, id 
 // India's centre, used only for the Moon when no birthplace is saved: the Moon
 // needs the moment of birth, not the place; lagna-based rules are skipped.
 type memberBirth struct {
-	Date, Time string
+	Date, Time, TimeAccuracy string
 	Place      *birthPlace
 }
 
@@ -114,7 +130,7 @@ func (s *Server) forgetChart(id string) {
 }
 
 func (s *Server) chartOf(id string, b memberBirth) (memberChart, bool) {
-	if b.Date == "" || b.Time == "" || b.Place == nil || !b.Place.valid() || s.engine == nil {
+	if b.Date == "" || b.Time == "" || b.TimeAccuracy != "exact" || b.Place == nil || !b.Place.valid() || s.engine == nil {
 		return memberChart{}, false
 	}
 	in := engine.ChartInput{Date: b.Date, Time: b.Time, Lat: b.Place.Lat, Lon: b.Place.Lon, TZ: b.Place.TZ}
@@ -142,7 +158,7 @@ func (s *Server) chartOf(id string, b memberBirth) (memberChart, bool) {
 func (s *Server) birthOf(ctx context.Context, id string) (memberBirth, error) {
 	var b memberBirth
 	var place []byte
-	err := s.membersDB().QueryRow(ctx, `SELECT COALESCE(to_char(birth_date,'YYYY-MM-DD'),''),COALESCE(to_char(birth_time,'HH24:MI'),''),birth_place FROM member_accounts WHERE id=$1`, id).Scan(&b.Date, &b.Time, &place)
+	err := s.membersDB().QueryRow(ctx, `SELECT COALESCE(to_char(birth_date,'YYYY-MM-DD'),''),COALESCE(to_char(birth_time,'HH24:MI'),''),birth_time_accuracy,birth_place FROM member_accounts WHERE id=$1`, id).Scan(&b.Date, &b.Time, &b.TimeAccuracy, &place)
 	if err == nil && len(place) > 0 {
 		var p birthPlace
 		if json.Unmarshal(place, &p) == nil && p.valid() {
@@ -538,7 +554,7 @@ func (s *Server) comparablePair(w http.ResponseWriter, r *http.Request, id, peer
 	}
 	h, ok := s.compareMembers(id, peer, mb, pb, myKind, theirKind)
 	if !ok {
-		problem(w, 409, fmt.Errorf("both members need a birth date, birth time and confirmed birthplace/timezone for this comparison"))
+		problem(w, 409, fmt.Errorf("both members need an exact birth time and confirmed birthplace/timezone for this comparison"))
 		return nil, false
 	}
 	return h, true

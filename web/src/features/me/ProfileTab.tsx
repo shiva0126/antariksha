@@ -6,7 +6,7 @@ import { PlaceSearch } from '../../ui/common/PlaceSearch';
 import type { Place } from '../../ui/common/places';
 import { MyCharacter } from '../../ui/community/MyCharacter';
 
-type Member = { id: string; handle: string; email: string; email_verified: boolean; email_delivery_available: boolean; birth_date: string; birth_time: string; birth_place: { name: string; lat: number; lon: number; tz: string } | null; profile: Record<string, string> };
+type Member = { id: string; handle: string; email: string; email_verified: boolean; email_delivery_available: boolean; birth_date: string; birth_time: string; birth_time_accuracy: 'exact' | 'approximate' | 'unknown'; birth_place: { name: string; lat: number; lon: number; tz: string } | null; profile: Record<string, string> };
 type Settings = { community: boolean; birth_date: string; avatar: string; accent: string; public_bio: string; interests: string[]; links: string[]; preferences: Record<string, string> };
 const blankSettings: Settings = { community: false, birth_date: '', avatar: 'sun', accent: '#d6b467', public_bio: '', interests: [], links: [], preferences: {} };
 const REFLECTIONS: [string, string][] = [['weekend', 'Your ideal weekend'], ['communication', 'How you prefer to communicate'], ['learning', 'Something you want to learn'], ['family', 'What family involvement means to you'], ['values', 'Values you want to live by']];
@@ -27,16 +27,21 @@ function Basics({ me, onSaved }: { me: Member; onSaved: () => void }) {
     try { await api('/api/me/birth-place', 'PUT', { name: [pl.name, pl.region].filter(Boolean).join(', '), lat: pl.lat, lon: pl.lon, tz: pl.tz }); setPlace(pl); toast('Birthplace saved.'); }
     catch (err) { toast(err instanceof Error ? err.message : 'Could not save birthplace', 'danger'); }
   }
+  async function saveTimeAccuracy(accuracy: Member['birth_time_accuracy']) {
+    try { await api('/api/me/birth-time-accuracy', 'PUT', { accuracy }); toast('Birth-time accuracy saved.'); onSaved(); }
+    catch (err) { toast(err instanceof Error ? err.message : 'Could not save birth-time accuracy', 'danger'); }
+  }
   return (
     <Card title="Basics" sub={<>Signed in as <b>{me.email || '@' + me.handle}</b> · private to you</>}>
       <div className="ds-stats">
         <StatTile label="Birth date" value={me.birth_date ? longDate(me.birth_date) : 'Not recorded'} />
-        <StatTile label="Birth time" value={me.birth_time?.slice(0, 5) || 'Not recorded'} />
+        <StatTile label="Birth time" value={me.birth_time?.slice(0, 5) || 'Not recorded'} note={me.birth_time_accuracy === 'exact' ? 'Marked exact' : me.birth_time_accuracy === 'approximate' ? 'Marked approximate' : 'Marked unknown'} />
         <StatTile label="Handle" value={/^member_[0-9a-f]{12}$/.test(me.handle) ? 'Not chosen' : '@' + me.handle} note={/^member_[0-9a-f]{12}$/.test(me.handle) ? 'Members see your display name' : undefined} />
         <StatTile label="Email" value={me.email_verified ? 'Verified' : 'Not verified'} note={!me.email_delivery_available ? 'Verification starts once email is set up' : undefined} />
       </div>
       {!me.email_verified && me.email_delivery_available && <div><Button size="sm" onClick={() => api<{ message: string }>('/api/me/email/verification', 'POST', {}).then(r => toast(r.message)).catch(e => toast(e.message, 'danger'))}>Send verification email</Button></div>}
       <PlaceSearch label="Birthplace (for lagna and Mangal dosha)" value={place} onChange={pl => void savePlace(pl)} />
+      <Field label="Birth-time accuracy" hint="Lagna, houses, transit alerts and matrimony horoscope matching use only an exact time. Mark approximate or unknown if you are not certain."><Select value={me.birth_time_accuracy || 'exact'} onChange={e => void saveTimeAccuracy(e.target.value as Member['birth_time_accuracy'])} options={[["exact", "Exact (recorded time)"], ["approximate", "Approximate"], ["unknown", "Unknown"]]} /></Field>
       <form onSubmit={save} className="ds-stack">
         <FormGrid>
           <Field label="Display name"><Input maxLength={100} value={p.name ?? ''} onChange={e => set('name', e.target.value)} autoComplete="name" /></Field>

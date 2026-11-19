@@ -27,7 +27,7 @@ func (s *Server) transitAlertRoutes() {
 
 func (s *Server) transitAlertsSetting(w http.ResponseWriter, r *http.Request, id string) {
 	var on, ready bool
-	err := s.membersDB().QueryRow(r.Context(), `SELECT transit_alerts, birth_date IS NOT NULL AND birth_time IS NOT NULL AND birth_place IS NOT NULL FROM member_accounts WHERE id=$1`, id).Scan(&on, &ready)
+	err := s.membersDB().QueryRow(r.Context(), `SELECT transit_alerts, birth_date IS NOT NULL AND birth_time IS NOT NULL AND birth_time_accuracy='exact' AND birth_place IS NOT NULL FROM member_accounts WHERE id=$1`, id).Scan(&on, &ready)
 	if err != nil {
 		problem(w, 500, err)
 		return
@@ -123,7 +123,7 @@ func (s *Server) queueTransitAlerts(ctx context.Context, now time.Time) (int, er
 	}
 	db := s.membersDB()
 	rows, err := db.Query(ctx, `SELECT id, to_char(birth_date,'YYYY-MM-DD'), to_char(birth_time,'HH24:MI'), birth_place FROM member_accounts
- WHERE transit_alerts AND birth_date IS NOT NULL AND birth_time IS NOT NULL AND birth_place IS NOT NULL`)
+ WHERE transit_alerts AND birth_date IS NOT NULL AND birth_time IS NOT NULL AND birth_time_accuracy='exact' AND birth_place IS NOT NULL`)
 	if err != nil {
 		return 0, err
 	}

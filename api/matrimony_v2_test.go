@@ -168,6 +168,13 @@ func TestMatrimonyV2Journey(t *testing.T) {
 	if !strings.Contains(w.Body.String(), `"total":19.5`) || strings.Contains(w.Body.String(), "1996-05-14") {
 		t.Fatalf("compare: %s", w.Body.String())
 	}
+	// A remembered-but-uncertain clock time must not produce a falsely exact
+	// lagna-based comparison. The account can restore exact status later.
+	check(request(bride, "PUT", "/api/me/birth-time-accuracy", map[string]string{"accuracy": "approximate"}), 200)
+	check(request(groom, "GET", "/api/matrimony/compare/"+bride.id, nil), 409)
+	check(request(bride, "PUT", "/api/me/birth-time-accuracy", map[string]string{"accuracy": "exact"}), 200)
+	check(request(groom, "GET", "/api/matrimony/compare/"+bride.id, nil), 200)
+	check(request(bride, "PUT", "/api/me/birth-time-accuracy", map[string]string{"accuracy": "made_up"}), 400)
 	check(request(groom, "GET", "/api/matrimony/compare/"+private.id, nil), 404)
 	w = request(groom, "POST", "/api/matrimony/compare/"+bride.id+"/chat", map[string]any{"question": "Explain our guna score", "history": []any{}})
 	check(w, 200)
