@@ -361,7 +361,7 @@ func (s *Server) discoverFor(w http.ResponseWriter, r *http.Request, owner, view
  p.verified_at IS NOT NULL, p.horoscope_visible, p.updated_at,
  COALESCE((SELECT kind FROM matrimony_saved sv WHERE sv.owner=$1 AND sv.target=a.id),''),
  COALESCE((SELECT CASE WHEN i.status='accepted' THEN 'accepted' WHEN i.status='declined' THEN 'declined' WHEN i.sender=$1 THEN 'sent' ELSE 'received' END FROM matrimony_interests i WHERE (i.sender=$1 AND i.recipient=a.id) OR (i.sender=a.id AND i.recipient=$1) ORDER BY i.created_at DESC LIMIT 1),''),
- COALESCE(to_char(a.birth_date,'YYYY-MM-DD'),''),COALESCE(to_char(a.birth_time,'HH24:MI'),''),a.birth_place
+ COALESCE(to_char(a.birth_date,'YYYY-MM-DD'),''),COALESCE(to_char(a.birth_time,'HH24:MI'),''),a.birth_time_accuracy,a.birth_place
  FROM matrimony_profiles p JOIN member_accounts a ON a.id=p.account_id JOIN member_settings c ON c.account_id=a.id
  JOIN member_settings me ON me.account_id=$1 JOIN matrimony_profiles mine ON mine.account_id=$1
  WHERE matrimony_visible(a.id,$1) AND a.id<>$2 AND NOT member_blocked(a.id,$2)
@@ -378,7 +378,7 @@ func (s *Server) discoverFor(w http.ResponseWriter, r *http.Request, owner, view
 		var details, photos, place []byte
 		var theirHoro bool
 		var b memberBirth
-		if err = rows.Scan(&c.ID, &c.Handle, &details, &c.Avatar, &c.Accent, &c.Age, &photos, &c.Shared, &c.Verified, &theirHoro, &c.Updated, &c.Saved, &c.Interest, &b.Date, &b.Time, &place); err != nil {
+		if err = rows.Scan(&c.ID, &c.Handle, &details, &c.Avatar, &c.Accent, &c.Age, &photos, &c.Shared, &c.Verified, &theirHoro, &c.Updated, &c.Saved, &c.Interest, &b.Date, &b.Time, &b.TimeAccuracy, &place); err != nil {
 			rows.Close()
 			problem(w, 500, fmt.Errorf("discovery unavailable"))
 			return
@@ -403,7 +403,7 @@ func (s *Server) discoverFor(w http.ResponseWriter, r *http.Request, owner, view
 			if h, ok := s.compareMembers(owner, c.ID, ownerBirth, b, mine.ProfileKind, c.Details.ProfileKind); ok {
 				c.Horoscope = h
 			} else {
-				c.HoroReason = "Both members need a birth date, birth time and confirmed birthplace/timezone for horoscope matching."
+				c.HoroReason = "Both members need an exact birth time and confirmed birthplace/timezone for horoscope matching."
 			}
 		}
 		c.addReasons(mine, c.Horoscope)

@@ -187,7 +187,7 @@ func TestAdminAuthenticatorLifecycle(t *testing.T) {
 
 func TestMatrimonyRequiresConfirmedBirthplace(t *testing.T) {
 	s := NewServer(realEngine(t), nil, nil)
-	b := memberBirth{Date: "1996-05-14", Time: "10:15"}
+	b := memberBirth{Date: "1996-05-14", Time: "10:15", TimeAccuracy: "exact"}
 	if _, ok := s.chartOf("test-no-place", b); ok {
 		t.Fatal("missing birthplace was guessed")
 	}
