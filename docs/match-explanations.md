@@ -35,7 +35,7 @@ Reading validation now requires exact canonical planet identity/placement fields
 
 Set `RAG_SEMANTIC_ENABLED=true` only after loading compatible vectors. Chat then performs exact retrieval first and optionally enriches context with up to six semantic matches restricted **before ranking** to the chart's detected tokens, Parashari namespace, English and configured embedding model. Empty indexes do not trigger paid query embeddings. Exact retrieval remains available when enrichment fails.
 
-Use the existing `corpus load -embed` and `corpus validate` commands with a configured provider. Fake vectors used by tests are never production embeddings. This release does not add or clear book editions: the current 447-entry corpus, pending Lal Kitab and other sources remain accurately reported. Book acquisition, human review and independent five-birth yoga/dasha comparison remain outstanding; the new five-birth regression test is not an external validation.
+Use the existing `corpus load -embed` and `corpus validate` commands with a configured provider. Fake vectors used by tests are never production embeddings. The live library was checked on 19 November 2026 at 571 embedded entries; pending Lal Kitab and other sources remain accurately reported. Book acquisition, human review and independent five-birth yoga/dasha comparison remain outstanding; the new five-birth regression test is not an external validation.
 
 The API adapter continues to use JSON mode with application-level validation; it does not claim strict provider-schema enforcement. Design reference: [official OpenAI structured-output guidance](https://developers.openai.com/api/docs/guides/structured-outputs).
 
@@ -44,4 +44,4 @@ The API adapter continues to use JSON mode with application-level validation; it
 - `go test ./...`, targeted `go vet`, and race tests for `reading` / `corpus` pass.
 - An isolated migrated PostgreSQL database exercises profile consent, post-generation revocation, community access, embedding synchronization and detected-key semantic filtering with a fake provider.
 - Browser tests cover all nine chart factors, the clearly labeled unavailable-AI fallback, eight profile factors, unknown preferences and blocked-profile denial. Frontend TypeScript build and seven existing unit tests pass.
-- Production corpus remains 447 rows / 0 vectors. There was no paid model call, external five-birth certification or book ingestion in this release.
+- At the time of this release the corpus was 447 rows / 0 vectors. It has since been expanded and embedded; see `docs/corpus.md` for the current audited count. There was no paid model call or external five-birth certification in this release.

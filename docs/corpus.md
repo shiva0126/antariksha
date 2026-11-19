@@ -51,7 +51,8 @@ go run ./cmd/corpus search -q "Jupiter in a kendra from the Moon"
 ## Current contents
 
 - 332 self-authored Parashari entries (full required coverage) and 7 Jaimini karaka entries.
-- 108 passages from *The Brihat Jataka of Varaha Mihira*, tr. N. Chidambaram Iyer (1885, public domain), chapters XIII (Chandra yogas), XIV (planet pairs), XVI (Moon's nakshatra), XVII (Moon in signs) and XX (planets in houses, dignity scaling).
+- 148 passages from *The Brihat Jataka of Varaha Mihira*, tr. N. Chidambaram Iyer (1885, public domain), including the mapped yoga, nakshatra, sign and house material.
+- 84 passages from *Brihat Samhita*, tr. N. Chidambaram Iyer (1884, public domain), mapped to the supported forecast material.
 - Other canonical texts are recorded in the manifest as `not_acquired` or `copyrighted_blocked`, with notes on what clearing each would take.
 
 The English self-authored entries were revised to explain themes in ordinary language, offer optional reflection questions and avoid presenting a chart as evidence about a person's lived experience. Historical public-domain passages remain available for grounding and citations, but reading and chat responses do not repeat old prediction wording verbatim. These authored explanations are editorial interpretations, not translations.
@@ -70,7 +71,7 @@ Readings now keep complete planet-guide paragraphs rather than clipping sentence
 
 The optional runtime semantic path and reading validation changes are documented in [Detailed matching explanations](match-explanations.md). `GET /api/reading/status` exposes current aggregate readiness to signed-in users. With `RAG_SEMANTIC_ENABLED=true`, chat enrichment searches only detected Parashari facts in English and only vectors from the configured model; exact-key retrieval remains the primary path. This flag alone does not create vectors or acquire books.
 
-The live schema supports `vector(1536)` and has an HNSW index. Since 5 October 2026 all **447 rows are embedded** with the local model below. Reading requests still retrieve on exact engine keys first; semantic search only adds passages for keys already present in the chart. No book has been used for fine-tuning.
+The live schema supports `vector(1536)` and has an HNSW index. The production library was checked on 19 November 2026: all **571 rows are embedded** with the local model below (332 authored Parashari, 7 authored Jaimini, 148 *Brihat Jataka*, 84 *Brihat Samhita*). Reading requests still retrieve on exact engine keys first; semantic search only adds passages for keys already present in the chart. No book has been used for fine-tuning.
 
 ## Local embeddings
 
@@ -97,4 +98,4 @@ The system PostgreSQL has no pgvector. `scripts/install-pgvector.sh` builds a us
 
 `go test ./corpus` covers the gate, segmentation, matching, coverage and namespacing, plus the public-domain build if `corpus/raw` has been acquired. Set `CORPUS_TEST_DATABASE_URL` to a disposable migrated database to also exercise sync, re-embedding and HNSW search against a fake embeddings server.
 
-The 2 October editorial release passed all Go packages, targeted vet/race checks, the database source-count test, frontend unit/build checks, and two browser journeys covering Kundali and the additional readings. An isolated PostgreSQL load retained 447 entries; five-chart exact retrieval found all required tokens (269 passages). Production sync updated 72 rows, retained 375 unchanged, and removed none. The corpus validator still fails its embedding requirement (447 unembedded) and skips semantic search; automated OCR checks are not a substitute for a human passage review or independent chart validation.
+The 2 October editorial release passed all Go packages, targeted vet/race checks, the database source-count test, frontend unit/build checks, and two browser journeys covering Kundali and the additional readings. Later source mapping expanded the live library to 571 entries, all with local embeddings. Automated OCR checks and embeddings are not a substitute for a human passage review or independent chart validation.
